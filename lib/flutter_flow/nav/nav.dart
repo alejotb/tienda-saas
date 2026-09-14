@@ -18,6 +18,7 @@ import 'package:baul_pandora/index.dart';
 import 'package:baul_pandora/pages/administracion/admin_pagos_page.dart';
 import 'package:baul_pandora/pages/administracion/admin_despachos_page.dart';
 import 'package:baul_pandora/pages/administracion/admin_inventario_page.dart';
+import 'package:baul_pandora/pages/store_register/store_register_widget.dart';
 
 export 'package:go_router/go_router.dart';
 export 'serialization_util.dart';
@@ -317,6 +318,11 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
                 ? const NavBarPage(initialPage: 'adminAuditoria')
                 : const AdminAuditoriaPage();
           },
+        ),
+        FFRoute(
+          name: StoreRegisterWidget.routeName,
+          path: StoreRegisterWidget.routePath,
+          builder: (context, params) => const StoreRegisterWidget(),
         ),
         FFRoute(
           name: AdministracionWidget.routeName,
