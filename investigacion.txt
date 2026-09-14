@@ -1,0 +1,26 @@
+Markdown
+### CONTEXTO DE DESARROLLO
+Objetivo: Implementar el modelo oficial Gemini 3.1 para análisis de imágenes (visión multimodal) de forma directa en el cliente de Flutter mediante el paquete `google_generative_ai`. El origen de los datos es un Array de texto proveniente de Supabase (`image_path`), del cual se debe parsear el primer elemento.
+
+### ESPECIFICACIONES TÉCNICAS REQUERIDAS
+
+1. DECLARACIÓN DEL MODELO OBBLIGATORIO:
+   El identificador oficial para la API es 'gemini-3.1-flash-lite'. Debe inicializarse mediante GenerativeModel:
+   ```dart
+   final model = GenerativeModel(
+     model: 'gemini-3.1-flash-lite',
+     apiKey: yourApiKey,
+   );
+LOGÍSTICA DE CONEXIÓN (EVITAR SÍNDROME DE TIMEOUT):
+Dado el ancho de banda inestable, NO utilizar flujos de transmisión (streaming / generateContentStream). Utilizar llamadas HTTP sincrónicas completas mediante 'generateContent' con manejo explícito de errores (try-catch) para capturar fallos de red sin congelar la app.
+
+PROCESAMIENTO MULTIMODAL DIRECTO (DART):
+
+La función debe recibir el String de la URL (extraído con '.first' del array de Supabase).
+
+Debe descargar los bytes de la imagen de forma interna y encapsularlos en un objeto 'DataPart'.
+
+El payload para 'generateContent' se debe componer combinando el 'TextPart' (prompt) y el 'DataPart' (imagen) dentro de la lista de contenidos.
+
+REGLAS DE ARQUITECTURA:
+Generar una función independiente y modular. No usar estados globales complejos para prevenir errores de anidamiento de widgets en archivos masivos.

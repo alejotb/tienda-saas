@@ -1,0 +1,163 @@
+// ignore_for_file: unnecessary_getters_setters
+
+import 'package:baul_pandora/backend/schema/util/schema_util.dart';
+
+import 'index.dart';
+import 'package:baul_pandora/flutter_flow/flutter_flow_util.dart';
+
+class TransactionsStruct extends BaseStruct {
+  TransactionsStruct({
+    String? name,
+    DateTime? dateCreated,
+    String? description,
+    String? vendor,
+    double? amount,
+  })  : _name = name,
+        _dateCreated = dateCreated,
+        _description = description,
+        _vendor = vendor,
+        _amount = amount;
+
+  // "name" field.
+  String? _name;
+  String get name => _name ?? '';
+  set name(String? val) => _name = val;
+
+  bool hasName() => _name != null;
+
+  // "dateCreated" field.
+  DateTime? _dateCreated;
+  DateTime? get dateCreated => _dateCreated;
+  set dateCreated(DateTime? val) => _dateCreated = val;
+
+  bool hasDateCreated() => _dateCreated != null;
+
+  // "description" field.
+  String? _description;
+  String get description => _description ?? '';
+  set description(String? val) => _description = val;
+
+  bool hasDescription() => _description != null;
+
+  // "vendor" field.
+  String? _vendor;
+  String get vendor => _vendor ?? '';
+  set vendor(String? val) => _vendor = val;
+
+  bool hasVendor() => _vendor != null;
+
+  // "amount" field.
+  double? _amount;
+  double get amount => _amount ?? 0.0;
+  set amount(double? val) => _amount = val;
+
+  void incrementAmount(double amount) => amount = amount + amount;
+
+  bool hasAmount() => _amount != null;
+
+  static TransactionsStruct fromMap(Map<String, dynamic> data) =>
+      TransactionsStruct(
+        name: data['name'] as String?,
+        dateCreated: data['dateCreated'] as DateTime?,
+        description: data['description'] as String?,
+        vendor: data['vendor'] as String?,
+        amount: castToType<double>(data['amount']),
+      );
+
+  static TransactionsStruct? maybeFromMap(dynamic data) => data is Map
+      ? TransactionsStruct.fromMap(data.cast<String, dynamic>())
+      : null;
+
+  Map<String, dynamic> toMap() => {
+        'name': _name,
+        'dateCreated': _dateCreated,
+        'description': _description,
+        'vendor': _vendor,
+        'amount': _amount,
+      }.withoutNulls;
+
+  @override
+  Map<String, dynamic> toSerializableMap() => {
+        'name': serializeParam(
+          _name,
+          ParamType.String,
+        ),
+        'dateCreated': serializeParam(
+          _dateCreated,
+          ParamType.DateTime,
+        ),
+        'description': serializeParam(
+          _description,
+          ParamType.String,
+        ),
+        'vendor': serializeParam(
+          _vendor,
+          ParamType.String,
+        ),
+        'amount': serializeParam(
+          _amount,
+          ParamType.double,
+        ),
+      }.withoutNulls;
+
+  static TransactionsStruct fromSerializableMap(Map<String, dynamic> data) =>
+      TransactionsStruct(
+        name: deserializeParam(
+          data['name'],
+          ParamType.String,
+          false,
+        ),
+        dateCreated: deserializeParam(
+          data['dateCreated'],
+          ParamType.DateTime,
+          false,
+        ),
+        description: deserializeParam(
+          data['description'],
+          ParamType.String,
+          false,
+        ),
+        vendor: deserializeParam(
+          data['vendor'],
+          ParamType.String,
+          false,
+        ),
+        amount: deserializeParam(
+          data['amount'],
+          ParamType.double,
+          false,
+        ),
+      );
+
+  @override
+  String toString() => 'TransactionsStruct(${toMap()})';
+
+  @override
+  bool operator ==(Object other) {
+    return other is TransactionsStruct &&
+        name == other.name &&
+        dateCreated == other.dateCreated &&
+        description == other.description &&
+        vendor == other.vendor &&
+        amount == other.amount;
+  }
+
+  @override
+  int get hashCode => const ListEquality()
+      .hash([name, dateCreated, description, vendor, amount]);
+}
+
+TransactionsStruct createTransactionsStruct({
+  String? name,
+  DateTime? dateCreated,
+  String? description,
+  String? vendor,
+  double? amount,
+}) =>
+    TransactionsStruct(
+      name: name,
+      dateCreated: dateCreated,
+      description: description,
+      vendor: vendor,
+      amount: amount,
+    );

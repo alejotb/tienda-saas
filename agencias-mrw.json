@@ -1,0 +1,50 @@
+[
+  {
+    "empresa": "MRW",
+    "estado": "DISTRITO CAPITAL",
+    "ciudad": "CARACAS",
+    "nombre_agencia": "LOS CAOBOS",
+    "codigo_agencia": "01010",
+    "direccion": "AV. PANAMA CON AV. LIBERTADOR, QTA. SOCA AL LADO DE AUDIVISION, C.A. DETRAS DE RESTAURANT GRAN YEIN, SUBIENDO POR LA TORRE POLAR. URB LOS CAOBOS"
+  },
+  {
+    "empresa": "MRW",
+    "estado": "DISTRITO CAPITAL",
+    "ciudad": "BELLO MONTE",
+    "nombre_agencia": "BELLO MONTE",
+    "codigo_agencia": "01020",
+    "direccion": "AVENIDA LEONARDO DA VINCI PLAZA LINCOLN, QUINTA MOHEDANO, LOCAL 3 DETRAS DE CIUDAD BANESCO COLINAS DE BELLO MONTE"
+  },
+  {
+    "empresa": "MRW",
+    "estado": "DISTRITO CAPITAL",
+    "ciudad": "EL LLANITO",
+    "nombre_agencia": "EL LLANITO",
+    "codigo_agencia": "01030",
+    "direccion": "AV. PCPAL DEL LLANITO EN LA FERRETERIA CASATRIGO PUNTO DE REFERENCIA AL FRENTE DEL C.C. EL LLANITO"
+  },
+  {
+    "empresa": "MRW",
+    "estado": "ARAGUA",
+    "ciudad": "MARACAY",
+    "nombre_agencia": "MARACAY ZONA INDUSTRIAL",
+    "codigo_agencia": "05010",
+    "direccion": "AV. ARAGUA CENTRO Nº 58, ENTRE CALLES CLAVELLINAS Y URDANETA, BARRIO BOLIVAR I"
+  },
+  {
+    "empresa": "MRW",
+    "estado": "TRUJILLO",
+    "ciudad": "VALERA",
+    "nombre_agencia": "VALERA",
+    "codigo_agencia": "21010",
+    "direccion": "CALLE 5 ENTRE AV. BOLÍVAR Y 9, EDIF. PROFESIONAL DON PEPE, PB, LOCAL MRW"
+  },
+  {
+    "empresa": "MRW",
+    "estado": "ZULIA",
+    "ciudad": "MARACAIBO",
+    "nombre_agencia": "LA LIMPIA",
+    "codigo_agencia": "24000",
+    "direccion": "AV. 28 EDIF. RODRÍGUEZ Y BARBOZA, PISO PB LOCAL 01, DIAGONAL AL HOTEL MARACAIBO SUIT. SECTOR LA LIMPIA"
+  }
+]

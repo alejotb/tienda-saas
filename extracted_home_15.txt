@@ -1,0 +1,56 @@
+Created At: 2026-08-28T10:10:29-04:00
+Completed At: 2026-08-28T10:10:38-04:00
+
+The command exited with code 0.
+Output:
+import 'package:baul_pandora/auth/supabase_auth/auth_util.dart';
+import 'package:baul_pandora/backend/supabase/supabase.dart';
+import 'package:baul_pandora/services/cart_service.dart';
+import 'package:baul_pandora/components/top_nav/top_nav_widget.dart';
+import 'package:baul_pandora/flutter_flow/flutter_flow_theme.dart';
+import 'package:baul_pandora/flutter_flow/flutter_flow_util.dart';
+
+import 'components/featured_categories_widget.dart';
+import 'components/product_list_area.dart';
+import 'package:baul_pandora/components/barcode_scanner_modal.dart' as baul_pandora;
+import 'package:baul_pandora/pages/search_results/components/search_sidebar_filters.dart';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:baul_pandora/services/ai/ai_product_service.dart';
+
+import 'package:flutter/scheduler.dart';
+import 'package:provider/provider.dart';
+import 'main_home_page_model.dart';
+export 'main_home_page_model.dart';
+
+class MainHomePageWidget extends StatefulWidget {
+  const MainHomePageWidget({super.key});
+
+  static String routeName = 'mainHomePage';
+  static String routePath = '/mainHomePage';
+
+  @override
+  State<MainHomePageWidget> createState() => _MainHomePageWidgetState();
+}
+
+class _MainHomePageWidgetState extends State<MainHomePageWidget> {
+  late MainHomePageModel _model;
+
+  final scaffoldKey = GlobalKey<ScaffoldState>();
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _model = createModel(context, () => MainHomePageModel());
+    debugPrint('DEBUG: Cart items on Home Page: ${FFAppState().itemsCarrito.map((e) => e.idProducto).toList()}');
+
+    // On page load action.
+    SchedulerBinding.instance.addPostFrameCallback((_) async {
+      if (loggedIn) {
+        await CartService.instance.fetchRemoteCart();
+        safeSetState(() {});
+      }
+      _model.usuario = await UsuariosTable().queryRows(
+        queryFn: (q) => q.eq(
+

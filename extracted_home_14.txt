@@ -1,0 +1,33 @@
+Created At: 2026-08-25T11:47:52-04:00
+Completed At: 2026-08-25T11:47:53-04:00
+File Path: `file:///c:/Users/alejo/Documents/Baul/baul_pandora/lib/pages/main_home_page/main_home_page_widget.dart`
+Total Lines: 226
+Total Bytes: 10242
+Showing lines 1 to 25
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1: import 'package:baul_pandora/auth/supabase_auth/auth_util.dart';
+2: import 'package:baul_pandora/backend/supabase/supabase.dart';
+3: import 'package:baul_pandora/services/cart_service.dart';
+4: import 'package:baul_pandora/components/top_nav/top_nav_widget.dart';
+5: import 'package:baul_pandora/flutter_flow/flutter_flow_theme.dart';
+6: import 'package:baul_pandora/flutter_flow/flutter_flow_util.dart';
+7: 
+8: import 'components/featured_categories_widget.dart';
+9: import 'components/product_list_area.dart';
+10: import 'package:baul_pandora/components/barcode_scanner_modal.dart' as baul_pandora;
+11: import 'package:baul_pandora/pages/search_results/components/search_sidebar_filters.dart';
+12: import 'package:flutter/material.dart';
+13: import 'package:flutter/scheduler.dart';
+14: import 'package:provider/provider.dart';
+15: import 'main_home_page_model.dart';
+16: export 'main_home_page_model.dart';
+17: 
+18: class MainHomePageWidget extends StatefulWidget {
+19:   const MainHomePageWidget({super.key});
+20: 
+21:   static String routeName = 'mainHomePage';
+22:   static String routePath = '/mainHomePage';
+23: 
+24:   @override
+25:   State<MainHomePageWidget> createState() => _MainHomePageWidgetState();
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.

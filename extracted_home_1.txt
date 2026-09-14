@@ -1,0 +1,154 @@
+Created At: 2026-08-20T22:20:05-04:00
+Completed At: 2026-08-20T22:20:05-04:00
+File Path: `file:///c:/Users/alejo/Documents/Baul/baul_pandora/lib/pages/main_home_page/main_home_page_widget.dart`
+Total Lines: 146
+Total Bytes: 5347
+Showing lines 1 to 146
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1: import 'package:baul_pandora/auth/supabase_auth/auth_util.dart';
+2: import 'package:baul_pandora/backend/supabase/supabase.dart';
+3: import 'package:baul_pandora/services/cart_service.dart';
+4: import 'package:baul_pandora/components/top_nav/top_nav_widget.dart';
+5: import 'package:baul_pandora/flutter_flow/flutter_flow_theme.dart';
+6: import 'package:baul_pandora/flutter_flow/flutter_flow_util.dart';
+7: import 'components/category_filter_bar.dart';
+8: import 'components/featured_categories_widget.dart';
+9: import 'components/product_list_area.dart';
+10: import 'package:flutter/material.dart';
+11: import 'package:flutter/scheduler.dart';
+12: import 'package:provider/provider.dart';
+13: import 'main_home_page_model.dart';
+14: export 'main_home_page_model.dart';
+15: export 'main_home_page_model.dart';
+16: 
+17: class MainHomePageWidget extends StatefulWidget {
+18:   const MainHomePageWidget({super.key});
+19: 
+20:   static String routeName = 'mainHomePage';
+21:   static String routePath = '/mainHomePage';
+22: 
+23:   @override
+24:   State<MainHomePageWidget> createState() => _MainHomePageWidgetState();
+25: }
+26: 
+27: class _MainHomePageWidgetState extends State<MainHomePageWidget> {
+28:   late MainHomePageModel _model;
+29: 
+30:   final scaffoldKey = GlobalKey<ScaffoldState>();
+31: 
+32:   @override
+33:   void initState() {
+34:     super.initState();
+35:     _model = createModel(context, () => MainHomePageModel());
+36:     debugPrint('DEBUG: Cart items on Home Page: ${FFAppState().itemsCarrito.map((e) => e.idProducto).toList()}');
+37: 
+38:     // On page load action.
+39:     SchedulerBinding.instance.addPostFrameCallback((_) async {
+40:       if (loggedIn) {
+41:         await CartService.instance.fetchRemoteCart();
+42:         safeSetState(() {});
+43:       }
+44:       _model.usuario = await UsuariosTable().queryRows(
+45:         queryFn: (q) => q.eq(
+46:           'id',
+47:           currentUserUid,
+48:         ),
+49:       );
+50:       if (_model.usuario != null && (_model.usuario)!.isNotEmpty) {
+51:         final user = _model.usuario!.firstOrNull;
+52:         if (user != null) {
+53:           FFAppState().isAdmin = user.isAdmin;
+54:           _model.favoritos = user.favoriteItems.toList().cast<String>();
+55:         }
+56:         safeSetState(() {});
+57:       }
+58:     });
+59:   }
+60: 
+61:   @override
+62:   void dispose() {
+63:     _model.dispose();
+64: 
+65:     super.dispose();
+66:   }
+67: 
+68:   @override
+69:   Widget build(BuildContext context) {
+70:     context.watch<FFAppState>();
+71: 
+72:     return GestureDetector(
+73:       onTap: () {
+74:         FocusScope.of(context).unfocus();
+75:         FocusManager.instance.primaryFocus?.unfocus();
+76:       },
+77:       child: Scaffold(
+78:         key: scaffoldKey,
+79:         backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+80:         body: SafeArea(
+81:           top: true,
+82:           child: Column(
+83:             mainAxisSize: MainAxisSize.max,
+84:             children: <Widget>[
+85:               Expanded(
+86:                 child: Padding(
+87:                   padding:
+88:                       const EdgeInsetsDirectional.fromSTEB(8.0, 0.0, 8.0, 0.0),
+89:                   child: Container(
+90:                     constraints: const BoxConstraints(
+91:                       maxWidth: 1400.0,
+92:                     ),
+93:                     decoration: BoxDecoration(
+94:                       color: FlutterFlowTheme.of(context).primaryBackground,
+95:                       borderRadius: BorderRadius.circular(12.0),
+96:                       border: Border.all(
+97:                         color: FlutterFlowTheme.of(context).primaryBackground,
+98:                         width: 2.0,
+99:                       ),
+100:                     ),
+101:                     child: Column(
+102:                       mainAxisSize: MainAxisSize.max,
+103:                       crossAxisAlignment: CrossAxisAlignment.start,
+104:                       children: <Widget>[
+105:                         Padding(
+106:                           padding: const EdgeInsetsDirectional.fromSTEB(
+107:                               0.0, 0.0, 16.0, 0.0),
+108:                           child: Column(
+109:                             mainAxisSize: MainAxisSize.max,
+110:                             mainAxisAlignment: MainAxisAlignment.center,
+111:                             crossAxisAlignment: CrossAxisAlignment.start,
+112:                             children: <Widget>[
+113:                               wrapWithModel(
+114:                                 model: _model.topNavModel,
+115:                                 updateCallback: () async { safeSetState(() {}); },
+116:                                 child: const TopNavWidget(),
+117:                               ),
+118:                               FeaturedCategoriesWidget(
+119:                                 model: _model,
+120:                                 updateCallback: () async { safeSetState(() {}); },
+121:                               ),
+122:                               ],
+123:                               ),
+124:                               ),
+125:                               CategoryFilterBar(
+126:                               model: _model,
+127:                               updateCallback: () async { safeSetState(() {}); },
+128:                               ),
+129:                         Expanded(
+130:                           child: ProductListArea(
+131:                             model: _model,
+132:                           ),
+133:                         ),
+134:                       ],
+135:                     ),
+136:                   ),
+137:                 ),
+138:               ),
+139:             ],
+140:           ),
+141:         ),
+142:       ),
+143:     );
+144:   }
+145: }
+146: 
+The above content shows the entire, complete file contents of the requested file.

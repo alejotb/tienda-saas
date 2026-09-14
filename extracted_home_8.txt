@@ -1,0 +1,108 @@
+Created At: 2026-08-23T14:15:19-04:00
+Completed At: 2026-08-23T14:15:19-04:00
+File Path: `file:///c:/Users/alejo/Documents/Baul/baul_pandora/lib/pages/main_home_page/components/featured_categories_widget.dart`
+Total Lines: 278
+Total Bytes: 15168
+Showing lines 1 to 100
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1: import 'package:baul_pandora/auth/supabase_auth/auth_util.dart';
+2: import 'package:baul_pandora/backend/supabase/supabase.dart';
+3: import 'package:baul_pandora/components/empty_categoria/empty_categoria_widget.dart';
+4: import 'package:baul_pandora/dropdowns/dropdown_categorias_destacadas/dropdown_categorias_destacadas_widget.dart';
+5: import 'package:baul_pandora/flutter_flow/flutter_flow_theme.dart';
+6: import 'package:baul_pandora/flutter_flow/flutter_flow_util.dart';
+7: import 'package:baul_pandora/flutter_flow/custom_functions.dart' as functions;
+8: import 'package:flutter/material.dart';
+9: import 'package:google_fonts/google_fonts.dart';
+10: import '../main_home_page_model.dart';
+11: 
+12: class FeaturedCategoriesWidget extends StatelessWidget {
+13:   const FeaturedCategoriesWidget({
+14:     super.key,
+15:     required this.model,
+16:     required this.updateCallback,
+17:   });
+18: 
+19:   final MainHomePageModel model;
+20:   final Future<void> Function() updateCallback;
+21: 
+22:   @override
+23:   Widget build(BuildContext context) {
+24:     return FutureBuilder<List<CategoriasRow>>(
+25:       future: CategoriasTable().queryRows(
+26:         queryFn: (q) => q.eq('destacada', true),
+27:       ),
+28:       builder: (context, snapshot) {
+29:         if (!snapshot.hasData) {
+30:           return Center(
+31:             child: SizedBox(
+32:               width: 50.0,
+33:               height: 50.0,
+34:               child: CircularProgressIndicator(
+35:                 valueColor: AlwaysStoppedAnimation<Color>(
+36:                   FlutterFlowTheme.of(context).primary,
+37:                 ),
+38:               ),
+39:             ),
+40:           );
+41:         }
+42:         final listViewCategoriasRowList = snapshot.data!;
+43:         if (listViewCategoriasRowList.isEmpty && !model.isAdmin) {
+44:           return const SizedBox.shrink();
+45:         }
+46:         return Column(
+47:           mainAxisSize: MainAxisSize.max,
+48:           crossAxisAlignment: CrossAxisAlignment.start,
+49:           children: <Widget>[
+50:             Text(
+51:               'Categorias Destacadas',
+52:               style: FlutterFlowTheme.of(context)
+53:                   .headlineLarge
+54:                   .override(
+55:                     font: GoogleFonts.interTight(
+56:                       fontWeight: FlutterFlowTheme.of(context).headlineLarge.fontWeight,
+57:                       fontStyle: FlutterFlowTheme.of(context).headlineLarge.fontStyle,
+58:                     ),
+59:                     letterSpacing: 0.0,
+60:                     fontWeight: FlutterFlowTheme.of(context).headlineLarge.fontWeight,
+61:                     fontStyle: FlutterFlowTheme.of(context).headlineLarge.fontStyle,
+62:                   ),
+63:             ),
+64:             Padding(
+65:               padding: const EdgeInsetsDirectional.fromSTEB(0.0, 4.0, 0.0, 0.0),
+66:               child: Text(
+67:                 'Vea las últimas tendencias en nuestra tienda a continuación.',
+68:                 style: FlutterFlowTheme.of(context)
+69:                     .labelMedium
+70:                     .override(
+71:                       font: GoogleFonts.inter(
+72:                         fontWeight: FlutterFlowTheme.of(context).labelMedium.fontWeight,
+73:                         fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle,
+74:                       ),
+75:                       letterSpacing: 0.0,
+76:                       fontWeight: FlutterFlowTheme.of(context).labelMedium.fontWeight,
+77:                       fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle,
+78:                     ),
+79:               ),
+80:             ),
+81:             Stack(
+82:               children: [
+83:                 Container(
+84:                   width: double.infinity,
+85:                   height: 230.0,
+86:                   decoration: BoxDecoration(
+87:                     color: FlutterFlowTheme.of(context).primaryBackground,
+88:                   ),
+89:                   child: (listViewCategoriasRowList.isEmpty)
+90:                       ? SizedBox(
+91:                           width: 200.0,
+92:                           height: 100.0,
+93:                           child: EmptyCategoriaWidget(
+94:                             icon: Icon(
+95:                               Icons.apps_outage,
+96:                               color: FlutterFlowTheme.of(context).primary,
+97:                               size: 100.0,
+98:                             ),
+99:                             title: 'No se han seleccionado Categorias Destacadas',
+100:                           ),
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.

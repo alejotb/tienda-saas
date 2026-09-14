@@ -1,0 +1,106 @@
+Created At: 2026-08-28T10:56:25-04:00
+Completed At: 2026-08-28T10:58:31-04:00
+
+The command exited with code 1.
+Output:
+commit 3c0d87d676b6211430fc92d683f8995f4ad60c98
+Author: amigos <simonsarseo@gmail.com>
+Date:   Sat Aug 8 20:04:20 2026 -0400
+
+    Actualización para git hub
+
+diff --git a/lib/pages/main_home_page/main_home_page_widget.dart b/lib/pages/main_home_page/main_home_page_widget.dart
+index b429b2a..1cf4bb6 100644
+--- a/lib/pages/main_home_page/main_home_page_widget.dart
++++ b/lib/pages/main_home_page/main_home_page_widget.dart
+@@ -33,6 +33,7 @@ class _MainHomePageWidgetState extends State<MainHomePageWidget> {
+   void initState() {
+     super.initState();
+     _model = createModel(context, () => MainHomePageModel());
++    debugPrint('DEBUG: Cart items on Home Page: ${FFAppState().itemsCarrito.map((e) => e.idProducto).toList()}');
+ 
+     // On page load action.
+     SchedulerBinding.instance.addPostFrameCallback((_) async {
+
+commit 6f763f070e6e0fc0971f892595a5b1a3d2169e53
+Author: amigos <simonsarseo@gmail.com>
+Date:   Wed Jun 17 23:30:27 2026 -0400
+
+    Arreglar foto de perfil
+
+diff --git a/lib/pages/main_home_page/main_home_page_widget.dart b/lib/pages/main_home_page/main_home_page_widget.dart
+index 1317eea..b429b2a 100644
+--- a/lib/pages/main_home_page/main_home_page_widget.dart
++++ b/lib/pages/main_home_page/main_home_page_widget.dart
+@@ -1,28 +1,18 @@
+ import 'package:baul_pandora/auth/supabase_auth/auth_util.dart';
+ import 'package:baul_pandora/backend/supabase/supabase.dart';
+ import 'package:baul_pandora/services/cart_service.dart';
+-import 'package:baul_pandora/components/empty_categoria/empty_categoria_widget.dart';
+-import 'package:baul_pandora/components/empty_products/empty_products_widget.dart';
+-import 'package:baul_pandora/components/empty_state/empty_state_widget.dart';
+-import 'package:baul_pandora/components/loading_list/loading_list_widget.dart';
+-import 'package:baul_pandora/components/product_grid/product_grid_widget.dart';
+-import 'package:baul_pandora/components/tarjeta_producto/tarjeta_producto_widget.dart';
+ import 'package:baul_pandora/components/top_nav/top_nav_widget.dart';
+-import 'package:baul_pandora/dropdowns/dropdown_categorias_destacadas/dropdown_categorias_destacadas_widget.dart';
+-import 'package:baul_pandora/flutter_flow/flutter_flow_icon_button.dart';
+ import 'package:baul_pandora/flutter_flow/flutter_flow_theme.dart';
+ import 'package:baul_pandora/flutter_flow/flutter_flow_util.dart';
+-import 'package:baul_pandora/flutter_flow/flutter_flow_widgets.dart';
+-import 'package:baul_pandora/flutter_flow/custom_functions.dart' as functions;
+-import 'package:baul_pandora/index.dart';
+-import 'package:auto_size_text/auto_size_text.dart';
+-import 'package:cached_network_image/cached_network_image.dart';
++import 'components/category_filter_bar.dart';
++import 'components/featured_categories_widget.dart';
++import 'components/product_list_area.dart';
+ import 'package:flutter/material.dart';
+ import 'package:flutter/scheduler.dart';
+-import 'package:google_fonts/google_fonts.dart';
+ import 'package:provider/provider.dart';
+ import 'main_home_page_model.dart';
+ export 'main_home_page_model.dart';
++export 'main_home_page_model.dart';
+ 
+ class MainHomePageWidget extends StatefulWidget {
+   const MainHomePageWidget({super.key});
+@@ -57,8 +47,11 @@ class _MainHomePageWidgetState extends State<MainHomePageWidget> {
+         ),
+       );
+       if (_model.usuario != null && (_model.usuario)!.isNotEmpty) {
+-        _model.favoritos =
+-            _model.usuario!.firstOrNull!.favoriteItems.toList().cast<String>();
++        final user = _model.usuario!.firstOrNull;
++        if (user != null) {
++          FFAppState().isAdmin = user.isAdmin;
++          _model.favoritos = user.favoriteItems.toList().cast<String>();
++        }
+         safeSetState(() {});
+       }
+     });
+@@ -83,572 +76,6 @@ class _MainHomePageWidgetState extends State<MainHomePageWidget> {
+       child: Scaffold(
+         key: scaffoldKey,
+         backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+-        drawer: SizedBox(
+-          width: 400.0,
+-          child: Drawer(
+-            elevation: 16.0,
+-            child: Container(
+-              width: 100.0,
+-              height: 100.0,
+-              decoration: BoxDecoration(
+-                color: FlutterFlowTheme.of(context).secondaryBackground,
+-              ),
+-              child: Padding(
+-                padding: const EdgeInsets.all(16.0),
+-                child: Column(
+-                  mainAxisSize: MainAxisSize.max,
+-                  crossAxisAlignment: CrossAxisAlignment.start,
+-                  children: [
+-                    Padding(
+-                      padding:
+-                          const EdgeInsetsDirectional.fromSTEB(0.0, 32.0, 0.0, 0.0),
+-                      child: Row(
+

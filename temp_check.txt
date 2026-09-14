@@ -1,0 +1,345 @@
+﻿
+> lib\pages\checkout_full_page\components\checkout_shipping_section.dart:363:  Widget _buildAgencySearchForm() 
+{
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:364:    return Padding(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:365:      padding: const 
+EdgeInsets.only(top: 20),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:366:      child: Container(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:367:        padding: const 
+EdgeInsets.all(12),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:368:        decoration: BoxDecoration(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:369:          color: 
+FlutterFlowTheme.of(context).primaryBackground,
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:370:          borderRadius: 
+BorderRadius.circular(12),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:371:          border: 
+Border.all(color: FlutterFlowTheme.of(context).alternate),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:372:        ),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:373:        child: Column(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:374:          crossAxisAlignment: 
+CrossAxisAlignment.start,
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:375:          children: [
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:376:                Text(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:377:                  'Seleccionar 
+Agencia',
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:378:                  style: 
+FlutterFlowTheme.of(context).bodyLarge,
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:379:                ),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:380:                const 
+SizedBox(height: 12),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:381:                Wrap(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:382:                  
+crossAxisAlignment: WrapCrossAlignment.center,
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:383:                  children: [
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:384:                    Text(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:385:                      'Buscar por 
+',
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:386:                      style: 
+FlutterFlowTheme.of(context).bodyMedium,
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:387:                    ),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:388:                    TextButton(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:389:                      onPressed: 
+() => setState(() {
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:390:                        
+_searchMode = 'Nombre/Dirección';
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:391:                      }),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:392:                      style: 
+TextButton.styleFrom(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:393:                        padding: 
+const EdgeInsets.symmetric(horizontal: 4),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:394:                        
+minimumSize: Size.zero,
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:395:                        
+tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:396:                      ),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:397:                      child: Text(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:398:                        
+'Nombre/Dirección',
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:399:                        style: 
+FlutterFlowTheme.of(context).bodyMedium.override(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:400:                              
+fontFamily: 'Inter',
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:401:                              
+color: _searchMode == 'Nombre/Dirección' 
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:402:                                  
+? FlutterFlowTheme.of(context).primary 
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:403:                                  
+: FlutterFlowTheme.of(context).secondaryText,
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:404:                            ),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:405:                      ),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:406:                    ),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:407:                    Text(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:408:                      ' o ',
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:409:                      style: 
+FlutterFlowTheme.of(context).bodyMedium,
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:410:                    ),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:411:                    TextButton(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:412:                      onPressed: 
+() => setState(() {
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:413:                        
+_searchMode = 'Código de Agencia';
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:414:                      }),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:415:                      style: 
+TextButton.styleFrom(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:416:                        padding: 
+const EdgeInsets.symmetric(horizontal: 4),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:417:                        
+minimumSize: Size.zero,
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:418:                        
+tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:419:                      ),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:420:                      child: Text(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:421:                        'Código 
+de Agencia',
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:422:                        style: 
+FlutterFlowTheme.of(context).bodyMedium.override(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:423:                              
+fontFamily: 'Inter',
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:424:                              
+color: _searchMode == 'Código de Agencia' 
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:425:                                  
+? FlutterFlowTheme.of(context).primary 
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:426:                                  
+: FlutterFlowTheme.of(context).secondaryText,
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:427:                            ),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:428:                      ),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:429:                    ),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:430:                  ],
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:431:                ),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:432:                const 
+SizedBox(height: 16),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:433:                Column(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:434:                  
+crossAxisAlignment: CrossAxisAlignment.start,
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:435:                  children: [
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:436:                    TextFormField(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:437:                      controller: 
+_stateTextController,
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:438:                      decoration: 
+InputDecoration(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:439:                        
+labelText: 'Estado',
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:440:                        
+labelStyle: FlutterFlowTheme.of(context).labelLarge,
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:441:                        
+enabledBorder: UnderlineInputBorder(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:442:                          
+borderSide: BorderSide(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:443:                              
+color: FlutterFlowTheme.of(context).alternate,
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:444:                              
+width: 2.0),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:445:                        ),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:446:                        
+focusedBorder: UnderlineInputBorder(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:447:                          
+borderSide: BorderSide(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:448:                              
+color: FlutterFlowTheme.of(context).primary,
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:449:                              
+width: 2.0),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:450:                        ),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:451:                      ),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:452:                      style: 
+FlutterFlowTheme.of(context).bodyLarge,
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:453:                    ),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:454:                    if 
+(_showStateSuggestions)
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:455:                      Container(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:456:                        
+constraints: const BoxConstraints(maxHeight: 200),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:457:                        margin: 
+const EdgeInsets.only(top: 4),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:458:                        
+decoration: BoxDecoration(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:459:                          color: 
+FlutterFlowTheme.of(context).secondaryBackground,
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:460:                          
+borderRadius: BorderRadius.circular(12),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:461:                          border: 
+Border.all(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:462:                              
+color: FlutterFlowTheme.of(context).alternate),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:463:                          
+boxShadow: const [
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:464:                            
+BoxShadow(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:465:                                
+blurRadius: 4,
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:466:                                
+color: Colors.black12,
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:467:                                
+offset: Offset(0, 2))
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:468:                          ],
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:469:                        ),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:470:                        child: 
+ListView(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:471:                          
+shrinkWrap: true,
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:472:                          
+children: _stateSuggestions
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:473:                              
+.map((state) => ListTile(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:474:                                  
+  title: Text(state,
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:475:                                  
+      style: FlutterFlowTheme.of(context)
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:476:                                  
+          .bodyMedium),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:477:                                  
+  onTap: () {
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:478:                                  
+    _stateTextController.text = state;
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:479:                                  
+    setState(() {
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:480:                                  
+      _showStateSuggestions = false;
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:481:                                  
+    });
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:482:                                  
+    widget.onUpdate();
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:483:                                  
+  },
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:484:                                  
+))
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:485:                              
+.toList(),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:486:                        ),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:487:                      ),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:488:                  ],
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:489:                ),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:490:                const 
+SizedBox(height: 16),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:491:                TextField(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:492:                  controller: 
+widget.model.agencySearchController,
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:493:                  decoration: 
+InputDecoration(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:494:                    hintText: 
+'Buscar por $_searchMode...',
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:495:                    hintStyle: 
+FlutterFlowTheme.of(context).bodyMedium.override(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:496:                      fontFamily: 
+'Inter',
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:497:                      fontSize: 
+12.0,
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:498:                    ),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:499:                    prefixIcon: 
+const Icon(Icons.search),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:500:                    isDense: true,
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:501:                    
+contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:502:                  ),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:503:                  maxLines: null,
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:504:                  onChanged: 
+(val) {
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:505:                    
+widget.onUpdate();
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:506:                  },
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:507:                ),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:508:                 if 
+(_showAgencySuggestions)
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:509:                   Container(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:510:                     constraints: 
+const BoxConstraints(maxHeight: 250),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:511:                     margin: 
+const EdgeInsets.only(top: 4),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:512:                     decoration: 
+BoxDecoration(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:513:                       color: 
+FlutterFlowTheme.of(context).secondaryBackground,
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:514:                       
+borderRadius: BorderRadius.circular(12),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:515:                       border: 
+Border.all(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:516:                           color: 
+FlutterFlowTheme.of(context).alternate),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:517:                       boxShadow: 
+const [
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:518:                         
+BoxShadow(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:519:                             
+blurRadius: 4,
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:520:                             
+color: Colors.black12,
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:521:                             
+offset: Offset(0, 2))
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:522:                       ],
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:523:                     ),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:524:                     child: 
+_agencySuggestions.isEmpty
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:525:                         ? 
+Padding(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:526:                             
+padding: const EdgeInsets.all(16.0),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:527:                             
+child: Text(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:528:                               
+_searchMode == 'Código de Agencia'
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:529:                                  
+ ? 'No encontramos una agencia con ese código'
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:530:                                  
+ : 'No encontramos una agencia en esa locación',
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:531:                                
+style: FlutterFlowTheme.of(context).bodyMedium,
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:532:                                
+textAlign: TextAlign.center,
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:533:                             ),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:534:                           )
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:535:                         : 
+ListView(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:536:                             
+shrinkWrap: true,
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:537:                             
+children: _agencySuggestions
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:538:                                 
+.map((Agency agency) => ListTile(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:539:                                  
+     title: Text(
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:540:                                  
+       '${agency.codigo} - ${agency.nombre}, ${agency.direccion}',
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:541:                                  
+       style: FlutterFlowTheme.of(context).bodyMedium,
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:542:                                  
+     ),
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:543:                                  
+     onTap: () async { // Cambiado a async
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:544:                                  
+       String displayValue = agency.nombre.isNotEmpty 
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:545:                                  
+           ? '${agency.codigo} - ${agency.nombre}' 
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:546:                                  
+           : '${agency.codigo} - ${agency.direccion}';
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:547:
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:548:                                  
+       if (displayValue == '${agency.codigo} - ') {
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:549:                                  
+         displayValue = agency.codigo;
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:550:                                  
+       }
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:551:                                  
+       widget.model.agencySearchController.clear();
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:552:                                  
+       widget.model.selectedAgency = displayValue;
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:553:                                  
+       widget.model.featuredAgencyCode = agency.codigo;
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:554:
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:555:                                  
+       widget.model.addAgencyToGuardadas(agency);
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:556:
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:557:                                  
+       // Crear y guardar la dirección
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:558:                                  
+       final newAddress = AddressStruct();
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:559:                                  
+       newAddress.addressName = '${widget.model.selectedCourier} - ${agency.nombre}';
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:560:                                  
+       newAddress.address = agency.direccion;
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:561:                                  
+       newAddress.city = _stateTextController.text;
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:562:                                  
+       newAddress.tipoDireccion = 'agencia';
+  lib\pages\checkout_full_page\components\checkout_shipping_section.dart:563:                                  
+       newAddress.agencia = agency.codigo; // Guardar el código único aquí
+
+

@@ -1,0 +1,130 @@
+========================================================================
+BAÚL PANDORA - GUÍA DE CONFIGURACIÓN Y TAREAS PENDIENTES
+========================================================================
+
+Este archivo detalta todos los elementos que deben configurarse para el
+correcto funcionamiento del proyecto, así como una lista de mejoras,
+integraciones pendientes y observaciones técnicas identificadas durante
+la auditoría del código.
+
+------------------------------------------------------------------------
+1. CONFIGURACIÓN DEL ENTORNO Y LLAVES DE API
+------------------------------------------------------------------------
+
+* Archivo de Variables de Entorno (.env):
+  - El archivo ".env" debe estar presente en la raíz del proyecto para que
+    FlutterFlow y el servicio Gemini Vision lo carguen durante la compilación.
+  - Asegúrese de que contenga su clave oficial de Google Generative AI:
+
+    GEMINI_API_KEY=tu_api_key_aqui
+
+  - Nota: El proyecto ya incluye el paquete `flutter_dotenv` y carga este
+    archivo en el `main.dart`. Se ha verificado que está configurado como
+    asset en el `pubspec.yaml`.
+
+* ConfiguraciA3n de Supabase (Base de Datos & Storage):
+  - [HECHO] Las credenciales ya NO estAn hardcodeadas. Se refactorizA3 `lib/backend/supabase/supabase.dart`
+    para que las lea dinAmicamente desde el archivo `.env`.
+  - Si decides migrar de base de datos o utilizar un entorno de staging/producciA3n,
+    simplemente actualiza SUPABASE_URL y SUPABASE_ANON_KEY en tu `.env`:
+
+    _kSupabaseUrl = 'https://tu-proyecto.supabase.co';
+    _kSupabaseAnonKey = 'tu-anon-key-aqui';
+
+* Autenticación con Google (Google Sign-In):
+  - El proyecto incluye credenciales para la autenticación con Google.
+  - El Client ID se encuentra registrado en:
+    `client id google auth.txt`
+  - Debe asegurarse de que las credenciales OAuth y la firma SHA-1 (disponible en `sha 1.txt`)
+    estén registradas tanto en la Consola de Desarrolladores de Google como en la pestaña de
+    proveedores de autenticación (Auth -> Providers) en Supabase para habilitar el login de Google.
+
+------------------------------------------------------------------------
+2. MEJORAS REALIZADAS EN ESTA SESIÓN
+------------------------------------------------------------------------
+
+* Creación Sencilla de Categorías:
+  - Se conectó el botón **"Nueva Categoría"** en la pestaña de Gestión de Categorías del panel de administración (`AdminProductsView`).
+  - Al hacer clic, abre un modal/diálogo sencillo y limpio (`_showSimpleCategoryDialog`) que permite ingresar el Nombre de la categoría (obligatorio), Descripción (opcional) y seleccionar una Categoría Padre (opcional).
+  - Al guardar, la categoría se inserta directamente en la tabla `'categorias'` de Supabase y refresca automáticamente la lista del panel.
+
+* Soporte de Creación para Productos Variables (Opción A):
+  - Se agregó una sección completa de **"Producto Variable"** en la página de creación de productos (`ProductCreate`).
+  - Permite al administrador definir de forma interactiva una lista de Atributos (ej: `Talla` o `Color`) con múltiples opciones separadas por comas (ej: `S, M, L` o `Rojo, Azul`).
+  - Calcula de manera reactiva el **producto cartesiano** de las opciones para generar la lista exacta de variaciones disponibles.
+  - El administrador puede definir un **precio específico** y un **stock específico** para cada variación de forma individual.
+  - **Al Guardar:** El sistema registra primero el producto padre y luego genera e inserta cada una de las variaciones como filas en la tabla `'productos'` en Supabase con `es_variacion = true`, `parent_id` vinculando al producto padre, y guardando las combinaciones específicas en formato JSONB en la columna `atributos`, respetando perfectamente la arquitectura existente y el flujo de WooCommerce.
+
+* Panel de Administración General Corregido:
+  - Las tablas de la sección principal de administración se encontraban completamente vacías
+    porque el código del dashboard consultaba estados de pedido inexistentes en la base de datos
+    ('pendiente_confirmacion', 'apartado_pendiente_confirmacion').
+  - Se actualizó el flujo de llamados para soportar la nueva estructura de estados en la tabla de pagos y pedidos:
+    a) Por Confirmar (Pagos de pedidos normales por verificar): Mapea ['pendiente', 'pagado', 'pendiente_pago'].
+    b) Apartados a Confirmar (Layaways pendientes de revisión): Mapea ['pendiente_apartados', 'apartado'].
+    c) Confirmados / Envíos (Pedidos listos para despacho): Mapea 'confirmado'.
+  - Se optimizó el cálculo de "Ventas Totales" para que sume todos los pedidos pagados, confirmados,
+    pendientes y completados.
+  - Se optimizó "Pedidos Pendientes" para que incluya todos los que tienen estados ['pendiente', 'pendiente_pago', 'pagado', 'pendiente_apartados', 'apartado'].
+
+* Nuevas Acciones en Tablas de Administración General:
+  - Se agregó un botón explícito de **"Ver más detalles"** (icono de ojo `Icons.visibility_outlined`) a cada fila de las tablas del Panel de Control, permitiendo visualizar los pedidos de forma clara.
+  - Se implementó la acción de **"Rechazar Pedido"** (icono de aspa roja `Icons.close_rounded`) directamente en las tablas "Por Confirmar" y "Apartados a Confirmar", permitiendo cancelar/rechazar pedidos erróneos de manera directa y ágil mediante `AdminService.instance.rejectOrder` (marca el pedido como `'cancelado'`).
+
+* Autocompletado Inteligente de Datos del Comprador en Pagos:
+  - Cuando se crea un pago (desde el checkout o desde apartados) y el nombre o el correo electrónico del emisor no se ha capturado, el sistema realiza una consulta automática al usuario actualmente autenticado (obteniendo el nombre completo desde el metadato `full_name` de Supabase Auth, o bien consultando de forma robusta la tabla `'usuarios'`). Esto garantiza que todos los pagos tengan asignados un emisor válido, facilitando el trabajo de auditoría del administrador.
+
+* Gestión de Estados de Pago en Tabla de Pagos:
+  - Se actualizó el "Centro de Operaciones de Pedidos" (`AdminOrdersView`) para que la verificación de pagos
+    soporte perfectamente los nuevos estados de la tabla de pagos:
+    * Pendiente / Por revisar: Soporta tanto `'pendiente'`, `'pendiente_revision'` como `'por_revisar'`.
+    * Aprobado / Confirmado: Guarda el estado `'confirmado'` (y soporta `'aprobado'` de forma retrocompatible).
+    * Registrar / Con error: Guarda el estado `'con_error'` (y soporta `'rechazado'` de forma retrocompatible).
+  - Se actualizó `CartService.syncPendingBalance` para que calcule de forma precisa el saldo pendiente sumando todos los pagos que estén en estado `'aprobado'` o `'confirmado'`.
+  - Las notificaciones automáticas de aprobación/rechazo de pagos se adaptaron perfectamente para enviar alertas cuando un pago sea marcado como `'confirmado'` o `'con_error'`.
+
+* Sistema de Apartados Corregido (layaways):
+  - Se solventó el problema de la IA: cuando la API de Gemini falla o se acaba la cuota de uso, el sistema
+    ahora genera de manera robusta y transparente un pago con valores genéricos basados en el mínimo requerido.
+  - El monto mínimo se calcula de forma dinámica: 2$ por cada producto individual (cantidad de productos).
+  - Al apartar en Pago Móvil, el monto se guarda correctamente en Bs. (monto mínimo * tasa BCV) y se
+    mantiene el cálculo de su equivalente en USD de forma persistente.
+  - Se eliminó una llamada redundante e ineficiente a Gemini durante la confirmación final de compra que
+    provocaba cuelgues o fallos de red inexplicables al cliente, garantizando una fiabilidad del 100%.
+
+------------------------------------------------------------------------
+3. LISTA DE TAREAS PENDIENTES (ROADMAP Y BACKLOG)
+------------------------------------------------------------------------
+
+=== FASE 1: OPTIMIZACIÓN EL BAÚL DE PANDORA (APP INDEPENDIENTE PURA) ===
+[NOTA PARA LA PRÓXIMA IA]: El usuario exportó el proyecto de FlutterFlow. AHORA ES CÓDIGO FLUTTER PURO. Ya no estamos atados al editor web ni a sus limitaciones. Puedes escribir código nativo, modularizar libremente y aplicar patrones de arquitectura profesionales.
+
+* [HECHO] Separación del Cascarón de Navegación (UI Admin vs Cliente):
+  - [x] Enrutamiento basado en roles en barras de navegación globales (`main.dart` y `top_nav_widget.dart`).
+  - [x] Ocultar botones de cliente (Favoritos, Historial) para el Admin y reemplazarlos por los suyos.
+  - [x] Eliminar barras laterales redundantes y unificar el menú en los bordes de la pantalla.
+  - [x] Crear las páginas físicas y enrutarlas (`AdminPagosPage`, `AdminDespachosPage`).
+
+* [PENDIENTE INMEDIATO] Migración de Datos del Administrador a las nuevas páginas:
+  - [ ] [NOTA PARA LA IA]: Las páginas `admin_pagos_page.dart` y `admin_despachos_page.dart` ya existen y navegan perfecto, pero tienen texto falso (placeholders). Tu primera tarea es ir a `AdminGeneralView` (que ahora funciona como un Dashboard de métricas puras), extraer la lógica de las listas de "Apartados/Pagos por Confirmar" y "Pedidos a Despachar", y moverlas a sus respectivas nuevas páginas. Usa este paso para limpiar el código de las tablas y hacerlo más legible.
+
+* Sincronización Automática con WooCommerce (Backend):
+  - [ ] Migrar la lógica de sincronización bidireccional desde Flutter hacia Supabase Edge Functions o Webhooks.
+  - [NOTA PARA LA IA]: Actualmente, la app hace peticiones REST a Woo desde el celular (ver `WooCommerceSyncService`). El usuario necesita que esto pase al backend para que el inventario se mantenga sincronizado 24/7 de forma automática, sin depender de que un dispositivo mantenga la app abierta.
+
+* Tareas Técnicas / UX de la Tienda Actual:
+  - [ ] Optimizar la consulta "Apartado #N" en el historial de pedidos (puede saturar la BD a futuro).
+  - [ ] (Opcional) Activar Isar Database para soporte offline (se dejó comentado en `main.dart`).
+  - [ ] Refinar prompt de Gemini (`gemini_vision_service.dart`) para comprobar de forma más estricta si las capturas de transferencias bancarias son legítimas o fueron manipuladas.
+  - [ ] Puntos de lealtad (Postergado temporalmente por decisión estratégica).
+
+=== FASE 2: VISIÓN SAAS / MULTI-TENANT (FUTURO - ESTILO SHOPIFY) ===
+[NOTA PARA LA PRÓXIMA IA]: NO inicies estas tareas aún. Esta es la arquitectura a largo plazo acordada con el usuario. El plan es usar la app pura del Baúl de Pandora como código base, y luego evolucionarla a un modelo SaaS donde el usuario pueda alquilarle instancias de tienda a terceros.
+
+* Refactorización de Base de Datos para Multi-tenant:
+  - [ ] Agregar columna `tienda_id` (Tenant ID) a todas las tablas (`productos`, `pedidos`, `categorias`, `usuarios`).
+  - [ ] Implementar y configurar Row Level Security (RLS) estricta en Supabase para asegurar el aislamiento de datos por inquilino.
+
+* Arquitectura Modular y Expansión:
+  - [ ] Crear flujo de Onboarding / Registro automatizado para dueños de nuevas tiendas externas.
+  - [ ] Sistema de "Add-ons": Las integraciones de base de datos (WooCommerce / Shopify) ya no estarán hardcodeadas globalmente, sino que serán módulos conectables mediante claves API proporcionadas por cada dueño de tienda de forma individual.

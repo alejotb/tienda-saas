@@ -1,0 +1,33 @@
+Created At: 2026-08-20T22:20:16-04:00
+Completed At: 2026-08-20T22:20:16-04:00
+File Path: `file:///c:/Users/alejo/Documents/Baul/baul_pandora/lib/components/top_nav/top_nav_widget.dart`
+Total Lines: 153
+Total Bytes: 5272
+Showing lines 1 to 25
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1: import 'dart:async';
+2: import 'package:baul_pandora/auth/supabase_auth/auth_util.dart';
+3: import 'package:baul_pandora/backend/supabase/supabase.dart';
+4: import 'package:baul_pandora/services/notification_service.dart';
+5: import 'package:baul_pandora/components/main_logo/main_logo_widget.dart';
+6: import 'package:baul_pandora/components/barcode_scanner_modal.dart' as baul_pandora;
+7: import 'package:baul_pandora/dropdowns/dropdown_account/dropdown_account_widget.dart';
+8: import 'package:baul_pandora/dropdowns/dropdown_account_guest/dropdown_account_guest_widget.dart';
+9: import 'package:baul_pandora/dropdowns/dropdown_notifications/dropdown_notifications_widget.dart';
+10: import 'package:baul_pandora/dropdowns/order_summary_new/order_summary_new_widget.dart';
+11: import 'package:baul_pandora/flutter_flow/flutter_flow_animations.dart';
+12: import 'package:baul_pandora/flutter_flow/flutter_flow_icon_button.dart';
+13: import 'package:baul_pandora/flutter_flow/flutter_flow_theme.dart';
+14: import 'package:baul_pandora/flutter_flow/flutter_flow_util.dart';
+15: import 'package:baul_pandora/flutter_flow/flutter_flow_widgets.dart';
+16: import 'package:baul_pandora/index.dart';
+17: import 'package:aligned_tooltip/aligned_tooltip.dart';
+18: import 'package:badges/badges.dart' as badges;
+19: import 'package:aligned_dialog/aligned_dialog.dart';
+20: import 'package:flutter/material.dart';
+21: import 'package:flutter/scheduler.dart';
+22: import 'package:flutter_animate/flutter_animate.dart';
+23: import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+24: import 'package:google_fonts/google_fonts.dart';
+25: import 'package:provider/provider.dart';
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.

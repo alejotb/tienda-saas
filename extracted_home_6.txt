@@ -1,0 +1,108 @@
+Created At: 2026-08-23T14:11:12-04:00
+Completed At: 2026-08-23T14:11:12-04:00
+File Path: `file:///c:/Users/alejo/Documents/Baul/baul_pandora/lib/components/top_nav/components/notification_badge_widget.dart`
+Total Lines: 101
+Total Bytes: 4356
+Showing lines 1 to 100
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1: import 'package:baul_pandora/auth/supabase_auth/auth_util.dart';
+2: import 'package:baul_pandora/flutter_flow/flutter_flow_util.dart';
+3: import 'package:google_fonts/google_fonts.dart';
+4: import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+5: import 'package:badges/badges.dart' as badges;
+6: import 'package:aligned_tooltip/aligned_tooltip.dart';
+7: import 'package:aligned_dialog/aligned_dialog.dart';
+8: import 'package:flutter/material.dart';
+9: import 'package:baul_pandora/flutter_flow/flutter_flow_theme.dart';
+10: import 'package:baul_pandora/flutter_flow/flutter_flow_icon_button.dart';
+11: import 'package:baul_pandora/dropdowns/dropdown_notifications/dropdown_notifications_widget.dart';
+12: import 'package:baul_pandora/services/notification_service.dart';
+13: import '../../../flutter_flow/flutter_flow_animations.dart';
+14: 
+15: class NotificationBadgeWidget extends StatelessWidget {
+16:   const NotificationBadgeWidget({super.key});
+17: 
+18:   @override
+19:   Widget build(BuildContext context) {
+20:     return Padding(
+21:       padding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 8.0, 0.0),
+22:       child: StreamBuilder<int>(
+23:         stream: NotificationService.instance.getUnreadCountStream(),
+24:         builder: (context, snapshot) {
+25:           final count = snapshot.data ?? 0;
+26:           return badges.Badge(
+27:             badgeContent: Text(
+28:               count.toString(),
+29:               style: FlutterFlowTheme.of(context).titleSmall.override(
+30:                 fontFamily: 'Inter',
+31:                 color: Colors.white,
+32:               ),
+33:             ),
+34:             showBadge: count > 0,
+35:             shape: badges.BadgeShape.circle,
+36:             badgeColor: FlutterFlowTheme.of(context).primary,
+37:             elevation: 4.0,
+38:             padding: const EdgeInsets.all(8.0),
+39:             position: badges.BadgePosition.topEnd(),
+40:             animationType: badges.BadgeAnimationType.scale,
+41:             toAnimate: true,
+42:             child: AlignedTooltip(
+43:               content: Padding(
+44:                 padding: const EdgeInsetsDirectional.fromSTEB(8.0, 4.0, 8.0, 4.0),
+45:                 child: Text(
+46:                   'Notifications',
+47:                   style: FlutterFlowTheme.of(context).labelMedium,
+48:                 ),
+49:               ),
+50:               offset: 4.0,
+51:               preferredDirection: AxisDirection.down,
+52:               borderRadius: BorderRadius.circular(8.0),
+53:               backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+54:               elevation: 3.0,
+55:               tailBaseWidth: 16.0,
+56:               tailLength: 8.0,
+57:               waitDuration: const Duration(milliseconds: 50),
+58:               showDuration: const Duration(milliseconds: 600),
+59:               triggerMode: TooltipTriggerMode.tap,
+60:               child: Visibility(
+61:                 visible: loggedIn,
+62:                 child: Builder(
+63:                   builder: (context) => FlutterFlowIconButton(
+64:                     borderColor: FlutterFlowTheme.of(context).alternate,
+65:                     borderRadius: 12.0,
+66:                     borderWidth: 1.0,
+67:                     buttonSize: 44.0,
+68:                     fillColor: FlutterFlowTheme.of(context).primaryBackground,
+69:                     icon: const FaIcon(
+70:                       FontAwesomeIcons.bell,
+71:                       size: 24.0,
+72:                     ),
+73:                     onPressed: () async {
+74:                       await showAlignedDialog(
+75:                         barrierColor: Colors.transparent,
+76:                         context: context,
+77:                         isGlobal: false,
+78:                         avoidOverflow: true,
+79:                         targetAnchor: const AlignmentDirectional(-1.0, 1.0)
+80:                             .resolve(Directionality.of(context)),
+81:                         followerAnchor: const AlignmentDirectional(0.0, 0.0)
+82:                             .resolve(Directionality.of(context)),
+83:                         builder: (dialogContext) {
+84:                           return const Material(
+85:                             color: Colors.transparent,
+86:                             child: DropdownNotificationsWidget(),
+87:                           );
+88:                         },
+89:                       );
+90:                     },
+91:                   ),
+92:                 ),
+93:               ),
+94:             ),
+95:           );
+96:         },
+97:       ),
+98:     );
+99:   }
+100: }
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.

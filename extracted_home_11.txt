@@ -1,0 +1,158 @@
+Created At: 2026-08-24T10:08:51-04:00
+Completed At: 2026-08-24T10:08:51-04:00
+File Path: `file:///c:/Users/alejo/Documents/Baul/baul_pandora/lib/pages/main_profile/components/profile_stats_section.dart`
+Total Lines: 162
+Total Bytes: 8100
+Showing lines 1 to 150
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1: import 'package:baul_pandora/auth/supabase_auth/auth_util.dart';
+2: import 'package:baul_pandora/backend/supabase/supabase.dart';
+3: import 'package:baul_pandora/flutter_flow/flutter_flow_theme.dart';
+4: import 'package:baul_pandora/flutter_flow/flutter_flow_util.dart';
+5: import 'package:flutter/material.dart';
+6: import 'package:google_fonts/google_fonts.dart';
+7: import '../main_profile_model.dart';
+8: 
+9: class ProfileStatsSection extends StatelessWidget {
+10:   const ProfileStatsSection({
+11:     super.key,
+12:     required this.model,
+13:   });
+14: 
+15:   final MainProfileModel model;
+16: 
+17:   @override
+18:   Widget build(BuildContext context) {
+19:     return Padding(
+20:       padding: const EdgeInsetsDirectional.fromSTEB(0.0, 24.0, 0.0, 0.0),
+21:       child: Container(
+22:         width: double.infinity,
+23:         constraints: const BoxConstraints(
+24:           maxWidth: 770.0,
+25:         ),
+26:         decoration: BoxDecoration(
+27:           color: FlutterFlowTheme.of(context).secondaryBackground,
+28:           boxShadow: const [
+29:             BoxShadow(
+30:               blurRadius: 3.0,
+31:               color: Color(0x33000000),
+32:               offset: Offset(0.0, 1.0),
+33:             )
+34:           ],
+35:           borderRadius: BorderRadius.circular(12.0),
+36:         ),
+37:         child: Padding(
+38:           padding: const EdgeInsets.all(16.0),
+39:           child: Column(
+40:             mainAxisSize: MainAxisSize.max,
+41:             crossAxisAlignment: CrossAxisAlignment.start,
+42:             children: [
+43:               Padding(
+44:                 padding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 8.0),
+45:                 child: Text(
+46:                   'Actividad',
+47:                   style: FlutterFlowTheme.of(context).headlineMedium.override(
+48:                         font: GoogleFonts.interTight(
+49:                           fontWeight: FlutterFlowTheme.of(context).headlineMedium.fontWeight,
+50:                           fontStyle: FlutterFlowTheme.of(context).headlineMedium.fontStyle,
+51:                         ),
+52:                         letterSpacing: 0.0,
+53:                         fontWeight: FlutterFlowTheme.of(context).headlineMedium.fontWeight,
+54:                         fontStyle: FlutterFlowTheme.of(context).headlineMedium.fontStyle,
+55:                       ),
+56:                 ),
+57:               ),
+58:               Padding(
+59:                 padding: const EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 12.0),
+60:                 child: FutureBuilder<List<UsuariosRow>>(
+61:                   future: UsuariosTable().queryRows(
+62:                     queryFn: (q) => q.eq('id', currentUserUid),
+63:                   ),
+64:                   builder: (context, snapshot) {
+65:                     final usuarioList = snapshot.data;
+66:                     final usuario = (usuarioList != null && usuarioList.isNotEmpty) ? usuarioList.first : null;
+67:                     return Row(
+68:                       mainAxisSize: MainAxisSize.max,
+69:                       children: [
+70:                         Expanded(
+71:                           child: Padding(
+72:                             padding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 12.0, 0.0),
+73:                             child: Column(
+74:                               mainAxisSize: MainAxisSize.max,
+75:                               crossAxisAlignment: CrossAxisAlignment.center,
+76:                               children: [
+77:                                 Padding(
+78:                                   padding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 8.0),
+79:                                   child: Text(
+80:                                     valueOrDefault<String>(usuario?.productosComprados.toString(), '0'),
+81:                                     textAlign: TextAlign.center,
+82:                                     style: FlutterFlowTheme.of(context).displaySmall.override(
+83:                                       font: GoogleFonts.interTight(
+84:                                         fontWeight: FlutterFlowTheme.of(context).displaySmall.fontWeight,
+85:                                         fontStyle: FlutterFlowTheme.of(context).displaySmall.fontStyle,
+86:                                       ),
+87:                                       letterSpacing: 0.0,
+88:                                       fontWeight: FlutterFlowTheme.of(context).displaySmall.fontWeight,
+89:                                       fontStyle: FlutterFlowTheme.of(context).displaySmall.fontStyle,
+90:                                     ),
+91:                                   ),
+92:                                 ),
+93:                                 Text(
+94:                                   'Productos Comprados',
+95:                                   textAlign: TextAlign.center,
+96:                                   style: FlutterFlowTheme.of(context).labelMedium.override(
+97:                                     font: GoogleFonts.inter(
+98:                                       fontWeight: FlutterFlowTheme.of(context).labelMedium.fontWeight,
+99:                                       fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle,
+100:                                     ),
+101:                                     letterSpacing: 0.0,
+102:                                     fontWeight: FlutterFlowTheme.of(context).labelMedium.fontWeight,
+103:                                     fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle,
+104:                                   ),
+105:                                 ),
+106:                               ],
+107:                             ),
+108:                           ),
+109:                         ),
+110:                         Expanded(
+111:                           child: Padding(
+112:                             padding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 12.0, 0.0),
+113:                             child: Column(
+114:                               mainAxisSize: MainAxisSize.max,
+115:                               crossAxisAlignment: CrossAxisAlignment.center,
+116:                               children: [
+117:                                 Padding(
+118:                                   padding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 8.0),
+119:                                   child: Text(
+120:                                     valueOrDefault<String>(usuario?.puntosLealtad.toString(), '0'),
+121:                                     textAlign: TextAlign.center,
+122:                                     style: FlutterFlowTheme.of(context).displaySmall.override(
+123:                                       font: GoogleFonts.interTight(
+124:                                         fontWeight: FlutterFlowTheme.of(context).displaySmall.fontWeight,
+125:                                         fontStyle: FlutterFlowTheme.of(context).displaySmall.fontStyle,
+126:                                       ),
+127:                                       letterSpacing: 0.0,
+128:                                       fontWeight: FlutterFlowTheme.of(context).displaySmall.fontWeight,
+129:                                       fontStyle: FlutterFlowTheme.of(context).displaySmall.fontStyle,
+130:                                     ),
+131:                                   ),
+132:                                 ),
+133:                                 Text(
+134:                                   'Puntos de Lealtad',
+135:                                   textAlign: TextAlign.center,
+136:                                   style: FlutterFlowTheme.of(context).labelMedium.override(
+137:                                     font: GoogleFonts.inter(
+138:                                       fontWeight: FlutterFlowTheme.of(context).labelMedium.fontWeight,
+139:                                       fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle,
+140:                                     ),
+141:                                     letterSpacing: 0.0,
+142:                                     fontWeight: FlutterFlowTheme.of(context).labelMedium.fontWeight,
+143:                                     fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle,
+144:                                   ),
+145:                                 ),
+146:                               ],
+147:                             ),
+148:                           ),
+149:                         ),
+150:                       ],
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.

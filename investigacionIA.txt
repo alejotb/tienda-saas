@@ -1,0 +1,97 @@
+======================================================================
+  INVESTIGACIÓN DE MODELOS DE IA CON VISIÓN (PROCESAMIENTO DE IMÁGENES)
+======================================================================
+
+1. CÓMO CALCULAN LAS IMÁGENES EN TOKENS LOS MODELOS DE IA
+----------------------------------------------------------------------
+En las APIs multimodales, las imágenes no se miden por palabras, sino que se
+dividen en parches (tiles) o se calculan mediante fórmulas de resolución:
+- OpenAI (GPT-4o / GPT-4o-mini): Una imagen estándar consume entre 85 y 283 tokens
+  en baja resolución, o alrededor de 765 - 1,105 tokens en alta resolución (parches de 512x512).
+- Google Gemini: Una imagen suele consumir un costo fijo de ~258 tokens de entrada.
+- Anthropic Claude: Escala la imagen a ~1600 tokens dependiendo de las dimensiones.
+
+----------------------------------------------------------------------
+2. PRINCIPALES MODELOS MULTIMODALES (VISIÓN) Y VENTANAS DE CONTEXTO
+----------------------------------------------------------------------
+
+[A] ECOSISTEMA GOOGLE GEMINI
+- Gemini 2.0 / 2.5 / 3 Flash:
+  * Ventana de contexto: 1,000,000 tokens (1M).
+  * Salida máxima: 8,192 tokens.
+  * Características: Es la opción más rápida e ideal para visión masiva y documentos.
+- Gemini 2.5 Pro:
+  * Ventana de contexto: 1,000,000 a 2,000,000 tokens (1M - 2M).
+  * Salida máxima: 8,192 tokens.
+  * Características: Razonamiento complejo sobre imágenes y diagramas detallados.
+
+[B] ECOSISTEMA OPENAI
+- GPT-4o (Omni):
+  * Ventana de contexto: 128,000 tokens (128K).
+  * Salida máxima: 16,384 tokens.
+  * Características: Alta precisión en lectura OCR y extracción de datos en imágenes.
+- GPT-4o-mini:
+  * Ventana de contexto: 128,000 tokens (128K).
+  * Salida máxima: 16,384 tokens.
+  * Características: Extremadamente económico y rápido para procesamiento ligero.
+
+[C] ECOSISTEMA ANTHROPIC CLAUDE
+- Claude 3.5 Sonnet:
+  * Ventana de contexto: 200,000 tokens (200K).
+  * Salida máxima: 8,192 tokens.
+  * Características: El mejor modelo actual para interpretar código en capturas de pantalla,
+    diseños de UI y lectura fina de documentos/diagramas.
+
+[D] MODELOS OPEN SOURCE / AGREGADORES (VÍA GROQ / OPENROUTER)
+- Llama 3.2 Vision (11B / 90B) & Llama 4 Scout:
+  * Ventana de contexto: 128,000 tokens (128K).
+  * Salida máxima: 8,192 tokens.
+  * Características: Disponibles en agregadores con límites gratuitos diarios permisivos.
+
+----------------------------------------------------------------------
+3. LÍMITES GRATUITOS (FREE TIERS) DISPONIBLES EN LA ACTUALIDAD
+----------------------------------------------------------------------
+
+¿Por qué se agotó Gemini 3.5 rápidamente?
+Google limita las cuotas gratuitas por proyecto mediante tres factores:
+  - RPM: Requests Per Minute (Peticiones por minuto)
+  - RPD: Requests Per Day (Peticiones por día)
+  - TPM: Tokens Per Minute (Tokens por minuto)
+
+Límites de la Capa Gratuita (Google AI Studio):
+- Gemini Flash (2.0 / 3 Flash): 10 - 15 RPM | 1,500 RPD | 250K - 1M TPM.
+- Gemini Flash-Lite (2.5 / 3.1): 15 - 30 RPM | 1,000 - 1,500 RPD | 250K TPM.
+- Gemini Pro (2.5 Pro): Muy limitado (~5 RPM y 50 RPD en prueba).
+
+Otras opciones gratuitas para Visión via API:
+- OpenRouter (openrouter.ai):
+  Ofrece modelos multimodales gratuitos (como Llama Vision / GLM Vision) con un límite
+  de 20 RPM y 200 RPD sin costo.
+- Groq / Cloudflare Workers AI:
+  Ofrecen inferencia ultra rápida con modelos ligeros de visión en capas gratuitas diarias.
+
+----------------------------------------------------------------------
+4. RECOMENDACIONES DE MEJORES OPCIONES
+----------------------------------------------------------------------
+
+OPCIÓN 1: Mantenerse Gratis (Estrategia Multicuenta / Multi-proveedor)
+- Si deseas seguir en el nivel gratuito, combina la API de Gemini Flash-Lite
+  con la API gratuita de OpenRouter (usando Llama Vision).
+- Separa tus entornos en proyectos distintos de Google Cloud si necesitas reiniciar
+  la cuota diaria (1,500 RPD) sin activar facturación.
+
+OPCIÓN 2: Opción de Pago con Mejor Relación Calidad/Precio (Recomendado)
+- GPT-4o-mini (OpenAI):
+  Costos: ~$0.15 por 1M tokens de entrada / ~$0.60 por 1M tokens de salida.
+  Procesar 1,000 imágenes cuesta solo unos pocos centavos de dólar.
+- Gemini 2.0 / 2.5 Flash (Paid Tier en Google Cloud):
+  Costos: ~$0.075 por 1M tokens de entrada.
+  Al activar facturación en Google Cloud obtienes millones de tokens por dólar y
+  se eliminan las restricciones agresivas de 10-15 RPM.
+
+OPCIÓN 3: La Mayor Calidad Visual y Diagramas (Premium)
+- Claude 3.5 Sonnet:
+  Costos: $3.00 / 1M input - $15.00 / 1M output.
+  Insuperable analizando maquetas visuales, capturas de interfaces de usuario (UI)
+  y convirtiendo imágenes a código Flutter/HTML.
+======================================================================

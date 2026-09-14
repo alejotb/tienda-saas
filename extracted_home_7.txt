@@ -1,0 +1,233 @@
+Created At: 2026-08-23T14:15:01-04:00
+Completed At: 2026-08-23T14:15:01-04:00
+File Path: `file:///c:/Users/alejo/Documents/Baul/baul_pandora/lib/pages/main_home_page/main_home_page_widget.dart`
+Total Lines: 225
+Total Bytes: 10157
+Showing lines 1 to 225
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1: import 'package:baul_pandora/auth/supabase_auth/auth_util.dart';
+2: import 'package:baul_pandora/backend/supabase/supabase.dart';
+3: import 'package:baul_pandora/services/cart_service.dart';
+4: import 'package:baul_pandora/components/top_nav/top_nav_widget.dart';
+5: import 'package:baul_pandora/flutter_flow/flutter_flow_theme.dart';
+6: import 'package:baul_pandora/flutter_flow/flutter_flow_util.dart';
+7: 
+8: import 'components/featured_categories_widget.dart';
+9: import 'components/product_list_area.dart';
+10: import 'package:baul_pandora/components/barcode_scanner_modal.dart' as baul_pandora;
+11: import 'package:baul_pandora/pages/search_results/components/search_sidebar_filters.dart';
+12: import 'package:flutter/material.dart';
+13: import 'package:flutter/scheduler.dart';
+14: import 'package:provider/provider.dart';
+15: import 'main_home_page_model.dart';
+16: export 'main_home_page_model.dart';
+17: 
+18: class MainHomePageWidget extends StatefulWidget {
+19:   const MainHomePageWidget({super.key});
+20: 
+21:   static String routeName = 'mainHomePage';
+22:   static String routePath = '/mainHomePage';
+23: 
+24:   @override
+25:   State<MainHomePageWidget> createState() => _MainHomePageWidgetState();
+26: }
+27: 
+28: class _MainHomePageWidgetState extends State<MainHomePageWidget> {
+29:   late MainHomePageModel _model;
+30: 
+31:   final scaffoldKey = GlobalKey<ScaffoldState>();
+32:   final TextEditingController _searchController = TextEditingController();
+33: 
+34:   @override
+35:   void initState() {
+36:     super.initState();
+37:     _model = createModel(context, () => MainHomePageModel());
+38:     debugPrint('DEBUG: Cart items on Home Page: ${FFAppState().itemsCarrito.map((e) => e.idProducto).toList()}');
+39: 
+40:     // On page load action.
+41:     SchedulerBinding.instance.addPostFrameCallback((_) async {
+42:       if (loggedIn) {
+43:         await CartService.instance.fetchRemoteCart();
+44:         safeSetState(() {});
+45:       }
+46:       _model.usuario = await UsuariosTable().queryRows(
+47:         queryFn: (q) => q.eq(
+48:           'id',
+49:           currentUserUid,
+50:         ),
+51:       );
+52:       if (_model.usuario != null && (_model.usuario)!.isNotEmpty) {
+53:         final user = _model.usuario!.firstOrNull;
+54:         if (user != null) {
+55:           FFAppState().isAdmin = user.isAdmin;
+56:           _model.favoritos = user.favoriteItems.toList().cast<String>();
+57:         }
+58:         safeSetState(() {});
+59:       }
+60:     });
+61:   }
+62: 
+63:   @override
+64:   void dispose() {
+65:     _model.dispose();
+66:     _searchController.dispose();
+67:     super.dispose();
+68:   }
+69: 
+70:   @override
+71:   Widget build(BuildContext context) {
+72:     context.watch<FFAppState>();
+73: 
+74:     return GestureDetector(
+75:       onTap: () {
+76:         FocusScope.of(context).unfocus();
+77:         FocusManager.instance.primaryFocus?.unfocus();
+78:       },
+79:       child: Scaffold(
+80:         key: scaffoldKey,
+81:         backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+82:         endDrawer: Drawer(
+83:           child: SearchSidebarFilters(
+84:             selectedCategoryId: _model.selectedCategoryId,
+85:             onCategorySelected: (categoryId, categoryName) {
+86:               safeSetState(() {
+87:                 if (_model.selectedCategoryId == categoryId) {
+88:                   _model.selectedCategoryId = null; // Toggle off
+89:                   _model.selectedCategoryName = null;
+90:                 } else {
+91:                   _model.selectedCategoryId = categoryId;
+92:                   _model.selectedCategoryName = categoryName;
+93:                 }
+94:               });
+95:             },
+96:           ),
+97:         ),
+98:         body: SafeArea(
+99:           top: true,
+100:           child: Column(
+101:             mainAxisSize: MainAxisSize.max,
+102:             children: <Widget>[
+103:               Expanded(
+104:                 child: Padding(
+105:                   padding:
+106:                       const EdgeInsetsDirectional.fromSTEB(8.0, 0.0, 8.0, 0.0),
+107:                   child: Container(
+108:                     constraints: const BoxConstraints(
+109:                       maxWidth: 1400.0,
+110:                     ),
+111:                     decoration: BoxDecoration(
+112:                       color: FlutterFlowTheme.of(context).primaryBackground,
+113:                       borderRadius: BorderRadius.circular(12.0),
+114:                       border: Border.all(
+115:                         color: FlutterFlowTheme.of(context).primaryBackground,
+116:                         width: 2.0,
+117:                       ),
+118:                     ),
+119:                     child: Column(
+120:                       mainAxisSize: MainAxisSize.max,
+121:                       crossAxisAlignment: CrossAxisAlignment.start,
+122:                       children: <Widget>[
+123:                         Padding(
+124:                           padding: const EdgeInsetsDirectional.fromSTEB(
+125:                               0.0, 0.0, 16.0, 0.0),
+126:                           child: Column(
+127:                             mainAxisSize: MainAxisSize.max,
+128:                             mainAxisAlignment: MainAxisAlignment.center,
+129:                             crossAxisAlignment: CrossAxisAlignment.start,
+130:                             children: <Widget>[
+131:                               wrapWithModel(
+132:                                 model: _model.topNavModel,
+133:                                 updateCallback: () async { safeSetState(() {}); },
+134:                                 child: const TopNavWidget(),
+135:                               ),
+136:                               FeaturedCategoriesWidget(
+137:                                 model: _model,
+138:                                 updateCallback: () async { safeSetState(() {}); },
+139:                               ),
+140:                               ],
+141:                               ),
+142:                               ),
+143:                               Padding(
+144:                                 padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+145:                                 child: Row(
+146:                                   children: [
+147:                                     Expanded(
+148:                                       child: TextField(
+149:                                         controller: _searchController,
+150:                                         decoration: InputDecoration(
+151:                                           hintText: 'Buscar productos...',
+152:                                           prefixIcon: const Icon(Icons.search),
+153:                                           border: OutlineInputBorder(
+154:                                             borderRadius: BorderRadius.circular(12.0),
+155:                                           ),
+156:                                           filled: true,
+157:                                           fillColor: FlutterFlowTheme.of(context).secondaryBackground,
+158:                                         ),
+159:                                         onSubmitted: (value) {
+160:                                           if (value.isNotEmpty) {
+161:                                             context.pushNamed(
+162:                                               'searchResults',
+163:                                               queryParameters: {'q': value}.withoutNulls,
+164:                                             );
+165:                                           }
+166:                                         },
+167:                                       ),
+168:                                     ),
+169:                                     const SizedBox(width: 8.0),
+170:                                     IconButton(
+171:                                       icon: Icon(
+172:                                         Icons.qr_code_scanner,
+173:                                         color: FlutterFlowTheme.of(context).secondaryText,
+174:                                         size: 28,
+175:                                       ),
+176:                                       onPressed: () async {
+177:                                         final code = await Navigator.push<String>(
+178:                                           context,
+179:                                           MaterialPageRoute(
+180:                                             builder: (context) => const baul_pandora.BarcodeScannerModal(),
+181:                                           ),
+182:                                         );
+183:                                         if (code != null && code.isNotEmpty) {
+184:                                           final isUuid = RegExp(r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', caseSensitive: false).hasMatch(code);
+185:                                           final products = await ProductosTable().queryRows(
+186:                                             queryFn: (q) => isUuid ? q.eq('id', code).limit(1) : q.eq('codigo_barras', code).limit(1),
+187:                                           );
+188:                                           if (products.isNotEmpty && context.mounted) {
+189:                                             context.pushNamed(
+190:                                               'productDetails',
+191:                                               queryParameters: {
+192:                                                 'productRow': serializeParam(
+193:                                                   products.first,
+194:                                                   ParamType.SupabaseRow,
+195:                                                 ),
+196:                                               }.withoutNulls,
+197:                                             );
+198:                                           } else if (context.mounted) {
+199:                                             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Producto no encontrado')));
+200:                                           }
+201:                                         }
+202:                                       },
+203:                                     ),
+204:                                   ],
+205:                                 ),
+206:                               ),
+207: 
+208:                         Expanded(
+209:                           child: ProductListArea(
+210:                             model: _model,
+211:                           ),
+212:                         ),
+213:                       ],
+214:                     ),
+215:                   ),
+216:                 ),
+217:               ),
+218:             ],
+219:           ),
+220:         ),
+221:       ),
+222:     );
+223:   }
+224: }
+225: 
+The above content shows the entire, complete file contents of the requested file.

@@ -1,0 +1,152 @@
+-- WARNING: This schema is for context only and is not meant to be run.
+-- Table order and constraints may not be valid for execution.
+
+CREATE TABLE public.categorias (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  descripcion text,
+  nombre text,
+  destacada boolean DEFAULT false,
+  photo_path text,
+  id_woo bigint UNIQUE,
+  slug text,
+  parent_id bigint,
+  CONSTRAINT categorias_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.usuarios (
+  id uuid NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  nombre text,
+  telefono text,
+  email character varying,
+  favoriteitems ARRAY,
+  datos_direccion ARRAY,
+  photo_path text,
+  bio text,
+  state_address text,
+  is_admin boolean DEFAULT false,
+  CONSTRAINT usuarios_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.agencias_envio (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  nombre_agencia text NOT NULL,
+  empresa text,
+  estado text,
+  direccion text,
+  telefonos text,
+  gps text,
+  codigo_agencia text,
+  CONSTRAINT agencias_envio_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.productos (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  nombre text,
+  descripcion text,
+  ubicacion text,
+  precio double precision,
+  categorias ARRAY,
+  image_path ARRAY,
+  stock bigint,
+  id_woo bigint,
+  categoria_id_woo ARRAY,
+  stock_reservado integer DEFAULT 0,
+  parent_id_woo bigint,
+  es_variacion boolean DEFAULT false,
+  sku text,
+  es_variable boolean DEFAULT false,
+  CONSTRAINT productos_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.pedidos (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  status text DEFAULT 'cart'::text,
+  total_price double precision DEFAULT 0,
+  user_id uuid,
+  pedido_nombre text,
+  tax double precision DEFAULT 0,
+  shipping_address jsonb,
+  datos_pago jsonb DEFAULT '{}'::jsonb,
+  agencia_envio_id bigint,
+  fecha_expiracion timestamp with time zone,
+  saldo_pendiente numeric DEFAULT 0.00,
+  paid_amount_usd double precision DEFAULT '0'::double precision,
+  CONSTRAINT pedidos_pkey PRIMARY KEY (id),
+  CONSTRAINT pedidos_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.usuarios(id),
+  CONSTRAINT pedidos_agencia_fkey FOREIGN KEY (agencia_envio_id) REFERENCES public.agencias_envio(id)
+);
+CREATE TABLE public.pedido_items (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  pedido_id uuid,
+  product_id uuid,
+  quantity bigint DEFAULT 1,
+  price_at_purchase double precision,
+  CONSTRAINT pedido_items_pkey PRIMARY KEY (id),
+  CONSTRAINT pedido_items_pedido_id_fkey FOREIGN KEY (pedido_id) REFERENCES public.pedidos(id),
+  CONSTRAINT pedido_items_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.productos(id)
+);
+CREATE TABLE public.inventory_logs (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  producto_id uuid NOT NULL,
+  usuario_id uuid NOT NULL,
+  cantidad integer NOT NULL,
+  tipo_operacion text NOT NULL,
+  notas text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT inventory_logs_pkey PRIMARY KEY (id),
+  CONSTRAINT inventory_logs_producto_id_fkey FOREIGN KEY (producto_id) REFERENCES public.productos(id),
+  CONSTRAINT inventory_logs_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.pagos (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  pedido_id uuid,
+  monto numeric NOT NULL,
+  moneda character varying NOT NULL,
+  estado character varying DEFAULT 'pendiente'::character varying,
+  referencia text,
+  comprobante_url text,
+  fecha_pago timestamp with time zone DEFAULT now(),
+  ai_data jsonb,
+  nombre_emisor text,
+  email_emisor text,
+  telefono_emisor text,
+  banco_emisor text,
+  created_at timestamp with time zone DEFAULT now(),
+  amount_ves double precision,
+  exchange_rate_applied double precision,
+  amount_usd_calculated double precision,
+  banco_receptor text,
+  tipo text,
+  CONSTRAINT pagos_pkey PRIMARY KEY (id),
+  CONSTRAINT pagos_pedido_id_fkey FOREIGN KEY (pedido_id) REFERENCES public.pedidos(id)
+);
+CREATE TABLE public.notificaciones_base (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  titulo text NOT NULL,
+  mensaje text NOT NULL,
+  tipo text DEFAULT 'sistema'::text,
+  link text,
+  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  CONSTRAINT notificaciones_base_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.pago_pedidos (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  pedido_id uuid,
+  pago_id uuid,
+  CONSTRAINT pago_pedidos_pkey PRIMARY KEY (id),
+  CONSTRAINT pago_pedidos_pedido_id_fkey FOREIGN KEY (pedido_id) REFERENCES public.pedidos(id),
+  CONSTRAINT pago_pedidos_pago_id_fkey FOREIGN KEY (pago_id) REFERENCES public.pagos(id)
+);
+CREATE TABLE public.notificaciones_usuario (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  notification_id uuid,
+  user_id uuid,
+  leido boolean DEFAULT false,
+  fecha_lectura timestamp with time zone,
+  CONSTRAINT notificaciones_usuario_pkey PRIMARY KEY (id),
+  CONSTRAINT notificaciones_usuario_notification_id_fkey FOREIGN KEY (notification_id) REFERENCES public.notificaciones_base(id),
+  CONSTRAINT notificaciones_usuario_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.usuarios(id)
+);

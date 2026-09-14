@@ -1,0 +1,178 @@
+import 'package:collection/collection.dart';
+import 'package:baul_pandora/auth/supabase_auth/auth_util.dart';
+import 'package:baul_pandora/backend/supabase/supabase.dart';
+import 'package:baul_pandora/services/cart_service.dart';
+import 'package:baul_pandora/flutter_flow/flutter_flow_icon_button.dart';
+import 'package:baul_pandora/flutter_flow/flutter_flow_theme.dart';
+import 'package:baul_pandora/flutter_flow/flutter_flow_util.dart';
+import 'package:baul_pandora/flutter_flow/custom_functions.dart' as functions;
+import 'package:baul_pandora/flutter_flow/flutter_flow_widgets.dart';
+import 'package:auto_size_text/auto_size_text.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../main_home_page_model.dart';
+
+class MainHomeOrderSummary extends StatelessWidget {
+  const MainHomeOrderSummary({
+    super.key,
+    required this.model,
+    required this.updateCallback,
+  });
+
+  final MainHomePageModel model;
+  final Future<void> Function() updateCallback;
+
+  @override
+  Widget build(BuildContext context) {
+    context.watch<FFAppState>();
+    final totalUSD = functions.calculateTotalFromCart(FFAppState().itemsCarrito);
+    final totalBs = totalUSD * FFAppState().bcvRate;
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildHeader(context),
+          _buildSubtitle(context),
+          _buildProductList(context),
+          const Divider(height: 32.0, thickness: 2.0),
+          _buildTotalSection(context, totalUSD, totalBs),
+          _buildCheckoutButton(context),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(top: 32.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Order Summary', style: FlutterFlowTheme.of(context).headlineLarge),
+            FlutterFlowIconButton(
+              borderColor: FlutterFlowTheme.of(context).primary,
+              borderRadius: 12.0,
+              buttonSize: 40.0,
+              icon: Icon(Icons.close_rounded, color: FlutterFlowTheme.of(context).primaryText),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ],
+        ),
+      );
+
+  Widget _buildSubtitle(BuildContext context) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: Text('Below is a list of your items.', style: FlutterFlowTheme.of(context).labelMedium),
+      );
+
+  Widget _buildProductList(BuildContext context) {
+    if (FFAppState().itemsCarrito.isEmpty) return const SizedBox(height: 200, child: EmptyStateWidget());
+
+    final productosCarrito = FFAppState().itemsCarrito.toList();
+    final productIds = productosCarrito.map((e) => e.idProducto).toList();
+
+    return FutureBuilder<List<ProductosRow>>(
+      future: ProductosTable().queryRows(queryFn: (q) => q.inFilterOrNull('id', productIds)),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+        final allProducts = snapshot.data!;
+        return ListView.builder(
+          padding: EdgeInsets.zero,
+          shrinkWrap: true,
+          itemCount: productosCarrito.length,
+          itemBuilder: (context, index) {
+            final item = productosCarrito[index];
+            final product = allProducts.firstWhereOrNull((p) => p.id == item.idProducto);
+            return _buildProductItem(context, item, product);
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildProductItem(BuildContext context, dynamic item, dynamic product) => Container(
+        margin: const EdgeInsets.only(bottom: 8.0),
+        padding: const EdgeInsets.all(8.0),
+        decoration: BoxDecoration(color: FlutterFlowTheme.of(context).secondaryBackground, borderRadius: BorderRadius.circular(12)),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: CachedNetworkImage(
+                imageUrl: functions.getProxyUrl(product?.imagePath?.firstOrNull),
+                width: 70, height: 70, fit: BoxFit.cover,
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(product?.nombre ?? 'Unknown', style: FlutterFlowTheme.of(context).bodyLarge),
+                    Text('Quantity: ${item.cantidad}', style: FlutterFlowTheme.of(context).labelSmall),
+                  ],
+                ),
+              ),
+            ),
+            Text('\$${product?.precio?.toString() ?? '0.00'}', style: FlutterFlowTheme.of(context).titleLarge),
+          ],
+        ),
+      );
+
+  Widget _buildTotalSection(BuildContext context, double totalUSD, double totalBs) => Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Total', style: FlutterFlowTheme.of(context).titleMedium),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Row(
+                    children: [
+                      Text(formatNumber(totalUSD, formatType: FormatType.decimal, currency: '\$'), style: FlutterFlowTheme.of(context).displaySmall),
+                      IconButton(
+                        icon: const Icon(Icons.content_copy, size: 16),
+                        onPressed: () => _copyToClipboard(context, totalUSD.toString(), 'Monto USD copiado'),
+                      ),
+                    ],
+                  ),
+                  if (FFAppState().bcvRate > 0)
+                    Row(
+                      children: [
+                        Text(formatNumber(totalBs, formatType: FormatType.decimal, currency: 'Bs.'), style: FlutterFlowTheme.of(context).bodyMedium),
+                        IconButton(
+                          icon: const Icon(Icons.content_copy, size: 16),
+                          onPressed: () => _copyToClipboard(context, totalBs.toStringAsFixed(2), 'Monto Bs. copiado'),
+                        ),
+                      ],
+                    ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      );
+
+  Widget _buildCheckoutButton(BuildContext context) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 24.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            FFButtonWidget(
+              onPressed: () => context.pushNamed(FullCartViewWidget.routeName),
+              text: 'Checkout',
+              options: FFButtonOptions(height: 50.0, padding: const EdgeInsets.symmetric(horizontal: 32.0), color: FlutterFlowTheme.of(context).primary, borderRadius: BorderRadius.circular(50.0)),
+            ),
+          ],
+        ),
+      );
+
+  Future<void> _copyToClipboard(BuildContext context, String text, String message) async {
+    await Clipboard.setData(ClipboardData(text: text));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  }}

@@ -1,0 +1,108 @@
+Created At: 2026-08-23T14:41:18-04:00
+Completed At: 2026-08-23T14:41:18-04:00
+File Path: `file:///c:/Users/alejo/Documents/Baul/baul_pandora/lib/pages/main_profile/components/profile_header.dart`
+Total Lines: 147
+Total Bytes: 7526
+Showing lines 1 to 100
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1: import 'package:baul_pandora/auth/supabase_auth/auth_util.dart';
+2: import 'package:baul_pandora/backend/supabase/supabase.dart';
+3: import 'package:cached_network_image/cached_network_image.dart';
+4: import 'package:baul_pandora/flutter_flow/flutter_flow_theme.dart';
+5: import 'package:baul_pandora/flutter_flow/flutter_flow_util.dart';
+6: import 'package:flutter/material.dart';
+7: import 'package:google_fonts/google_fonts.dart';
+8: import '../main_profile_model.dart';
+9: 
+10: class ProfileHeaderWidget extends StatelessWidget {
+11:   const ProfileHeaderWidget({
+12:     super.key,
+13:     required this.model,
+14:   });
+15: 
+16:   final MainProfileModel model;
+17: 
+18:   @override
+19:   Widget build(BuildContext context) {
+20:     return Column(
+21:       mainAxisSize: MainAxisSize.max,
+22:       children: [
+23:         Padding(
+24:           padding: const EdgeInsetsDirectional.fromSTEB(0.0, 16.0, 0.0, 0.0),
+25:           child: Row(
+26:             mainAxisSize: MainAxisSize.max,
+27:             mainAxisAlignment: MainAxisAlignment.center,
+28:             crossAxisAlignment: CrossAxisAlignment.start,
+29:             children: [
+30:               Flexible(
+31:                 child: Padding(
+32:                   padding: const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 8.0),
+33:                   child: Column(
+34:                     mainAxisSize: MainAxisSize.max,
+35:                     mainAxisAlignment: MainAxisAlignment.center,
+36:                     crossAxisAlignment: CrossAxisAlignment.center,
+37:                     children: [
+38:                       Padding(
+39:                         padding: const EdgeInsets.all(2.0),
+40:                         child: FutureBuilder<List<UsuariosRow>>(
+41:                           future: UsuariosTable().queryRows(
+42:                             queryFn: (q) => q.eq('id', currentUserUid),
+43:                           ),
+44:                           builder: (context, snapshot) {
+45:                             if (!snapshot.hasData) {
+46:                               return Center(
+47:                                 child: SizedBox(
+48:                                   width: 50.0,
+49:                                   height: 50.0,
+50:                                   child: CircularProgressIndicator(
+51:                                     valueColor: AlwaysStoppedAnimation<Color>(
+52:                                       FlutterFlowTheme.of(context).primary,
+53:                                     ),
+54:                                   ),
+55:                                 ),
+56:                               );
+57:                             }
+58:                             final avatarUsuariosRowList = snapshot.data!;
+59:                             final avatarUsuariosRow = avatarUsuariosRowList.isNotEmpty
+60:                                 ? avatarUsuariosRowList.first
+61:                                 : null;
+62:                             
+63:                             return Column(
+64:                               children: [
+65:                                 Padding(
+66:                                   padding: const EdgeInsets.all(2.0),
+67:                                   child: (avatarUsuariosRow?.photoPath != null &&
+68:                                           avatarUsuariosRow!.photoPath!.isNotEmpty)
+69:                                       ? ClipRRect(
+70:                                           borderRadius: BorderRadius.circular(10.0),
+71:                                           child: CachedNetworkImage(
+72:                                             fadeInDuration: const Duration(milliseconds: 500),
+73:                                             fadeOutDuration: const Duration(milliseconds: 500),
+74:                                             imageUrl: avatarUsuariosRow!.photoPath!,
+75:                                             width: 100.0,
+76:                                             height: 100.0,
+77:                                             fit: BoxFit.cover,
+78:                                             errorWidget: (context, url, error) => Image.asset(
+79:                                               'assets/images/guestUser.png',
+80:                                               width: 100.0,
+81:                                               height: 100.0,
+82:                                               fit: BoxFit.cover,
+83:                                             ),
+84:                                           ),
+85:                                         )
+86:                                       : Container(
+87:                                           width: 100.0,
+88:                                           height: 100.0,
+89:                                           decoration: BoxDecoration(
+90:                                             borderRadius: BorderRadius.circular(10.0),
+91:                                           ),
+92:                                           child: ClipRRect(
+93:                                             borderRadius: BorderRadius.circular(10.0),
+94:                                             child: Image.asset(
+95:                                               'assets/images/guestUser.png',
+96:                                               width: 100.0,
+97:                                               height: 100.0,
+98:                                               fit: BoxFit.cover,
+99:                                             ),
+100:                                           ),
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.

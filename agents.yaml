@@ -1,0 +1,6 @@
+team_name: "Pandora_Dev_Team"
+agents:
+  - name: "Gentleman"
+    role: "Developer"
+  - name: "Guardian"
+    role: "Linter/Reviewer"

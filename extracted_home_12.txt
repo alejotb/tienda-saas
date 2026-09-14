@@ -1,0 +1,68 @@
+Created At: 2026-08-24T10:09:22-04:00
+Completed At: 2026-08-24T10:09:23-04:00
+File Path: `file:///c:/Users/alejo/Documents/Baul/baul_pandora/lib/pages/main_profile/components/profile_settings_list.dart`
+Total Lines: 215
+Total Bytes: 7812
+Showing lines 1 to 60
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1: import 'package:baul_pandora/auth/supabase_auth/auth_util.dart';
+2: import 'package:baul_pandora/components/modal_edit/modal_edit_widget.dart';
+3: import 'package:baul_pandora/flutter_flow/flutter_flow_theme.dart';
+4: import 'package:baul_pandora/flutter_flow/flutter_flow_util.dart';
+5: import 'package:baul_pandora/flutter_flow/flutter_flow_widgets.dart';
+6: import 'package:flutter/material.dart';
+7: import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+8: import '../main_profile_model.dart';
+9: 
+10: class ProfileSettingsList extends StatelessWidget {
+11:   const ProfileSettingsList({
+12:     super.key,
+13:     required this.model,
+14:     required this.updateCallback,
+15:     required this.onSignOut,
+16:   });
+17: 
+18:   final MainProfileModel model;
+19:   final Future<void> Function() updateCallback;
+20:   final VoidCallback onSignOut;
+21: 
+22:   @override
+23:   Widget build(BuildContext context) {
+24:     return Column(
+25:       mainAxisSize: MainAxisSize.max,
+26:       children: [
+27:         Container(
+28:           width: double.infinity,
+29:           decoration: BoxDecoration(
+30:             color: FlutterFlowTheme.of(context).secondaryBackground,
+31:             boxShadow: const [
+32:               BoxShadow(
+33:                 blurRadius: 3.0,
+34:                 color: Color(0x33000000),
+35:                 offset: Offset(0.0, 1.0),
+36:               )
+37:             ],
+38:             borderRadius: BorderRadius.circular(12.0),
+39:           ),
+40:           child: Column(
+41:             mainAxisSize: MainAxisSize.min,
+42:             children: [
+43:               _buildSettingsItem(
+44:                 context,
+45:                 icon: Icon(Icons.person_outline_outlined, color: FlutterFlowTheme.of(context).secondaryText, size: 24.0),
+46:                 text: 'Editar perfil',
+47:                 onTap: () async {
+48:                   await showModalBottomSheet(
+49:                     isScrollControlled: true,
+50:                     backgroundColor: Colors.transparent,
+51:                     context: context,
+52:                     builder: (bottomSheetContext) {
+53:                       return Padding(
+54:                         padding: MediaQuery.viewInsetsOf(bottomSheetContext),
+55:                         child: SizedBox(
+56:                           height: MediaQuery.of(context).size.height * 0.85,
+57:                           child: const ModalEditWidget(editProfile: true),
+58:                         ),
+59:                       );
+60:                     },
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
