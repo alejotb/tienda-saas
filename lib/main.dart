@@ -183,12 +183,12 @@ class _NavBarPageState extends State<NavBarPage> {
         }
 
         final adminTabs = {
-          'mainHomePage': const MainHomePageWidget(),
-          'adminPagos': const AdminPagosPage(),
-          'adminDespachos': const AdminDespachosPage(),
-          'adminInventario': const AdminInventarioPage(),
-          'adminAuditoria': const AdminAuditoriaPage(),
-          'mainProfile': const MainProfileWidget(),
+          'mainHomePage': MainHomePageWidget(),
+          'adminPagos': AdminPagosPage(),
+          'adminDespachos': AdminDespachosPage(),
+          'adminInventario': AdminInventarioPage(),
+          'adminAuditoria': AdminAuditoriaPage(),
+          'mainProfile': MainProfileWidget(),
         };
 
         final adminBottomKeys = [
@@ -200,10 +200,10 @@ class _NavBarPageState extends State<NavBarPage> {
         ];
 
         final clientTabs = {
-          'mainHomePage': const MainHomePageWidget(),
-          'mainFavorites': const MainFavoritesWidget(),
-          'mainOrderHistory': const MainOrderHistoryWidget(),
-          'mainProfile': const MainProfileWidget(),
+          'mainHomePage': MainHomePageWidget(),
+          'mainFavorites': MainFavoritesWidget(),
+          'mainOrderHistory': MainOrderHistoryWidget(),
+          'mainProfile': MainProfileWidget(),
         };
 
         final activeTabs = isAdmin ? adminTabs : clientTabs;

@@ -159,7 +159,9 @@ class _UploadProofComponentState extends State<UploadProofComponent> {
         if (bytes == null && platformFile.path != null && !kIsWeb) {
           bytes = await File(platformFile.path!).readAsBytes();
         }
-        await _uploadBytes(bytes);
+        if (bytes != null) {
+          await _uploadBytes(bytes);
+        }
       }
     } catch (e) {
       setState(() {
@@ -179,7 +181,11 @@ class _UploadProofComponentState extends State<UploadProofComponent> {
           bytes, 'apartado_${DateTime.now().millisecondsSinceEpoch}');
 
       _lastUrl = url;
-      await _processProofWithAI(url);
+      if (url != null) {
+        await _processProofWithAI(url);
+      } else {
+        throw Exception('No se pudo generar la URL del comprobante');
+      }
     } catch (e) {
       setState(() {
         _errorMessage = 'No pudimos subir la imagen: $e';

@@ -127,7 +127,7 @@ Si NO es un comprobante o es inválido:
             ]).timeout(const Duration(seconds: 25));
 
             text = generateContentResponse.text;
-            if (text.isNotEmpty) {
+            if (text != null && text.isNotEmpty) {
               print('GeminiVisionService: Éxito con modelo $modelName!');
               break;
             }
