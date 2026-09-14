@@ -881,6 +881,30 @@ class _LoginPageWidgetState extends State<LoginPageWidget>
                                                               ],
                                                             ),
                                                           ),
+                                                          const SizedBox(height: 20),
+                                                          Container(
+                                                            width: double.infinity,
+                                                            padding: const EdgeInsets.all(12),
+                                                            decoration: BoxDecoration(
+                                                              color: FlutterFlowTheme.of(context).primary.withValues(alpha: 0.08),
+                                                              borderRadius: BorderRadius.circular(12),
+                                                              border: Border.all(color: FlutterFlowTheme.of(context).primary.withValues(alpha: 0.2)),
+                                                            ),
+                                                            child: Column(
+                                                              children: [
+                                                                Text(
+                                                                  '¿Tienes un negocio o quieres vender?',
+                                                                  style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 13),
+                                                                ),
+                                                                const SizedBox(height: 4),
+                                                                TextButton.icon(
+                                                                  onPressed: () => context.pushNamed('storeRegister'),
+                                                                  icon: const Icon(Icons.storefront_rounded, size: 18),
+                                                                  label: const Text('👉 ¡Registra tu Tienda Gratis Aquí!', style: TextStyle(fontWeight: FontWeight.bold)),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
                                                         ],
                                                       ),
                                                       Align(

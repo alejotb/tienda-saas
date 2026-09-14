@@ -46,8 +46,16 @@ class UsuariosRow extends SupabaseDataRow {
   String? get stateAddress => getField<String>('state_address');
   set stateAddress(String? value) => setField<String>('state_address', value);
 
-  bool get isAdmin => getField<bool>('is_admin') ?? false;
+  bool get isAdmin => (getField<bool>('is_admin') ?? false) || rol == 'dueno_tienda' || rol == 'super_admin';
   set isAdmin(bool value) => setField<bool>('is_admin', value);
+
+  String get rol => getField<String>('rol') ?? 'cliente';
+  set rol(String value) => setField<String>('rol', value);
+
+  String? get tiendaId => getField<String>('tienda_id');
+  set tiendaId(String? value) => setField<String>('tienda_id', value);
+
+  bool get isStoreOwner => rol == 'dueno_tienda' || rol == 'super_admin' || isAdmin;
 
   int get productosComprados => getField<int>('productos_comprados') ?? 0;
   set productosComprados(int value) => setField<int>('productos_comprados', value);
