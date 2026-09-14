@@ -16,6 +16,7 @@ import 'package:baul_pandora/pages/administracion/admin_pagos_page.dart';
 import 'package:baul_pandora/pages/administracion/admin_despachos_page.dart';
 import 'package:baul_pandora/pages/administracion/admin_inventario_page.dart';
 import 'package:baul_pandora/pages/administracion/admin_auditoria_page.dart';
+import 'package:baul_pandora/index.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

@@ -135,7 +135,7 @@ dependency_overrides:
   rxdart: 0.27.7
   uuid: ^4.0.0
   font_awesome_flutter: ^11.0.0
-  page_transition: 2.1.0
+  page_transition: 2.0.9
 
 dev_dependencies:
   flutter_lints: 4.0.0

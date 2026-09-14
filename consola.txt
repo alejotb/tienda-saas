@@ -1,35 +1,45 @@
-../../../AppData/Local/Pub/Cache/hosted/pub.dev/page_transition-2.2.1/lib/src/page_transition.dart:99:34: Error: Couldn't find constructor 'CupertinoPageTransitionsBuilder'.
+../../../AppData/Local/Pub/Cache/hosted/pub.dev/page_transition-2.1.0/lib/src/page_transition.dart:68:34: Error: Couldn't find constructor 'CupertinoPageTransitionsBuilder'.
     this.matchingBuilder = const CupertinoPageTransitionsBuilder(),
                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-lib/main.dart:186:33: Error: Not a constant expression.
-          'mainHomePage': const MainHomePageWidget(),
-                                ^^^^^^^^^^^^^^^^^^
-lib/main.dart:191:32: Error: Not a constant expression.
-          'mainProfile': const MainProfileWidget(),
-                               ^^^^^^^^^^^^^^^^^
-lib/main.dart:203:33: Error: Not a constant expression.
-          'mainHomePage': const MainHomePageWidget(),
-                                ^^^^^^^^^^^^^^^^^^
-lib/main.dart:204:34: Error: Not a constant expression.
-          'mainFavorites': const MainFavoritesWidget(),
-                                 ^^^^^^^^^^^^^^^^^^^
-lib/main.dart:205:37: Error: Not a constant expression.
-          'mainOrderHistory': const MainOrderHistoryWidget(),
-                                    ^^^^^^^^^^^^^^^^^^^^^^
-lib/main.dart:206:32: Error: Not a constant expression.
-          'mainProfile': const MainProfileWidget(),
-                               ^^^^^^^^^^^^^^^^^
-lib/services/ai/gemini_vision_service.dart:130:22: Error: Property 'isNotEmpty' cannot be
-accessed on 'String?' because it is potentially null.
-Try accessing using ?. instead.
-            if (text.isNotEmpty) {
-                     ^^^^^^^^^^
-lib/components/payment_instructions/upload_proof_component.dart:162:28: Error: The argument type
-'Uint8List?' can't be assigned to the parameter type 'Uint8List'.
- - 'Uint8List' is from 'dart:typed_data'.
-        await _uploadBytes(bytes);
-                           ^
-lib/components/payment_instructions/upload_proof_component.dart:182:33: Error: The argument type
-'String?' can't be assigned to the parameter type 'String'.
-      await _processProofWithAI(url);
-                                ^
+lib/main.dart:186:27: Error: The method 'MainHomePageWidget' isn't defined for the type
+'_NavBarPageState'.
+ - '_NavBarPageState' is from 'package:baul_pandora/main.dart' ('lib/main.dart').
+Try correcting the name to the name of an existing method, or defining a method named
+'MainHomePageWidget'.
+          'mainHomePage': MainHomePageWidget(),
+                          ^^^^^^^^^^^^^^^^^^
+lib/main.dart:191:26: Error: The method 'MainProfileWidget' isn't defined for the type
+'_NavBarPageState'.
+ - '_NavBarPageState' is from 'package:baul_pandora/main.dart' ('lib/main.dart').
+Try correcting the name to the name of an existing method, or defining a method named
+'MainProfileWidget'.
+          'mainProfile': MainProfileWidget(),
+                         ^^^^^^^^^^^^^^^^^
+lib/main.dart:203:27: Error: The method 'MainHomePageWidget' isn't defined for the type
+'_NavBarPageState'.
+ - '_NavBarPageState' is from 'package:baul_pandora/main.dart' ('lib/main.dart').
+Try correcting the name to the name of an existing method, or defining a method named
+'MainHomePageWidget'.
+          'mainHomePage': MainHomePageWidget(),
+                          ^^^^^^^^^^^^^^^^^^
+lib/main.dart:204:28: Error: The method 'MainFavoritesWidget' isn't defined for the type
+'_NavBarPageState'.
+ - '_NavBarPageState' is from 'package:baul_pandora/main.dart' ('lib/main.dart').
+Try correcting the name to the name of an existing method, or defining a method named
+'MainFavoritesWidget'.
+          'mainFavorites': MainFavoritesWidget(),
+                           ^^^^^^^^^^^^^^^^^^^
+lib/main.dart:205:31: Error: The method 'MainOrderHistoryWidget' isn't defined for the type
+'_NavBarPageState'.
+ - '_NavBarPageState' is from 'package:baul_pandora/main.dart' ('lib/main.dart').
+Try correcting the name to the name of an existing method, or defining a method named
+'MainOrderHistoryWidget'.
+          'mainOrderHistory': MainOrderHistoryWidget(),
+                              ^^^^^^^^^^^^^^^^^^^^^^
+lib/main.dart:206:26: Error: The method 'MainProfileWidget' isn't defined for the type
+'_NavBarPageState'.
+ - '_NavBarPageState' is from 'package:baul_pandora/main.dart' ('lib/main.dart').
+Try correcting the name to the name of an existing method, or defining a method named
+'MainProfileWidget'.
+          'mainProfile': MainProfileWidget(),
+                         ^^^^^^^^^^^^^^^^^
