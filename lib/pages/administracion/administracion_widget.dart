@@ -7,6 +7,7 @@ import 'package:baul_pandora/services/local_inventory_service.dart';
 import 'package:flutter/material.dart';
 import 'administracion_model.dart';
 import 'views/admin_general_view.dart';
+import 'views/admin_store_dashboard_view.dart';
 
 export 'administracion_model.dart';
 
@@ -101,7 +102,7 @@ class _AdministracionWidgetState extends State<AdministracionWidget> {
                   padding: const EdgeInsets.all(16.0),
                   color: FlutterFlowTheme.of(context).primaryBackground,
                   child: const SizedBox.expand(
-                    child: AdminGeneralView(), // Carga directamente el dashboard en lugar de usar sidebar
+                    child: AdminStoreDashboardView(), // Dashboard Multi-Tienda preparado para SaaS
                   ),
                 ),
               ),
