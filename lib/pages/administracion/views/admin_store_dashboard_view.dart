@@ -341,11 +341,7 @@ class _AdminStoreDashboardViewState extends State<AdminStoreDashboardView> {
           subtitle: 'Conectar WooCommerce / Shopify',
           icon: Icons.extension_rounded,
           color: Colors.orange,
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('El módulo de extensiones de WooCommerce se encuentra listo para instalar')),
-            );
-          },
+          onTap: () => context.pushNamed('adminIntegraciones'),
         ),
       ],
     );
