@@ -2,7 +2,6 @@
 
 import 'package:baul_pandora/backend/schema/util/schema_util.dart';
 
-import 'index.dart';
 import 'package:baul_pandora/flutter_flow/flutter_flow_util.dart';
 
 class PagoStruct extends BaseStruct {
@@ -112,7 +111,8 @@ class PagoStruct extends BaseStruct {
         email: data['email'] as String?,
         tipo: data['tipo'] as String?,
         referencia: data['referencia'] as String?,
-        comprobanteUrl: data['comprobanteUrl'] as String? ?? data['comprobante_url'] as String?,
+        comprobanteUrl: data['comprobanteUrl'] as String? ??
+            data['comprobante_url'] as String?,
         numeroTelefono: data['numeroTelefono'] as String?,
         bancoEnviado: data['bancoEnviado'] as String?,
         bancoRecibido: data['bancoRecibido'] as String?,
@@ -158,13 +158,19 @@ class PagoStruct extends BaseStruct {
         nombre: deserializeParam(data['nombre'], ParamType.String, false),
         email: deserializeParam(data['email'], ParamType.String, false),
         tipo: deserializeParam(data['tipo'], ParamType.String, false),
-        referencia: deserializeParam(data['referencia'], ParamType.String, false),
-        comprobanteUrl: deserializeParam(data['comprobanteUrl'], ParamType.String, false),
-        numeroTelefono: deserializeParam(data['numeroTelefono'], ParamType.String, false),
-        bancoEnviado: deserializeParam(data['bancoEnviado'], ParamType.String, false),
-        bancoRecibido: deserializeParam(data['bancoRecibido'], ParamType.String, false),
+        referencia:
+            deserializeParam(data['referencia'], ParamType.String, false),
+        comprobanteUrl:
+            deserializeParam(data['comprobanteUrl'], ParamType.String, false),
+        numeroTelefono:
+            deserializeParam(data['numeroTelefono'], ParamType.String, false),
+        bancoEnviado:
+            deserializeParam(data['bancoEnviado'], ParamType.String, false),
+        bancoRecibido:
+            deserializeParam(data['bancoRecibido'], ParamType.String, false),
         montoVes: deserializeParam(data['montoVes'], ParamType.double, false),
-        tasaAplicada: deserializeParam(data['tasaAplicada'], ParamType.double, false),
+        tasaAplicada:
+            deserializeParam(data['tasaAplicada'], ParamType.double, false),
         montoUsd: deserializeParam(data['montoUsd'], ParamType.double, false),
       );
 

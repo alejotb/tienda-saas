@@ -2,7 +2,6 @@
 
 import 'package:baul_pandora/backend/schema/util/schema_util.dart';
 
-import 'index.dart';
 import 'package:baul_pandora/flutter_flow/flutter_flow_util.dart';
 
 class AddressStruct extends BaseStruct {
@@ -100,7 +99,9 @@ class AddressStruct extends BaseStruct {
         state: data['state'] as String?,
         postalCode: castToType<int>(data['postalCode']),
         tipoDireccion: data['tipoDireccion'] as String?,
-        agencia: data['agencia'] as String? ?? data['codigoAgencia'] as String? ?? data['codigo_agencia'] as String?,
+        agencia: data['agencia'] as String? ??
+            data['codigoAgencia'] as String? ??
+            data['codigo_agencia'] as String?,
       );
 
   static AddressStruct? maybeFromMap(dynamic data) =>

@@ -8,7 +8,6 @@ import 'package:baul_pandora/backend/supabase/supabase.dart';
 import 'package:baul_pandora/services/cart_service.dart';
 import 'package:baul_pandora/services/exchange_rate_service.dart';
 import 'package:flutter/material.dart';
-import 'full_cart_view_widget.dart' show FullCartViewWidget;
 
 class FullCartViewModel extends ChangeNotifier {
   /// Local state fields
@@ -98,7 +97,8 @@ class FullCartViewModel extends ChangeNotifier {
   }
 
   Future<void> updateSelectedTotal() async {
-    debugPrint('DEBUG: Iniciando updateSelectedTotal. Items seleccionados: $selectedItemIds');
+    debugPrint(
+        'DEBUG: Iniciando updateSelectedTotal. Items seleccionados: $selectedItemIds');
     if (selectedItemIds.isEmpty) {
       selectedTotal = 0.0;
       selectedItemsDetails = [];
@@ -107,32 +107,35 @@ class FullCartViewModel extends ChangeNotifier {
     }
 
     try {
-      final itemsInCart = FFAppState().itemsCarrito.where((i) => selectedItemIds.contains(i.idProducto)).toList();
+      final itemsInCart = FFAppState()
+          .itemsCarrito
+          .where((i) => selectedItemIds.contains(i.idProducto))
+          .toList();
       debugPrint('DEBUG: Items en carrito filtrados: ${itemsInCart.length}');
-      
-       final idsString = '(${selectedItemIds.map((id) => '"$id"').join(',')})';
-       debugPrint('DEBUG: Query productos para IDs: $idsString');
-       final response = await SupaFlow.client
-           .from('productos')
-           .select('id, nombre, precio')
-           .filter('id', 'in', idsString);
-          
+
+      final idsString = '(${selectedItemIds.map((id) => '"$id"').join(',')})';
+      debugPrint('DEBUG: Query productos para IDs: $idsString');
+      final response = await SupaFlow.client
+          .from('productos')
+          .select('id, nombre, precio')
+          .filter('id', 'in', idsString);
+
       Map<String, dynamic> productDataMap = {};
       for (var row in (response as List)) {
         productDataMap[row['id']] = row;
       }
       debugPrint('DEBUG: Productos encontrados: ${productDataMap.length}');
-      
+
       double total = 0.0;
       List<Map<String, dynamic>> details = [];
-      
+
       for (var item in itemsInCart) {
         final product = productDataMap[item.idProducto];
         if (product != null) {
           double price = (product['precio'] as num).toDouble();
           int qty = item.cantidad;
           total += price * qty;
-          
+
           details.add({
             'id': product['id'], // Added ID
             'nombre': product['nombre'],
@@ -142,10 +145,11 @@ class FullCartViewModel extends ChangeNotifier {
           });
         }
       }
-      
+
       selectedTotal = total;
       selectedItemsDetails = details;
-      debugPrint('DEBUG: selectedItemsDetails actualizados: $selectedItemsDetails');
+      debugPrint(
+          'DEBUG: selectedItemsDetails actualizados: $selectedItemsDetails');
     } catch (e) {
       debugPrint('Error updating selected total: $e');
     } finally {
@@ -186,7 +190,7 @@ class FullCartViewModel extends ChangeNotifier {
   double get totalPagadoApartados {
     double total = 0.0;
     Set<String> affectedPedidoIds = {};
-    
+
     // Find all orders that have at least one item selected
     for (var apartado in apartados) {
       if (apartado['items'] != null) {
@@ -197,14 +201,14 @@ class FullCartViewModel extends ChangeNotifier {
         }
       }
     }
-    
+
     // Sum the 'monto_pagado' of those unique orders
     for (var apartado in apartados) {
       if (affectedPedidoIds.contains(apartado['pedido_id'].toString())) {
         total += (apartado['monto_pagado'] as num).toDouble();
       }
     }
-    
+
     return total;
   }
 
@@ -214,7 +218,8 @@ class FullCartViewModel extends ChangeNotifier {
       if (apartado['items'] != null) {
         for (var item in (apartado['items'] as List)) {
           if (apartadosSeleccionados.contains(item['id'].toString())) {
-            total += (item['precio'] as num).toDouble() * (item['cantidad'] as int);
+            total +=
+                (item['precio'] as num).toDouble() * (item['cantidad'] as int);
           }
         }
       }
@@ -222,7 +227,9 @@ class FullCartViewModel extends ChangeNotifier {
     return total;
   }
 
-  double get totalCarritoApartados => (selectedTotal + precioTotalApartadosSeleccionados) - totalPagadoApartados;
+  double get totalCarritoApartados =>
+      (selectedTotal + precioTotalApartadosSeleccionados) -
+      totalPagadoApartados;
 
   // Métodos de lógica de apartados
   void toggleApartadoSeleccion(String itemId) {
@@ -233,7 +240,8 @@ class FullCartViewModel extends ChangeNotifier {
     } else {
       apartadosSeleccionados.add(itemId);
     }
-    debugPrint('DEBUG: apartadosSeleccionados tras toggle: $apartadosSeleccionados');
+    debugPrint(
+        'DEBUG: apartadosSeleccionados tras toggle: $apartadosSeleccionados');
     notifyListeners();
     updatePage(() {});
   }
@@ -269,36 +277,41 @@ class FullCartViewModel extends ChangeNotifier {
     return totalItems > 0 && apartadosSeleccionados.length == totalItems;
   }
 
-
   Future<void> validateCartStock(BuildContext context) async {
     isValidating = true;
     updatePage(() {});
     try {
       // 1. Obtener ítems del carrito con stock actual
       final cartItems = FFAppState().itemsCarrito;
-      
+
       // 2. Llamar a CartService para validar stock y obtener estados
-      final itemsMap = cartItems.map((item) => {
-        'id': item.idProducto,
-        'cantidad': item.cantidad,
-      }).toList();
-      
+      final itemsMap = cartItems
+          .map((item) => {
+                'id': item.idProducto,
+                'cantidad': item.cantidad,
+              })
+          .toList();
+
       final stockInfo = await CartService.instance.checkStockLevels(itemsMap);
-      
+
       // 3. Filtrar los que tienen stock 0
-      itemsSinStock = stockInfo.where((item) => (item['stock'] as int) == 0).toList();
-      debugPrint('DEBUG: Productos sin stock detectados: ${itemsSinStock.length}');
-      
+      itemsSinStock =
+          stockInfo.where((item) => (item['stock'] as int) == 0).toList();
+      debugPrint(
+          'DEBUG: Productos sin stock detectados: ${itemsSinStock.length}');
+
       // LOG DEPURACIÓN: Mostrar stock de todos los productos en carrito
       stockInfo.forEach((item) {
-        debugPrint('DEBUG Stock Log: Producto: ${item['nombre']}, Stock Disponible: ${item['stock']}');
+        debugPrint(
+            'DEBUG Stock Log: Producto: ${item['nombre']}, Stock Disponible: ${item['stock']}');
       });
-      
-      final ajustes = await CartService.instance.validateAndAdjustStock(itemsMap);
-      
+
+      final ajustes =
+          await CartService.instance.validateAndAdjustStock(itemsMap);
+
       if (ajustes.isNotEmpty) {
         debugPrint('Ajustes de stock realizados: $ajustes');
-        
+
         // Actualizar el estado con las cantidades ajustadas
         for (var item in FFAppState().itemsCarrito) {
           final ajuste = itemsMap.firstWhere(
@@ -307,18 +320,19 @@ class FullCartViewModel extends ChangeNotifier {
           );
           item.cantidad = ajuste['cantidad'] as int;
         }
-        
+
         // Notificar al usuario
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Atención: Se han ajustado cantidades por falta de stock:\n${ajustes.join(", ")}'),
+              content: Text(
+                  'Atención: Se han ajustado cantidades por falta de stock:\n${ajustes.join(", ")}'),
               backgroundColor: Colors.red,
               duration: const Duration(seconds: 5),
             ),
           );
         }
-        
+
         // Recalcular totales
         updateSelectedTotal();
       }
@@ -333,43 +347,48 @@ class FullCartViewModel extends ChangeNotifier {
 
   // Métodos de lógica de apartados locales
   void updateApartadoItemLocal(String apartadoId, String itemId, int delta) {
-    debugPrint('DEBUG: Iniciando actualización para apartado: $apartadoId, item: $itemId, delta: $delta');
-    
+    debugPrint(
+        'DEBUG: Iniciando actualización para apartado: $apartadoId, item: $itemId, delta: $delta');
+
     // Buscar el apartado y el ítem
     for (var apartado in apartados) {
       if (apartado['pedido_id'] == apartadoId) {
         var items = (apartado['items'] as List);
-        debugPrint('DEBUG: Apartado encontrado. Items actuales: ${items.length}');
-        
+        debugPrint(
+            'DEBUG: Apartado encontrado. Items actuales: ${items.length}');
+
         var item = items.cast<Map<String, dynamic>>().firstWhere(
-          (i) => i['id'] == itemId,
-          orElse: () => {},
-        );
-        
+              (i) => i['id'] == itemId,
+              orElse: () => {},
+            );
+
         if (item.isEmpty) {
           debugPrint('DEBUG: Item no encontrado en el apartado');
           return;
         }
 
         int nuevaCantidad = item['cantidad'] + delta;
-        
+
         // Validar límites
         int min = item['cantidad_original'] ?? 0;
         int max = item['stock'] ?? 0;
-        
-        debugPrint('DEBUG: Cantidad actual: ${item['cantidad']}, Nueva: $nuevaCantidad, Min: $min, Max: $max');
-        
+
+        debugPrint(
+            'DEBUG: Cantidad actual: ${item['cantidad']}, Nueva: $nuevaCantidad, Min: $min, Max: $max');
+
         if (nuevaCantidad >= min && nuevaCantidad <= max) {
           item['cantidad'] = nuevaCantidad;
-          debugPrint('DEBUG: Cantidad actualizada exitosamente. Nueva cantidad: ${item['cantidad']}');
-          
+          debugPrint(
+              'DEBUG: Cantidad actualizada exitosamente. Nueva cantidad: ${item['cantidad']}');
+
           // FORZAR NOTIFICACIÓN DE CAMBIO creando una nueva lista para que Flutter detecte el cambio en memoria
           apartados = List.from(apartados);
-          
+
           notifyListeners();
           updatePage(() {});
         } else {
-          debugPrint('DEBUG: La nueva cantidad $nuevaCantidad viola los límites [$min, $max]');
+          debugPrint(
+              'DEBUG: La nueva cantidad $nuevaCantidad viola los límites [$min, $max]');
         }
         break;
       }
@@ -389,10 +408,12 @@ class FullCartViewModel extends ChangeNotifier {
     }
   }
 
-  Future<Map<String, dynamic>> apartarProductos({List<String>? productIdsSeleccionados}) async {
+  Future<Map<String, dynamic>> apartarProductos(
+      {List<String>? productIdsSeleccionados}) async {
     // Si se pasan IDs, los usamos, si no usamos los del set del modelo
     final ids = productIdsSeleccionados ?? selectedItemIds.toList();
-    return await CartService.instance.apartarProductos(productIdsSeleccionados: ids);
+    return await CartService.instance
+        .apartarProductos(productIdsSeleccionados: ids);
   }
 
   Future<Map<String, dynamic>> pagarApartado({

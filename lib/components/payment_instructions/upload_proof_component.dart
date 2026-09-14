@@ -36,12 +36,16 @@ class _UploadProofComponentState extends State<UploadProofComponent> {
     if (_currentState == ProofState.success) {
       return Container(
         padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(color: theme.secondaryBackground, borderRadius: BorderRadius.circular(12)),
+        decoration: BoxDecoration(
+            color: theme.secondaryBackground,
+            borderRadius: BorderRadius.circular(12)),
         child: Row(
           children: [
             const Icon(Icons.check_circle, color: Colors.green),
             const SizedBox(width: 8),
-            Text('Comprobante validado', style: theme.bodyMedium.override(color: Colors.green, fontWeight: FontWeight.bold)),
+            Text('Comprobante validado',
+                style: theme.bodyMedium.override(
+                    color: Colors.green, fontWeight: FontWeight.bold)),
           ],
         ),
       );
@@ -57,13 +61,17 @@ class _UploadProofComponentState extends State<UploadProofComponent> {
         ),
         child: Column(
           children: [
-            Text(_errorMessage ?? 'Error desconocido', style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+            Text(_errorMessage ?? 'Error desconocido',
+                style: const TextStyle(
+                    color: Colors.red, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
             Row(
               children: [
                 Expanded(
                   child: ElevatedButton.icon(
-                    onPressed: _lastUrl != null ? () => _processProofWithAI(_lastUrl!) : null,
+                    onPressed: _lastUrl != null
+                        ? () => _processProofWithAI(_lastUrl!)
+                        : null,
                     icon: const Icon(Icons.refresh),
                     label: const Text('Reintentar IA'),
                   ),
@@ -98,13 +106,20 @@ class _UploadProofComponentState extends State<UploadProofComponent> {
             children: [
               Text('Subir comprobante', style: theme.titleMedium),
               if (_currentState == ProofState.uploading)
-                const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2))
               else if (_currentState == ProofState.processing)
                 const Row(
                   children: [
-                    SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+                    SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2)),
                     SizedBox(width: 6),
-                    Text('Analizando IA...', style: TextStyle(fontSize: 12, color: Colors.blue)),
+                    Text('Analizando IA...',
+                        style: TextStyle(fontSize: 12, color: Colors.blue)),
                   ],
                 ),
             ],
@@ -118,7 +133,8 @@ class _UploadProofComponentState extends State<UploadProofComponent> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: (_currentState == ProofState.uploading || _currentState == ProofState.processing)
+              onPressed: (_currentState == ProofState.uploading ||
+                      _currentState == ProofState.processing)
                   ? null
                   : _pickAndUpload,
               icon: const Icon(Icons.upload_file),
@@ -143,14 +159,7 @@ class _UploadProofComponentState extends State<UploadProofComponent> {
         if (bytes == null && platformFile.path != null && !kIsWeb) {
           bytes = await File(platformFile.path!).readAsBytes();
         }
-        if (bytes != null) {
-          await _uploadBytes(bytes);
-        } else {
-          setState(() {
-            _errorMessage = 'No se pudo leer el archivo seleccionado.';
-            _currentState = ProofState.error;
-          });
-        }
+        await _uploadBytes(bytes);
       }
     } catch (e) {
       setState(() {
@@ -161,33 +170,36 @@ class _UploadProofComponentState extends State<UploadProofComponent> {
   }
 
   Future<void> _uploadBytes(Uint8List bytes) async {
-    setState(() { _currentState = ProofState.uploading; _errorMessage = null; });
+    setState(() {
+      _currentState = ProofState.uploading;
+      _errorMessage = null;
+    });
     try {
       String? url = await CartService.instance.uploadPaymentProof(
-        bytes,
-        'apartado_${DateTime.now().millisecondsSinceEpoch}'
-      );
-      
-      if (url != null) {
-        _lastUrl = url;
-        await _processProofWithAI(url);
-      } else {
-        setState(() {
-          _errorMessage = 'Error al subir el archivo.';
-          _currentState = ProofState.error;
-        });
-      }
+          bytes, 'apartado_${DateTime.now().millisecondsSinceEpoch}');
+
+      _lastUrl = url;
+      await _processProofWithAI(url);
     } catch (e) {
-      setState(() { _errorMessage = 'No pudimos subir la imagen: $e'; _currentState = ProofState.error; });
+      setState(() {
+        _errorMessage = 'No pudimos subir la imagen: $e';
+        _currentState = ProofState.error;
+      });
     }
   }
 
   Future<void> _processProofWithAI(String url) async {
-    setState(() { _currentState = ProofState.processing; _errorMessage = null; });
+    setState(() {
+      _currentState = ProofState.processing;
+      _errorMessage = null;
+    });
     try {
-      final aiData = await GeminiVisionService.instance.analyzePaymentProof(url);
-      
-      if (aiData != null && (aiData['valido'] as bool? ?? false) && (aiData['es_comprobante'] as bool? ?? true)) {
+      final aiData =
+          await GeminiVisionService.instance.analyzePaymentProof(url);
+
+      if (aiData != null &&
+          (aiData['valido'] as bool? ?? false) &&
+          (aiData['es_comprobante'] as bool? ?? true)) {
         setState(() {
           _aiData = aiData;
           _currentState = ProofState.success;
@@ -196,7 +208,8 @@ class _UploadProofComponentState extends State<UploadProofComponent> {
           widget.onProofUploaded!(url, aiData);
         }
       } else {
-        final motivo = aiData?['motivo']?.toString() ?? 'La imagen no corresponde a un comprobante de pago bancario válido o es ilegible.';
+        final motivo = aiData?['motivo']?.toString() ??
+            'La imagen no corresponde a un comprobante de pago bancario válido o es ilegible.';
         await _handleInvalidProof(url, motivo);
       }
     } catch (e) {
@@ -230,13 +243,13 @@ class _UploadProofComponentState extends State<UploadProofComponent> {
   }
 
   Future<void> _handleInvalidProof(String url, String message) async {
-      await CartService.instance.deletePaymentProof(url);
-      setState(() {
-          _errorMessage = message;
-          // Al poner este estado, el usuario NO puede reintentar con la misma URL (reintentar IA)
-          // Solo puede "Subir otro".
-          _currentState = ProofState.error; 
-          _lastUrl = null; // Limpiamos la URL para que no pueda reintentar
-      });
+    await CartService.instance.deletePaymentProof(url);
+    setState(() {
+      _errorMessage = message;
+      // Al poner este estado, el usuario NO puede reintentar con la misma URL (reintentar IA)
+      // Solo puede "Subir otro".
+      _currentState = ProofState.error;
+      _lastUrl = null; // Limpiamos la URL para que no pueda reintentar
+    });
   }
 }

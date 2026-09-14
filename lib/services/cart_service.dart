@@ -12,7 +12,8 @@ class CartService {
   CartService._internal();
 
   /// Agrega un producto al carrito.
-  Future<void> addItem(String productId, double price, {int quantity = 1}) async {
+  Future<void> addItem(String productId, double price,
+      {int quantity = 1}) async {
     final appState = FFAppState();
     _updateLocalCart(productId, quantity);
 
@@ -29,8 +30,8 @@ class CartService {
         if (response != null) {
           await SupaFlow.client
               .from('pedido_items')
-              .update({'quantity': (response['quantity'] ?? 0) + quantity})
-              .eq('id', response['id']);
+              .update({'quantity': (response['quantity'] ?? 0) + quantity}).eq(
+                  'id', response['id']);
         } else {
           await SupaFlow.client.from('pedido_items').insert({
             'pedido_id': pedidoId,
@@ -51,13 +52,9 @@ class CartService {
       if (newQuantity > 0) {
         await SupaFlow.client
             .from('pedido_items')
-            .update({'quantity': newQuantity})
-            .eq('id', itemId);
+            .update({'quantity': newQuantity}).eq('id', itemId);
       } else {
-        await SupaFlow.client
-            .from('pedido_items')
-            .delete()
-            .eq('id', itemId);
+        await SupaFlow.client.from('pedido_items').delete().eq('id', itemId);
       }
       debugPrint('Apartado item updated successfully: $itemId, $newQuantity');
     } catch (e) {
@@ -69,7 +66,7 @@ class CartService {
   Future<void> decrementItem(String productId, double price) async {
     final appState = FFAppState();
     _updateLocalCart(productId, -1);
-    
+
     if (loggedIn && appState.carritoActual.isNotEmpty) {
       try {
         final response = await SupaFlow.client
@@ -82,9 +79,14 @@ class CartService {
         if (response != null) {
           int currentQty = response['quantity'] ?? 0;
           if (currentQty > 1) {
-            await SupaFlow.client.from('pedido_items').update({'quantity': currentQty - 1}).eq('id', response['id']);
+            await SupaFlow.client
+                .from('pedido_items')
+                .update({'quantity': currentQty - 1}).eq('id', response['id']);
           } else {
-            await SupaFlow.client.from('pedido_items').delete().eq('id', response['id']);
+            await SupaFlow.client
+                .from('pedido_items')
+                .delete()
+                .eq('id', response['id']);
           }
         }
       } catch (e) {
@@ -98,15 +100,19 @@ class CartService {
     final appState = FFAppState();
     List<CarritoStruct> currentItems = List.from(appState.itemsCarrito);
     int index = currentItems.indexWhere((item) => item.idProducto == productId);
-    
+
     if (index != -1) {
       currentItems.removeAt(index);
       appState.itemsCarrito = currentItems;
     }
-    
+
     if (loggedIn && appState.carritoActual.isNotEmpty) {
       try {
-        await SupaFlow.client.from('pedido_items').delete().eq('pedido_id', appState.carritoActual).eq('product_id', productId);
+        await SupaFlow.client
+            .from('pedido_items')
+            .delete()
+            .eq('pedido_id', appState.carritoActual)
+            .eq('product_id', productId);
       } catch (e) {
         debugPrint('Error removing item: $e');
       }
@@ -139,7 +145,8 @@ class CartService {
 
       double totalPedido = 0.0;
       for (var item in (items as List)) {
-        totalPedido += (item['price_at_purchase'] as num).toDouble() * (item['quantity'] as int);
+        totalPedido += (item['price_at_purchase'] as num).toDouble() *
+            (item['quantity'] as int);
       }
 
       // 2. Sumar todos los pagos APROBADOS / CONFIRMADOS para este pedido
@@ -157,11 +164,15 @@ class CartService {
       double balance = totalPedido - totalPagado;
 
       // 3. Actualizar la tabla de pedidos
-      await SupaFlow.client.from('pedidos').update({'saldo_pendiente': balance}).eq('id', pedidoId);
+      await SupaFlow.client
+          .from('pedidos')
+          .update({'saldo_pendiente': balance}).eq('id', pedidoId);
 
       // 4. Si el balance es <= 0, marcar el pedido como pagado
       if (balance <= 0) {
-        await SupaFlow.client.from('pedidos').update({'status': 'pagado'}).eq('id', pedidoId);
+        await SupaFlow.client
+            .from('pedidos')
+            .update({'status': 'pagado'}).eq('id', pedidoId);
       }
     } catch (e) {
       debugPrint('Error syncing pending balance: $e');
@@ -169,19 +180,22 @@ class CartService {
   }
 
   /// Obtiene los niveles de stock actuales para una lista de productos.
-  Future<List<Map<String, dynamic>>> checkStockLevels(List<dynamic> items) async {
-    final productIds = items.map((item) => item['id'].toString()).toSet().toList();
-    
+  Future<List<Map<String, dynamic>>> checkStockLevels(
+      List<dynamic> items) async {
+    final productIds =
+        items.map((item) => item['id'].toString()).toSet().toList();
+
     final stockData = await SupaFlow.client
         .from('productos')
         .select('id, nombre, stock')
         .filter('id', 'in', productIds);
-    
+
     return (stockData as List).map((item) {
       final int stock = (item['stock'] as num?)?.toInt() ?? 0;
-      
-      debugPrint('DEBUG StockCheck (NUEVA LOGICA): ID: ${item['id']}, Nombre: ${item['nombre']}, Stock Físico Disponible: $stock');
-      
+
+      debugPrint(
+          'DEBUG StockCheck (NUEVA LOGICA): ID: ${item['id']}, Nombre: ${item['nombre']}, Stock Físico Disponible: $stock');
+
       return {
         'id': item['id'],
         'nombre': item['nombre'],
@@ -193,14 +207,16 @@ class CartService {
   /// Valida el stock de los ítems en el carrito y ajusta las cantidades si es necesario.
   /// Retorna un mensaje con los ajustes realizados, o una cadena vacía si no hubo ajustes.
   Future<List<String>> validateAndAdjustStock(List<dynamic> items) async {
-    debugPrint('DEBUG: Iniciando validateAndAdjustStock con ${items.length} items.');
-    final productIds = items.map((item) => item['id'].toString()).toSet().toList();
-    
+    debugPrint(
+        'DEBUG: Iniciando validateAndAdjustStock con ${items.length} items.');
+    final productIds =
+        items.map((item) => item['id'].toString()).toSet().toList();
+
     final stockData = await SupaFlow.client
         .from('productos')
         .select('id, nombre, stock, stock_reservado')
         .filter('id', 'in', productIds);
-    
+
     debugPrint('DEBUG: Stock data recibida: $stockData');
 
     final stockMap = {for (var item in (stockData as List)) item['id']: item};
@@ -216,17 +232,25 @@ class CartService {
       final int stockDisponible = (productStock['stock'] as num?)?.toInt() ?? 0;
       final int cantidadCarrito = item['cantidad'] as int;
 
-      debugPrint('DEBUG: Validando: ${productStock['nombre']} (ID: ${item['id']})');
-      debugPrint('DEBUG: Cantidad carrito: $cantidadCarrito, Stock Físico Total: $stockDisponible');
+      debugPrint(
+          'DEBUG: Validando: ${productStock['nombre']} (ID: ${item['id']})');
+      debugPrint(
+          'DEBUG: Cantidad carrito: $cantidadCarrito, Stock Físico Total: $stockDisponible');
 
       // Lógica actualizada:
       // Usamos solo el stock físico. Si la cantidad en carrito supera el stock, ajustamos al máximo físico.
-      final int cantidadAjustada = stockDisponible <= 0 ? 0 : (cantidadCarrito > stockDisponible ? stockDisponible : cantidadCarrito);
+      final int cantidadAjustada = stockDisponible <= 0
+          ? 0
+          : (cantidadCarrito > stockDisponible
+              ? stockDisponible
+              : cantidadCarrito);
 
       if (cantidadCarrito != cantidadAjustada) {
-        debugPrint('DEBUG: Ajustando cantidad para ${productStock['nombre']} de $cantidadCarrito a $cantidadAjustada');
+        debugPrint(
+            'DEBUG: Ajustando cantidad para ${productStock['nombre']} de $cantidadCarrito a $cantidadAjustada');
         item['cantidad'] = cantidadAjustada;
-        mensajesAjuste.add('${productStock['nombre']} (ajustado a $cantidadAjustada)');
+        mensajesAjuste
+            .add('${productStock['nombre']} (ajustado a $cantidadAjustada)');
       } else {
         debugPrint('DEBUG: Cantidad válida para ${productStock['nombre']}');
       }
@@ -234,7 +258,6 @@ class CartService {
 
     return mensajesAjuste;
   }
-
 
   Future<Map<String, dynamic>> apartarProductos({
     List<String>? productIdsSeleccionados,
@@ -244,60 +267,82 @@ class CartService {
     bool esPagoInmediato = true,
   }) async {
     final appState = FFAppState();
-    
+
     final currentUser = SupaFlow.client.auth.currentUser;
     if (currentUser == null) {
-      return {'success': false, 'message': 'Debes estar registrado para apartar productos'};
+      return {
+        'success': false,
+        'message': 'Debes estar registrado para apartar productos'
+      };
     }
-    
+
     List<CarritoStruct> itemsToProcessList = [];
     if (itemsToProcess != null) {
-      itemsToProcessList = itemsToProcess.map((item) => CarritoStruct(
-        idProducto: item['id'].toString(),
-        cantidad: (item['cantidad'] as num).toInt(),
-      )).toList();
+      itemsToProcessList = itemsToProcess
+          .map((item) => CarritoStruct(
+                idProducto: item['id'].toString(),
+                cantidad: (item['cantidad'] as num).toInt(),
+              ))
+          .toList();
     } else {
       itemsToProcessList = productIdsSeleccionados != null
-          ? appState.itemsCarrito.where((item) => productIdsSeleccionados.contains(item.idProducto)).toList()
+          ? appState.itemsCarrito
+              .where(
+                  (item) => productIdsSeleccionados.contains(item.idProducto))
+              .toList()
           : appState.itemsCarrito;
     }
 
-    if (itemsToProcessList.isEmpty) return {'success': false, 'message': 'Carrito vacío'};
+    if (itemsToProcessList.isEmpty)
+      return {'success': false, 'message': 'Carrito vacío'};
 
     try {
       double totalPedido = 0.0;
       for (var item in itemsToProcessList) {
-        final prod = await SupaFlow.client.from('productos').select('precio').eq('id', item.idProducto).single();
+        final prod = await SupaFlow.client
+            .from('productos')
+            .select('precio')
+            .eq('id', item.idProducto)
+            .single();
         totalPedido += (prod['precio'] as num).toDouble() * item.cantidad;
       }
 
       double fee = itemsToProcessList.length * 2.0;
-      
-      final newPedido = await SupaFlow.client.from('pedidos').insert({
-        'user_id': currentUser.id,
-        'status': 'apartado',
-        'total_price': totalPedido,
-        'saldo_pendiente': totalPedido - (datosPago?.montoUsd ?? 0.0),
-        'paid_amount_usd': datosPago?.montoUsd ?? 0.0,
-        'fecha_expiracion': DateTime.now()
-            .add(Duration(days: esPagoInmediato ? 30 : 1))
-            .toIso8601String(),
-      }).select().single();
+
+      final newPedido = await SupaFlow.client
+          .from('pedidos')
+          .insert({
+            'user_id': currentUser.id,
+            'status': 'apartado',
+            'total_price': totalPedido,
+            'saldo_pendiente': totalPedido - (datosPago?.montoUsd ?? 0.0),
+            'paid_amount_usd': datosPago?.montoUsd ?? 0.0,
+            'fecha_expiracion': DateTime.now()
+                .add(Duration(days: esPagoInmediato ? 30 : 1))
+                .toIso8601String(),
+          })
+          .select()
+          .single();
 
       String pedidoId = newPedido['id'];
 
       // Register the reservation payment
       if (datosPago != null || comprobanteUrl != null) {
         debugPrint('DEBUG: Insertando pago...');
-        
+
         final currentUserObj = SupaFlow.client.auth.currentUser;
         String emisorNombre = datosPago?.nombre ?? 'Anónimo';
         if (emisorNombre == 'Anónimo' || emisorNombre.isEmpty) {
           if (currentUserObj != null) {
-            emisorNombre = currentUserObj.userMetadata?['full_name'] as String? ?? '';
+            emisorNombre =
+                currentUserObj.userMetadata?['full_name'] as String? ?? '';
             if (emisorNombre.isEmpty) {
               try {
-                final userRow = await SupaFlow.client.from('usuarios').select('nombre').eq('id', currentUserObj.id).maybeSingle();
+                final userRow = await SupaFlow.client
+                    .from('usuarios')
+                    .select('nombre')
+                    .eq('id', currentUserObj.id)
+                    .maybeSingle();
                 if (userRow != null && userRow['nombre'] != null) {
                   emisorNombre = userRow['nombre'] as String;
                 }
@@ -318,7 +363,8 @@ class CartService {
         // Estructura de inserción base
         Map<String, dynamic> datosInsercion = {
           'pedido_id': pedidoId,
-          'monto': datosPago?.montoUsd ?? 0.0, // La restricción NOT NULL de 'monto' se satisface con el USD
+          'monto': datosPago?.montoUsd ??
+              0.0, // La restricción NOT NULL de 'monto' se satisface con el USD
           'amount_usd_calculated': datosPago?.montoUsd ?? 0.0,
           'referencia': datosPago?.referencia ?? 'S/R',
           'nombre_emisor': emisorNombre,
@@ -337,25 +383,29 @@ class CartService {
         } else {
           datosInsercion['moneda'] = 'USD';
         }
-        
+
         await SupaFlow.client.from('pagos').insert(datosInsercion);
         debugPrint('DEBUG: Pago insertado exitosamente');
       }
 
       for (var item in itemsToProcessList) {
-        final prod = await SupaFlow.client.from('productos').select('precio, stock, stock_reservado').eq('id', item.idProducto).single();
-        
+        final prod = await SupaFlow.client
+            .from('productos')
+            .select('precio, stock, stock_reservado')
+            .eq('id', item.idProducto)
+            .single();
+
         await SupaFlow.client.from('pedido_items').insert({
           'pedido_id': pedidoId,
           'product_id': item.idProducto,
           'quantity': item.cantidad,
           'price_at_purchase': (prod['precio'] as num).toDouble(),
         });
-        
+
         // Actualizar stock: Sumar a reservado y restar de disponible
         int currentStock = (prod['stock'] as num).toInt();
         int currentReserved = (prod['stock_reservado'] as num).toInt();
-        
+
         await SupaFlow.client.from('productos').update({
           'stock': currentStock - item.cantidad,
           'stock_reservado': currentReserved + item.cantidad,
@@ -363,9 +413,14 @@ class CartService {
       }
 
       // SIEMPRE limpiar el carrito
-      await _removeFromCart(itemsToProcessList.map((e) => e.idProducto).toList());
-      
-      return {'success': true, 'message': 'Apartado creado con éxito', 'pedidoId': pedidoId};
+      await _removeFromCart(
+          itemsToProcessList.map((e) => e.idProducto).toList());
+
+      return {
+        'success': true,
+        'message': 'Apartado creado con éxito',
+        'pedidoId': pedidoId
+      };
     } catch (e, stackTrace) {
       debugPrint('Error detallado en apartarProductos: $e');
       debugPrint('StackTrace: $stackTrace');
@@ -379,14 +434,19 @@ class CartService {
     required PagoStruct pago,
     String? comprobanteUrl,
   }) async {
-    if (!loggedIn) return {'success': false, 'message': 'Debes estar autenticado'};
+    if (!loggedIn)
+      return {'success': false, 'message': 'Debes estar autenticado'};
 
     try {
       // 1. Obtener pedido para saber el total y saldo actual
-      final pedido = await SupaFlow.client.from('pedidos').select('total_price, paid_amount_usd').eq('id', pedidoIdOriginal).single();
+      final pedido = await SupaFlow.client
+          .from('pedidos')
+          .select('total_price, paid_amount_usd')
+          .eq('id', pedidoIdOriginal)
+          .single();
       double total = (pedido['total_price'] as num).toDouble();
       double currentPaid = (pedido['paid_amount_usd'] as num).toDouble();
-      
+
       double nuevoMontoUsd = pago.montoUsd;
       double nuevoTotalPagado = currentPaid + nuevoMontoUsd;
       double nuevoSaldoPendiente = total - nuevoTotalPagado;
@@ -395,10 +455,15 @@ class CartService {
       String emisorNombre = pago.nombre;
       if (emisorNombre.isEmpty || emisorNombre == 'Anónimo') {
         if (currentUserObj != null) {
-          emisorNombre = currentUserObj.userMetadata?['full_name'] as String? ?? '';
+          emisorNombre =
+              currentUserObj.userMetadata?['full_name'] as String? ?? '';
           if (emisorNombre.isEmpty) {
             try {
-              final userRow = await SupaFlow.client.from('usuarios').select('nombre').eq('id', currentUserObj.id).maybeSingle();
+              final userRow = await SupaFlow.client
+                  .from('usuarios')
+                  .select('nombre')
+                  .eq('id', currentUserObj.id)
+                  .maybeSingle();
               if (userRow != null && userRow['nombre'] != null) {
                 emisorNombre = userRow['nombre'] as String;
               }
@@ -474,17 +539,19 @@ class CartService {
       final user = SupaFlow.client.auth.currentUser!;
       final pedidos = await SupaFlow.client
           .from('pedidos')
-          .select('id, saldo_pendiente, pedido_items(id, product_id, quantity, price_at_purchase, productos(nombre, stock))')
+          .select(
+              'id, saldo_pendiente, pedido_items(id, product_id, quantity, price_at_purchase, productos(nombre, stock))')
           .eq('user_id', user.id)
           .eq('status', 'apartado');
-      
+
       // Transform the response to match the structure expected by the UI
       return (pedidos as List<dynamic>).map((pedido) {
         // Calcular el total del pedido para obtener el monto pagado
         final items = pedido['pedido_items'] as List<dynamic>;
         double totalPedido = 0.0;
         for (var item in items) {
-          totalPedido += (item['price_at_purchase'] as num).toDouble() * (item['quantity'] as int);
+          totalPedido += (item['price_at_purchase'] as num).toDouble() *
+              (item['quantity'] as int);
         }
         double saldoPendiente = (pedido['saldo_pendiente'] as num).toDouble();
         double totalPagado = totalPedido - saldoPendiente;
@@ -500,16 +567,17 @@ class CartService {
               'product_id': item['product_id'],
               'nombre': producto['nombre'] ?? 'Producto desconocido',
               'cantidad': item['quantity'],
-              'cantidad_original': item['quantity'], // Guardamos la cantidad original para el límite mínimo
+              'cantidad_original': item[
+                  'quantity'], // Guardamos la cantidad original para el límite mínimo
               'precio': item['price_at_purchase'],
               'stock': producto['stock'] ?? 0, // Stock actual
             };
           }).toList(),
         };
       }).toList();
-    } catch (e) { 
+    } catch (e) {
       debugPrint('Error fetching apartados: $e');
-      return []; 
+      return [];
     }
   }
 
@@ -558,7 +626,8 @@ class CartService {
 
       // 3. Limpiar Carrito
       await clearCart();
-      debugPrint('DEBUG: Cart items after payment: ${FFAppState().itemsCarrito.map((e) => e.idProducto).toList()}');
+      debugPrint(
+          'DEBUG: Cart items after payment: ${FFAppState().itemsCarrito.map((e) => e.idProducto).toList()}');
 
       return {'success': true, 'message': 'Pedido finalizado con éxito'};
     } catch (e) {
@@ -567,42 +636,52 @@ class CartService {
     }
   }
 
-  Future<String?> uploadPaymentProof(dynamic fileOrBytes, String pedidoId) async {
+  Future<String?> uploadPaymentProof(
+      dynamic fileOrBytes, String pedidoId) async {
     try {
-      final fileName = 'pagos/${pedidoId}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final fileName =
+          'pagos/${pedidoId}_${DateTime.now().millisecondsSinceEpoch}.jpg';
       if (fileOrBytes is Uint8List) {
         await SupaFlow.client.storage.from('comprobantes').uploadBinary(
-          fileName,
-          fileOrBytes,
-          fileOptions: const FileOptions(contentType: 'image/jpeg', upsert: true),
-        );
+              fileName,
+              fileOrBytes,
+              fileOptions:
+                  const FileOptions(contentType: 'image/jpeg', upsert: true),
+            );
       } else if (fileOrBytes is File) {
         await SupaFlow.client.storage.from('comprobantes').upload(
-          fileName,
-          fileOrBytes,
-          fileOptions: const FileOptions(contentType: 'image/jpeg', upsert: true),
-        );
+              fileName,
+              fileOrBytes,
+              fileOptions:
+                  const FileOptions(contentType: 'image/jpeg', upsert: true),
+            );
       }
-      return SupaFlow.client.storage.from('comprobantes').getPublicUrl(fileName);
+      return SupaFlow.client.storage
+          .from('comprobantes')
+          .getPublicUrl(fileName);
     } catch (e) {
       debugPrint('Error uploadPaymentProof: $e');
       return null;
     }
   }
 
-  Future<String?> uploadPaymentProofBytes(Uint8List bytes, String pedidoId) async {
+  Future<String?> uploadPaymentProofBytes(
+      Uint8List bytes, String pedidoId) async {
     return uploadPaymentProof(bytes, pedidoId);
   }
 
   Future<void> deletePaymentProof(String url) async {
     try {
       final uri = Uri.parse(url);
-      final path = uri.pathSegments.last; // Asumiendo que la estructura es .../comprobantes/pagos/filename
-      // Necesitamos extraer el path correcto. Si getPublicUrl devuelve la ruta completa, 
+      final path = uri.pathSegments
+          .last; // Asumiendo que la estructura es .../comprobantes/pagos/filename
+      // Necesitamos extraer el path correcto. Si getPublicUrl devuelve la ruta completa,
       // extraer el path del archivo desde la URL.
       // Suponiendo que el bucket es 'comprobantes' y la estructura es pagos/nombre_archivo.jpg
       final fileName = url.split('/').last;
-      await SupaFlow.client.storage.from('comprobantes').remove(['pagos/$fileName']);
+      await SupaFlow.client.storage
+          .from('comprobantes')
+          .remove(['pagos/$fileName']);
       debugPrint('Comprobante eliminado: $fileName');
     } catch (e) {
       debugPrint('Error al eliminar comprobante: $e');
@@ -615,8 +694,15 @@ class CartService {
     appState.itemsCarritoActual = [];
     if (loggedIn && appState.carritoActual.isNotEmpty) {
       try {
-        await SupaFlow.client.from('pedido_items').delete().eq('pedido_id', appState.carritoActual);
-        await SupaFlow.client.from('pedidos').delete().eq('id', appState.carritoActual).eq('status', 'carrito');
+        await SupaFlow.client
+            .from('pedido_items')
+            .delete()
+            .eq('pedido_id', appState.carritoActual);
+        await SupaFlow.client
+            .from('pedidos')
+            .delete()
+            .eq('id', appState.carritoActual)
+            .eq('status', 'carrito');
       } catch (e) {
         debugPrint('Error clearing remote cart: $e');
       }
@@ -626,12 +712,12 @@ class CartService {
 
   Future<void> removePurchasedItems(List<String> productIds) async {
     final appState = FFAppState();
-    
+
     // 1. Eliminar localmente solo los productos comprados
     appState.itemsCarrito = appState.itemsCarrito
         .where((item) => !productIds.contains(item.idProducto))
         .toList();
-        
+
     appState.itemsCarritoActual = appState.itemsCarritoActual
         .where((id) => !productIds.contains(id))
         .toList();
@@ -646,13 +732,13 @@ class CartService {
               .eq('pedido_id', appState.carritoActual)
               .inFilter('product_id', productIds);
         }
-        
+
         // Verificar si quedan items en el carrito en la BD
         final remainingItems = await SupaFlow.client
             .from('pedido_items')
             .select('id')
             .eq('pedido_id', appState.carritoActual);
-            
+
         if ((remainingItems as List).isEmpty) {
           // Si no quedan items, eliminamos el pedido con status 'carrito' para no dejar basura
           await SupaFlow.client
@@ -674,7 +760,7 @@ class CartService {
     final appState = FFAppState();
     final user = SupaFlow.client.auth.currentUser;
     if (user == null) return;
-    
+
     try {
       // BUSCAMOS si ya existe un carrito activo en la DB en lugar de forzar la creación
       final response = await SupaFlow.client
@@ -698,13 +784,12 @@ class CartService {
           .select()
           .eq('pedido_id', pedidoId);
 
-
       if ((items as List).isEmpty) {
         appState.itemsCarrito = [];
         return;
       }
 
-      List<CarritoStruct> remoteItems = (items as List).map((row) {
+      List<CarritoStruct> remoteItems = (items).map((row) {
         return CarritoStruct(
           idProducto: row['product_id'] as String,
           cantidad: row['quantity'] as int,
@@ -724,11 +809,11 @@ class CartService {
       await fetchRemoteCart();
       return;
     }
-    
+
     try {
       final user = SupaFlow.client.auth.currentUser;
       if (user == null) return;
-    
+
       // Verificamos si ya existe un carrito activo para no crear uno duplicado
       final existingCart = await SupaFlow.client
           .from('pedidos')
@@ -736,27 +821,33 @@ class CartService {
           .eq('user_id', user.id)
           .eq('status', 'carrito')
           .maybeSingle();
-    
+
       String pedidoId;
       if (existingCart != null) {
         pedidoId = existingCart['id'];
       } else {
-        final newPedido = await SupaFlow.client.from('pedidos').insert({
-          'user_id': user.id,
-          'status': 'carrito',
-          'created_at': DateTime.now().toIso8601String(),
-        }).select().single();
+        final newPedido = await SupaFlow.client
+            .from('pedidos')
+            .insert({
+              'user_id': user.id,
+              'status': 'carrito',
+              'created_at': DateTime.now().toIso8601String(),
+            })
+            .select()
+            .single();
         pedidoId = newPedido['id'];
       }
-      
+
       appState.carritoActual = pedidoId;
-    
-      List<Map<String, dynamic>> itemsToInsert = localItems.map((item) => {
-        'pedido_id': pedidoId,
-        'product_id': item.idProducto,
-        'quantity': item.cantidad,
-      }).toList();
-    
+
+      List<Map<String, dynamic>> itemsToInsert = localItems
+          .map((item) => {
+                'pedido_id': pedidoId,
+                'product_id': item.idProducto,
+                'quantity': item.cantidad,
+              })
+          .toList();
+
       await SupaFlow.client.from('pedido_items').insert(itemsToInsert);
       await fetchRemoteCart();
       debugPrint('Guest cart synced successfully');
@@ -765,13 +856,14 @@ class CartService {
     }
   }
 
-
   Future<void> _removeFromCart(List<String> productIds) async {
     final appState = FFAppState();
-    
+
     // 1. Eliminar localmente
-    appState.itemsCarrito = appState.itemsCarrito.where((i) => !productIds.contains(i.idProducto)).toList();
-    
+    appState.itemsCarrito = appState.itemsCarrito
+        .where((i) => !productIds.contains(i.idProducto))
+        .toList();
+
     // 2. Eliminar en Supabase (carrito activo)
     if (appState.carritoActual.isNotEmpty) {
       try {
@@ -794,7 +886,8 @@ class CartService {
       currentItems[index].cantidad += quantityChange;
       if (currentItems[index].cantidad <= 0) currentItems.removeAt(index);
     } else if (quantityChange > 0) {
-      currentItems.add(CarritoStruct(idProducto: productId, cantidad: quantityChange));
+      currentItems
+          .add(CarritoStruct(idProducto: productId, cantidad: quantityChange));
     }
     appState.itemsCarrito = currentItems;
   }
@@ -803,7 +896,7 @@ class CartService {
     final appState = FFAppState();
     if (appState.carritoActual.isNotEmpty) return appState.carritoActual;
     final user = SupaFlow.client.auth.currentUser!;
-    
+
     try {
       // 1. Primero verificamos si ya existe un carrito activo en la DB
       final existingCart = await SupaFlow.client
@@ -812,20 +905,26 @@ class CartService {
           .eq('user_id', user.id)
           .eq('status', 'carrito')
           .maybeSingle();
-    
+
       if (existingCart != null) {
         String id = existingCart['id'];
         appState.carritoActual = id;
         return id;
       }
-    
+
       // 2. Si no existe, recién ahí creamos uno nuevo
-      final newPedido = await SupaFlow.client.from('pedidos').insert({'user_id': user.id, 'status': 'carrito'}).select().single();
+      final newPedido = await SupaFlow.client
+          .from('pedidos')
+          .insert({'user_id': user.id, 'status': 'carrito'})
+          .select()
+          .single();
       appState.carritoActual = newPedido['id'];
       return newPedido['id'];
     } catch (e) {
-      debugPrint('Error creating active cart (possible foreign key violation): $e');
-      throw Exception('User not found in database. Please re-login or contact support.');
+      debugPrint(
+          'Error creating active cart (possible foreign key violation): $e');
+      throw Exception(
+          'User not found in database. Please re-login or contact support.');
     }
   }
 }

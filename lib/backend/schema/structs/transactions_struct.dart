@@ -2,7 +2,6 @@
 
 import 'package:baul_pandora/backend/schema/util/schema_util.dart';
 
-import 'index.dart';
 import 'package:baul_pandora/flutter_flow/flutter_flow_util.dart';
 
 class TransactionsStruct extends BaseStruct {

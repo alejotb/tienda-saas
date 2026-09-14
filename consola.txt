@@ -1,59 +1,10 @@
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/box.dart:2251:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/box.dart:2251:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/box.dart:2251:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/box.dart:2251:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/box.dart:2251:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/box.dart:2251:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/box.dart:2251:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/box.dart:2251:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/box.dart:2251:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/box.dart:2251:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/box.dart:2251:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/box.dart:2251:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/box.dart:2251:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/box.dart:2251:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/box.dart:2251:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/box.dart:2251:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/box.dart:2251:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/box.dart:2251:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/box.dart:2251:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/box.dart:2251:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/box.dart:2251:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/box.dart:2251:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/box.dart:2251:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/box.dart:2251:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/box.dart:2251:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/box.dart:2251:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/box.dart:2251:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/box.dart:2251:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/box.dart:2251:12
-Another exception was thrown: Cannot hit test a render box with no size.
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/box.dart:2251:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/mouse_tracker.dart:199:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/box.dart:2251:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/mouse_tracker.dart:199:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/object.dart:2841:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/mouse_tracker.dart:199:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/object.dart:2841:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/mouse_tracker.dart:199:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/object.dart:2841:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/mouse_tracker.dart:199:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/object.dart:2841:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/mouse_tracker.dart:199:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/object.dart:2841:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/mouse_tracker.dart:199:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/object.dart:2841:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/mouse_tracker.dart:199:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/object.dart:2841:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/mouse_tracker.dart:199:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/object.dart:2841:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/mouse_tracker.dart:199:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/object.dart:2841:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/mouse_tracker.dart:199:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/box.dart:2251:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/mouse_tracker.dart:199:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/object.dart:2841:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/mouse_tracker.dart:199:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/object.dart:2841:12
-Another exception was thrown: Assertion failed: file:///C:/flutter/packages/flutter/lib/src/rendering/mouse_tracker.dart:199:12
-Another exception was thrown: Cannot hit test a render box with no size.
+../../../AppData/Local/Pub/Cache/hosted/pub.dev/page_transition-2.2.1/lib/src/page_transition.dart:99:34: Error: Couldn't find constructor 'CupertinoPageTransitionsBuilder'.
+    this.matchingBuilder = const CupertinoPageTransitionsBuilder(),
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+lib/pages/administracion/views/admin_integrations_view.dart:142:40: Error: The method 'pushNamed'isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart'
+ ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing method, or defining a method named
+'pushNamed'.
+              onPressed: () => context.pushNamed('storeRegister'),
+                                       ^^^^^^^^^

@@ -21,7 +21,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import 'checkout_full_page_model.dart';
 import 'package:file_picker/file_picker.dart';
-import 'dart:io';
 export 'checkout_full_page_model.dart';
 
 class CheckoutFullPageWidget extends StatefulWidget {
@@ -33,8 +32,8 @@ class CheckoutFullPageWidget extends StatefulWidget {
     this.productIdsJson,
     this.totalPagado,
     this.bcvRate,
-  }) : subPageName = subPageName ?? 'Product Details',
-       pedidoId = pedidoId;
+  })  : subPageName = subPageName ?? 'Product Details',
+        pedidoId = pedidoId;
 
   final bool? subPage;
   final String subPageName;
@@ -83,7 +82,7 @@ class _CheckoutFullPageWidgetState extends State<CheckoutFullPageWidget>
         await _model.fetchPendingBalance();
       }
       safeSetState(() {});
-      
+
       if (!loggedIn) {
         if (FFAppState().listaDirecciones.isNotEmpty) {
           _model.direccionesGuardadas =
@@ -107,13 +106,14 @@ class _CheckoutFullPageWidgetState extends State<CheckoutFullPageWidget>
               .cast<AddressStruct>();
           safeSetState(() {});
         }
-        
+
         final user = _model.usuarioRow!.firstOrNull;
         if (user != null) {
           if (_model.personNameController.text.isEmpty && user.nombre != null) {
             _model.personNameController.text = user.nombre!;
           }
-          if (_model.personPhoneController.text.isEmpty && user.telefono != null) {
+          if (_model.personPhoneController.text.isEmpty &&
+              user.telefono != null) {
             _model.personPhoneController.text = user.telefono!;
           }
           safeSetState(() {});
@@ -227,8 +227,7 @@ class _CheckoutFullPageWidgetState extends State<CheckoutFullPageWidget>
                                 padding: const EdgeInsets.all(16.0),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.max,
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     CheckoutProgressBar(
                                       currentStep: _model.stepNumber,
@@ -262,9 +261,9 @@ class _CheckoutFullPageWidgetState extends State<CheckoutFullPageWidget>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         switch (_model.stepNumber) {
-           1 => _buildStep1(),
-           2 => _buildStep2(),
-           3 => _buildStep3(),
+          1 => _buildStep1(),
+          2 => _buildStep2(),
+          3 => _buildStep3(),
           _ => Container(),
         },
         const SizedBox(height: 24),
@@ -359,19 +358,21 @@ class _CheckoutFullPageWidgetState extends State<CheckoutFullPageWidget>
                   _model.pago = _model.addPagoModel.currentPayment;
                   debugPrint('DEBUG PAGO CREADO: ${_model.pago.toString()}');
 
-                  debugPrint('DEBUG: Datos de pago sincronizados antes de avanzar: ${_model.pago.toString()}');
+                  debugPrint(
+                      'DEBUG: Datos de pago sincronizados antes de avanzar: ${_model.pago.toString()}');
                   safeSetState(() {});
                 }
                 // Si estamos pasando del paso 1 al 2, persistir direcciones
                 if (_model.stepNumber == 1 && loggedIn) {
-                   await UsuariosTable().update(
-                     data: {
-                       'datos_direccion': functions.addressesToJSONList(_model.direccionesGuardadas),
-                     },
-                     matchingRows: (rows) => rows.eq('id', currentUserUid),
-                   );
+                  await UsuariosTable().update(
+                    data: {
+                      'datos_direccion': functions
+                          .addressesToJSONList(_model.direccionesGuardadas),
+                    },
+                    matchingRows: (rows) => rows.eq('id', currentUserUid),
+                  );
                 }
-                
+
                 setState(() {
                   _model.stepNumber++;
                   _model.highlightErrors = false;
@@ -383,9 +384,9 @@ class _CheckoutFullPageWidgetState extends State<CheckoutFullPageWidget>
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
-                      _model.stepNumber == 1 
-                        ? 'Por favor, completa la dirección y el método de envío.' 
-                        : 'Por favor, completa los datos de pago o sube el comprobante.',
+                      _model.stepNumber == 1
+                          ? 'Por favor, completa la dirección y el método de envío.'
+                          : 'Por favor, completa los datos de pago o sube el comprobante.',
                       style: const TextStyle(color: Colors.white),
                     ),
                     backgroundColor: Colors.red,
@@ -420,13 +421,16 @@ class _CheckoutFullPageWidgetState extends State<CheckoutFullPageWidget>
 
   Widget _buildConfirmationStep() {
     debugPrint('DEBUG PASO 3: _model.pago es ${_model.pago?.toString()}');
-    debugPrint('DEBUG PASO 3: addPagoModel dropDown: ${_model.addPagoModel.dropDownValue}');
+    debugPrint(
+        'DEBUG PASO 3: addPagoModel dropDown: ${_model.addPagoModel.dropDownValue}');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Confirmación',
-          style: FlutterFlowTheme.of(context).titleLarge.override(fontFamily: 'Inter', fontWeight: FontWeight.bold),
+          style: FlutterFlowTheme.of(context)
+              .titleLarge
+              .override(fontFamily: 'Inter', fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
         Container(
@@ -439,7 +443,9 @@ class _CheckoutFullPageWidgetState extends State<CheckoutFullPageWidget>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Información de envío', style: FlutterFlowTheme.of(context).bodyMedium.override(fontFamily: 'Inter', fontWeight: FontWeight.bold)),
+              Text('Información de envío',
+                  style: FlutterFlowTheme.of(context).bodyMedium.override(
+                      fontFamily: 'Inter', fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               Text(
                 (_model.deliveryType == 'Persona')
@@ -452,19 +458,27 @@ class _CheckoutFullPageWidgetState extends State<CheckoutFullPageWidget>
               const SizedBox(height: 16),
               const Divider(),
               const SizedBox(height: 16),
-              Text('Información de pago', style: FlutterFlowTheme.of(context).bodyMedium.override(fontFamily: 'Inter', fontWeight: FontWeight.bold)),
+              Text('Información de pago',
+                  style: FlutterFlowTheme.of(context).bodyMedium.override(
+                      fontFamily: 'Inter', fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               if (_model.pago != null) ...[
-                Text('Método: ${_model.pago!.tipo}', style: FlutterFlowTheme.of(context).bodySmall),
-                if (_model.pago!.bancoEnviado.isNotEmpty) Text('Banco: ${_model.pago!.bancoEnviado}', style: FlutterFlowTheme.of(context).bodySmall),
-                if (_model.pago!.referencia.isNotEmpty) Text('Referencia: ${_model.pago!.referencia}', style: FlutterFlowTheme.of(context).bodySmall),
-                if (_model.pago!.numeroTelefono.isNotEmpty) Text('Teléfono: ${_model.pago!.numeroTelefono}', style: FlutterFlowTheme.of(context).bodySmall),
-                Text(
-                  '¿Estás seguro de que deseas finalizar la compra?', 
-                  style: FlutterFlowTheme.of(context).bodySmall
-                ),
+                Text('Método: ${_model.pago!.tipo}',
+                    style: FlutterFlowTheme.of(context).bodySmall),
+                if (_model.pago!.bancoEnviado.isNotEmpty)
+                  Text('Banco: ${_model.pago!.bancoEnviado}',
+                      style: FlutterFlowTheme.of(context).bodySmall),
+                if (_model.pago!.referencia.isNotEmpty)
+                  Text('Referencia: ${_model.pago!.referencia}',
+                      style: FlutterFlowTheme.of(context).bodySmall),
+                if (_model.pago!.numeroTelefono.isNotEmpty)
+                  Text('Teléfono: ${_model.pago!.numeroTelefono}',
+                      style: FlutterFlowTheme.of(context).bodySmall),
+                Text('¿Estás seguro de que deseas finalizar la compra?',
+                    style: FlutterFlowTheme.of(context).bodySmall),
               ] else
-                Text('No seleccionado', style: FlutterFlowTheme.of(context).bodySmall),
+                Text('No seleccionado',
+                    style: FlutterFlowTheme.of(context).bodySmall),
             ],
           ),
         ),
@@ -478,12 +492,17 @@ class _CheckoutFullPageWidgetState extends State<CheckoutFullPageWidget>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: FlutterFlowTheme.of(context).bodySmall.override(fontFamily: 'Inter', color: FlutterFlowTheme.of(context).secondaryText)),
+          Text(label,
+              style: FlutterFlowTheme.of(context).bodySmall.override(
+                  fontFamily: 'Inter',
+                  color: FlutterFlowTheme.of(context).secondaryText)),
           Flexible(
             child: Text(
               value,
               textAlign: TextAlign.end,
-              style: FlutterFlowTheme.of(context).bodyMedium.override(fontFamily: 'Inter', fontWeight: FontWeight.bold),
+              style: FlutterFlowTheme.of(context)
+                  .bodyMedium
+                  .override(fontFamily: 'Inter', fontWeight: FontWeight.bold),
             ),
           ),
         ],

@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:baul_pandora/components/add_pago/add_pago_widget.dart';
 import 'package:flutter/scheduler.dart';
@@ -16,7 +15,6 @@ import 'apartado_payment_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:baul_pandora/components/payment_instructions/payment_instructions_component.dart';
-import 'components/apartado_payment_section.dart';
 import 'components/apartado_order_summary.dart';
 
 class ApartadoPaymentPage extends StatefulWidget {
@@ -54,18 +52,23 @@ class _ApartadoPaymentPageState extends State<ApartadoPaymentPage> {
       _model.productIds = widget.productIds!;
     } else if (widget.productIdsJson != null) {
       try {
-        _model.productIds = List<String>.from(jsonDecode(widget.productIdsJson!));
+        _model.productIds =
+            List<String>.from(jsonDecode(widget.productIdsJson!));
       } catch (e) {
         debugPrint('Error decoding productIdsJson: $e');
       }
     } else if (widget.productDetailsJson != null) {
-      debugPrint('DEBUG: Recibiendo productDetailsJson: ${widget.productDetailsJson}');
+      debugPrint(
+          'DEBUG: Recibiendo productDetailsJson: ${widget.productDetailsJson}');
       try {
         final List<dynamic> details = jsonDecode(widget.productDetailsJson!);
-        _model.productsDetails = details.map((e) => e as Map<String, dynamic>).toList();
-        debugPrint('DEBUG: Productos decodificados: ${_model.productsDetails.length}');
+        _model.productsDetails =
+            details.map((e) => e as Map<String, dynamic>).toList();
+        debugPrint(
+            'DEBUG: Productos decodificados: ${_model.productsDetails.length}');
         // Construir productIds para mantener compatibilidad con el resto de la lógica si es necesario
-        _model.productIds = _model.productsDetails.map((e) => e['id'].toString()).toList();
+        _model.productIds =
+            _model.productsDetails.map((e) => e['id'].toString()).toList();
       } catch (e) {
         debugPrint('Error decoding productDetailsJson: $e');
       }
@@ -76,6 +79,7 @@ class _ApartadoPaymentPageState extends State<ApartadoPaymentPage> {
       safeSetState(() {});
     });
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -101,12 +105,15 @@ class _ApartadoPaymentPageState extends State<ApartadoPaymentPage> {
                         children: [
                           const Align(
                             alignment: Alignment.centerLeft,
-                            child: CheckoutBreadcrumbs(subPage: false, subPageName: 'Pago Apartado'),
+                            child: CheckoutBreadcrumbs(
+                                subPage: false, subPageName: 'Pago Apartado'),
                           ),
                           const SizedBox(height: 8),
                           Text(
                             'Apartados',
-                            style: FlutterFlowTheme.of(context).headlineLarge.override(
+                            style: FlutterFlowTheme.of(context)
+                                .headlineLarge
+                                .override(
                                   fontFamily: 'Inter',
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -124,81 +131,128 @@ class _ApartadoPaymentPageState extends State<ApartadoPaymentPage> {
                             child: Column(
                               children: [
                                 Container(
-                                    decoration: BoxDecoration(
-                                      color: FlutterFlowTheme.of(context).secondaryBackground,
-                                      borderRadius: BorderRadius.circular(12.0),
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(20.0),
-                                      child: Column(
-                                        children: [
-                                          wrapWithModel(
-                                            model: _model.addPagoModel,
-                                            updateCallback: () => safeSetState(() {}),
-                                            child: AddPagoWidget(
-                                              initialAmountUsd: _model.pendingBalance,
-                                              bcvRate: _model.bcvRate,
-                                              action: () async {
-                                                _model.updatePagoFromControllers();
-                                                safeSetState(() {});
-                                              },
-                                              onUpdate: () => safeSetState(() {}),
-                                              onProofUploaded: (url, aiData) {
-                                                setState(() => _uploadedImageUrl = url);
-                                                
-                                                if (aiData != null) {
-                                                  // --- Validación del tipo de pago ---
-                                                  final String aiTipoPago = aiData['tipo_pago']?.toString().toLowerCase() ?? '';
-                                                  final String userTipoPago = _model.addPagoModel.dropDownValue?.toLowerCase() ?? '';
-                                                  
-                                                  bool esValidoTipo = true;
-                                                  if (aiTipoPago == 'pago movil' && userTipoPago != 'pago movil') esValidoTipo = false;
-                                                  else if (aiTipoPago == 'binance' && userTipoPago != 'binance') esValidoTipo = false;
-                                                  else if (aiTipoPago == 'paypal' && userTipoPago != 'paypal') esValidoTipo = false;
+                                  decoration: BoxDecoration(
+                                    color: FlutterFlowTheme.of(context)
+                                        .secondaryBackground,
+                                    borderRadius: BorderRadius.circular(12.0),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(20.0),
+                                    child: Column(
+                                      children: [
+                                        wrapWithModel(
+                                          model: _model.addPagoModel,
+                                          updateCallback: () =>
+                                              safeSetState(() {}),
+                                          child: AddPagoWidget(
+                                            initialAmountUsd:
+                                                _model.pendingBalance,
+                                            bcvRate: _model.bcvRate,
+                                            action: () async {
+                                              _model
+                                                  .updatePagoFromControllers();
+                                              safeSetState(() {});
+                                            },
+                                            onUpdate: () => safeSetState(() {}),
+                                            onProofUploaded: (url, aiData) {
+                                              setState(() =>
+                                                  _uploadedImageUrl = url);
 
-                                                  if (!esValidoTipo) {
-                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                      const SnackBar(
-                                                        content: Text('El comprobante subido no corresponde al tipo de pago seleccionado'),
-                                                        backgroundColor: Colors.red,
-                                                      ),
-                                                    );
-                                                    setState(() => _uploadedImageUrl = null); // Invalida la subida
-                                                    return;
-                                                  }
-                                                  // --- Fin Validación ---
+                                              if (aiData != null) {
+                                                // --- Validación del tipo de pago ---
+                                                final String aiTipoPago =
+                                                    aiData['tipo_pago']
+                                                            ?.toString()
+                                                            .toLowerCase() ??
+                                                        '';
+                                                final String userTipoPago =
+                                                    _model.addPagoModel
+                                                            .dropDownValue
+                                                            ?.toLowerCase() ??
+                                                        '';
 
-                                                  if (aiData['valido'] == true) {
-                                                    // Autocompletar campos basados en aiData
-                                                    _model.addPagoModel.referenciaTextController?.text = aiData['referencia'] ?? '';
-                                                    _model.addPagoModel.nombreTextController?.text = aiData['nombre'] ?? '';
+                                                bool esValidoTipo = true;
+                                                if (aiTipoPago ==
+                                                        'pago movil' &&
+                                                    userTipoPago !=
+                                                        'pago movil')
+                                                  esValidoTipo = false;
+                                                else if (aiTipoPago ==
+                                                        'binance' &&
+                                                    userTipoPago != 'binance')
+                                                  esValidoTipo = false;
+                                                else if (aiTipoPago ==
+                                                        'paypal' &&
+                                                    userTipoPago != 'paypal')
+                                                  esValidoTipo = false;
 
-                                                    // Manejo de moneda
-                                                    if (aiData['moneda'] == 'VES') {
-                                                      _model.addPagoModel.dropDownValue = 'Pago Movil';
-                                                    }
-
-                                                    // El monto devuelto por la IA debe ser parseado y puesto en el controlador
-                                                    if (aiData['monto'] != null) {
-                                                      _model.addPagoModel.montoTextController?.text = aiData['monto'].toString();
-                                                    }
-
-                                                    // Intentar setear el banco
-                                                    if (aiData['banco'] != null) {
-                                                      _model.addPagoModel.bancoDropdownValue = aiData['banco'];
-                                                    }
-
-                                                    // Sincronizar el modelo después de los cambios
-                                                    _model.updatePagoFromControllers();
-                                                    safeSetState(() {});
-                                                  }
+                                                if (!esValidoTipo) {
+                                                  ScaffoldMessenger.of(context)
+                                                      .showSnackBar(
+                                                    const SnackBar(
+                                                      content: Text(
+                                                          'El comprobante subido no corresponde al tipo de pago seleccionado'),
+                                                      backgroundColor:
+                                                          Colors.red,
+                                                    ),
+                                                  );
+                                                  setState(() => _uploadedImageUrl =
+                                                      null); // Invalida la subida
+                                                  return;
                                                 }
-                                              },
-                                            ),
+                                                // --- Fin Validación ---
+
+                                                if (aiData['valido'] == true) {
+                                                  // Autocompletar campos basados en aiData
+                                                  _model
+                                                      .addPagoModel
+                                                      .referenciaTextController
+                                                      ?.text = aiData[
+                                                          'referencia'] ??
+                                                      '';
+                                                  _model
+                                                          .addPagoModel
+                                                          .nombreTextController
+                                                          ?.text =
+                                                      aiData['nombre'] ?? '';
+
+                                                  // Manejo de moneda
+                                                  if (aiData['moneda'] ==
+                                                      'VES') {
+                                                    _model.addPagoModel
+                                                            .dropDownValue =
+                                                        'Pago Movil';
+                                                  }
+
+                                                  // El monto devuelto por la IA debe ser parseado y puesto en el controlador
+                                                  if (aiData['monto'] != null) {
+                                                    _model
+                                                            .addPagoModel
+                                                            .montoTextController
+                                                            ?.text =
+                                                        aiData['monto']
+                                                            .toString();
+                                                  }
+
+                                                  // Intentar setear el banco
+                                                  if (aiData['banco'] != null) {
+                                                    _model.addPagoModel
+                                                            .bancoDropdownValue =
+                                                        aiData['banco'];
+                                                  }
+
+                                                  // Sincronizar el modelo después de los cambios
+                                                  _model
+                                                      .updatePagoFromControllers();
+                                                  safeSetState(() {});
+                                                }
+                                              }
+                                            },
                                           ),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     ),
+                                  ),
                                 ),
                               ],
                             ),
@@ -206,12 +260,12 @@ class _ApartadoPaymentPageState extends State<ApartadoPaymentPage> {
                           Container(
                             constraints: const BoxConstraints(maxWidth: 550.0),
                             child: ApartadoOrderSummary(
-                                model: _model,
-                                onConfirm: _processApartado,
-                                onPagarMasTarde: _processApartadoPagoMasTarde,
-                                isProcessing: _isProcessing,
-                                comprobanteValidado: _uploadedImageUrl != null,
-                              ),
+                              model: _model,
+                              onConfirm: _processApartado,
+                              onPagarMasTarde: _processApartadoPagoMasTarde,
+                              isProcessing: _isProcessing,
+                              comprobanteValidado: _uploadedImageUrl != null,
+                            ),
                           ),
                         ],
                       ),
@@ -236,14 +290,16 @@ class _ApartadoPaymentPageState extends State<ApartadoPaymentPage> {
       if (result['success']) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Tienes un día para completar el pago y asegurar tu apartado'),
+            content: Text(
+                'Tienes un día para completar el pago y asegurar tu apartado'),
             backgroundColor: Colors.orange,
           ),
         );
         Navigator.of(context).pop();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result['message']), backgroundColor: Colors.red),
+          SnackBar(
+              content: Text(result['message']), backgroundColor: Colors.red),
         );
       }
     } catch (e) {
@@ -288,19 +344,23 @@ class _ApartadoPaymentPageState extends State<ApartadoPaymentPage> {
       }
       final double montoMinimoUsd = totalCantidad * 2.0;
 
-      final bool isPagoMovil = dropDownValue.toLowerCase().contains('movil') == true ||
-                               dropDownValue.toLowerCase().contains('móvil') == true;
-      
-      final double montoIngresado = (double.tryParse(_model.addPagoModel.montoTextController.text) ?? 0.0);
+      final bool isPagoMovil =
+          dropDownValue.toLowerCase().contains('movil') == true ||
+              dropDownValue.toLowerCase().contains('móvil') == true;
+
+      final double montoIngresado =
+          (double.tryParse(_model.addPagoModel.montoTextController.text) ??
+              0.0);
       final double bcvRate = _model.bcvRate > 0 ? _model.bcvRate : 1.0;
-      
+
       if (isPagoMovil) {
         // Convertimos el mínimo a VES para comparar
         final double montoMinimoVes = montoMinimoUsd * bcvRate;
         if (montoIngresado < montoMinimoVes) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('El monto mínimo para apartar es ${formatNumber(montoMinimoVes, formatType: FormatType.decimal, decimalType: DecimalType.automatic)} VES'),
+              content: Text(
+                  'El monto mínimo para apartar es ${formatNumber(montoMinimoVes, formatType: FormatType.decimal, decimalType: DecimalType.automatic)} VES'),
               backgroundColor: Colors.red,
             ),
           );
@@ -312,7 +372,8 @@ class _ApartadoPaymentPageState extends State<ApartadoPaymentPage> {
         if (montoIngresado < montoMinimoUsd) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('El monto mínimo para apartar es ${formatNumber(montoMinimoUsd, formatType: FormatType.decimal, decimalType: DecimalType.automatic)} USD'),
+              content: Text(
+                  'El monto mínimo para apartar es ${formatNumber(montoMinimoUsd, formatType: FormatType.decimal, decimalType: DecimalType.automatic)} USD'),
               backgroundColor: Colors.red,
             ),
           );
@@ -324,18 +385,21 @@ class _ApartadoPaymentPageState extends State<ApartadoPaymentPage> {
 
       // 3. Construir PagoStruct de forma explícita a partir de los campos del formulario
       // (Autocompletados por IA en UploadProofComponent, o llenados/corregidos manualmente)
-      final double montoUsd = isPagoMovil ? (montoIngresado / bcvRate) : montoIngresado;
+      final double montoUsd =
+          isPagoMovil ? (montoIngresado / bcvRate) : montoIngresado;
       final double montoVes = isPagoMovil ? montoIngresado : 0.0;
       final double tasaAplicada = isPagoMovil ? bcvRate : 0.0;
 
       final user = currentUser;
-      final String nombreUsuario = _model.addPagoModel.nombreTextController.text.trim().isNotEmpty
-          ? _model.addPagoModel.nombreTextController.text.trim()
-          : (user?.displayName ?? 'Anónimo');
+      final String nombreUsuario =
+          _model.addPagoModel.nombreTextController.text.trim().isNotEmpty
+              ? _model.addPagoModel.nombreTextController.text.trim()
+              : (user?.displayName ?? 'Anónimo');
 
-      final String emailUsuario = _model.addPagoModel.emailTextController.text.trim().isNotEmpty
-          ? _model.addPagoModel.emailTextController.text.trim()
-          : (user?.email ?? 'N/A');
+      final String emailUsuario =
+          _model.addPagoModel.emailTextController.text.trim().isNotEmpty
+              ? _model.addPagoModel.emailTextController.text.trim()
+              : (user?.email ?? 'N/A');
 
       PagoStruct pagoFinal = PagoStruct(
         nombre: nombreUsuario,
@@ -354,7 +418,8 @@ class _ApartadoPaymentPageState extends State<ApartadoPaymentPage> {
       if (!_model.isValidPayment) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Por favor, completa los datos de pago o sube un comprobante válido.'),
+            content: Text(
+                'Por favor, completa los datos de pago o sube un comprobante válido.'),
             backgroundColor: Colors.red,
           ),
         );

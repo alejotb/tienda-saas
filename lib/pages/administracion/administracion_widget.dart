@@ -6,7 +6,6 @@ import 'package:baul_pandora/services/isar_service.dart';
 import 'package:baul_pandora/services/local_inventory_service.dart';
 import 'package:flutter/material.dart';
 import 'administracion_model.dart';
-import 'views/admin_general_view.dart';
 import 'views/admin_store_dashboard_view.dart';
 
 export 'administracion_model.dart';
@@ -61,7 +60,8 @@ class _AdministracionWidgetState extends State<AdministracionWidget> {
           onPressed: () async {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('⏳ Sincronizando catálogo en la base de datos...'),
+                content:
+                    Text('⏳ Sincronizando catálogo en la base de datos...'),
                 duration: Duration(seconds: 2),
                 behavior: SnackBarBehavior.floating,
               ),
@@ -74,7 +74,8 @@ class _AdministracionWidgetState extends State<AdministracionWidget> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(result.message),
-                  backgroundColor: result.success ? const Color(0xFF16A34A) : Colors.red,
+                  backgroundColor:
+                      result.success ? const Color(0xFF16A34A) : Colors.red,
                   duration: const Duration(seconds: 4),
                   behavior: SnackBarBehavior.floating,
                 ),
@@ -102,7 +103,8 @@ class _AdministracionWidgetState extends State<AdministracionWidget> {
                   padding: const EdgeInsets.all(16.0),
                   color: FlutterFlowTheme.of(context).primaryBackground,
                   child: const SizedBox.expand(
-                    child: AdminStoreDashboardView(), // Dashboard Multi-Tienda preparado para SaaS
+                    child:
+                        AdminStoreDashboardView(), // Dashboard Multi-Tienda preparado para SaaS
                   ),
                 ),
               ),

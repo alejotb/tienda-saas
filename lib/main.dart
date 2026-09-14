@@ -11,7 +11,6 @@ import 'auth/supabase_auth/auth_util.dart';
 import 'package:baul_pandora/backend/supabase/supabase.dart';
 import 'package:baul_pandora/flutter_flow/flutter_flow_theme.dart';
 import 'flutter_flow/flutter_flow_util.dart';
-import 'index.dart';
 import 'package:baul_pandora/services/isar_service.dart';
 import 'package:baul_pandora/pages/administracion/admin_pagos_page.dart';
 import 'package:baul_pandora/pages/administracion/admin_despachos_page.dart';
@@ -158,12 +157,28 @@ class _NavBarPageState extends State<NavBarPage> {
     return ListenableBuilder(
       listenable: AppStateNotifier.instance,
       builder: (context, _) {
-        final isAdmin = (AppStateNotifier.instance.currentUserRow?.isAdmin ?? false) || FFAppState().isAdmin;
+        final isAdmin =
+            (AppStateNotifier.instance.currentUserRow?.isAdmin ?? false) ||
+                FFAppState().isAdmin;
 
         // Redirección automática si un admin cae en una ruta de cliente o viceversa
-        if (isAdmin && !['mainHomePage', 'adminPagos', 'adminDespachos', 'adminInventario', 'adminAuditoria', 'mainProfile'].contains(_currentPageName)) {
+        if (isAdmin &&
+            ![
+              'mainHomePage',
+              'adminPagos',
+              'adminDespachos',
+              'adminInventario',
+              'adminAuditoria',
+              'mainProfile'
+            ].contains(_currentPageName)) {
           _currentPageName = 'mainHomePage';
-        } else if (!isAdmin && !['mainHomePage', 'mainFavorites', 'mainOrderHistory', 'mainProfile'].contains(_currentPageName)) {
+        } else if (!isAdmin &&
+            ![
+              'mainHomePage',
+              'mainFavorites',
+              'mainOrderHistory',
+              'mainProfile'
+            ].contains(_currentPageName)) {
           _currentPageName = 'mainHomePage';
         }
 
@@ -176,7 +191,13 @@ class _NavBarPageState extends State<NavBarPage> {
           'mainProfile': const MainProfileWidget(),
         };
 
-        final adminBottomKeys = ['mainHomePage', 'adminPagos', 'adminDespachos', 'adminInventario', 'mainProfile'];
+        final adminBottomKeys = [
+          'mainHomePage',
+          'adminPagos',
+          'adminDespachos',
+          'adminInventario',
+          'mainProfile'
+        ];
 
         final clientTabs = {
           'mainHomePage': const MainHomePageWidget(),
@@ -186,7 +207,14 @@ class _NavBarPageState extends State<NavBarPage> {
         };
 
         final activeTabs = isAdmin ? adminTabs : clientTabs;
-        final bottomNavKeys = isAdmin ? adminBottomKeys : ['mainHomePage', 'mainFavorites', 'mainOrderHistory', 'mainProfile'];
+        final bottomNavKeys = isAdmin
+            ? adminBottomKeys
+            : [
+                'mainHomePage',
+                'mainFavorites',
+                'mainOrderHistory',
+                'mainProfile'
+              ];
         final currentBottomIndex = bottomNavKeys.indexOf(_currentPageName);
 
         return Scaffold(
@@ -198,46 +226,70 @@ class _NavBarPageState extends State<NavBarPage> {
               tabletLandscape: false,
               desktop: false,
             ),
-            child: isAdmin 
-            ? BottomNavigationBar(
-                currentIndex: currentBottomIndex == -1 ? 0 : currentBottomIndex,
-                onTap: (i) => safeSetState(() {
-                  _currentPage = null;
-                  _currentPageName = bottomNavKeys[i];
-                }),
-                backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-                selectedItemColor: FlutterFlowTheme.of(context).primary,
-                unselectedItemColor: FlutterFlowTheme.of(context).secondaryText,
-                showSelectedLabels: true,
-                showUnselectedLabels: true,
-                type: BottomNavigationBarType.fixed,
-                items: const [
-                  BottomNavigationBarItem(icon: Icon(Icons.storefront_outlined, size: 24.0), label: 'Tienda'),
-                  BottomNavigationBarItem(icon: Icon(Icons.payments_outlined, size: 24.0), label: 'Pagos'),
-                  BottomNavigationBarItem(icon: Icon(Icons.local_shipping_outlined, size: 24.0), label: 'Despachos'),
-                  BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined, size: 24.0), label: 'Inventario'),
-                  BottomNavigationBarItem(icon: Icon(Icons.account_circle_outlined, size: 24.0), label: 'Perfil'),
-                ],
-              )
-            : BottomNavigationBar(
-                currentIndex: currentBottomIndex == -1 ? 0 : currentBottomIndex,
-                onTap: (i) => safeSetState(() {
-                  _currentPage = null;
-                  _currentPageName = bottomNavKeys[i];
-                }),
-                backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-                selectedItemColor: FlutterFlowTheme.of(context).primary,
-                unselectedItemColor: FlutterFlowTheme.of(context).secondaryText,
-                showSelectedLabels: true,
-                showUnselectedLabels: true,
-                type: BottomNavigationBarType.fixed,
-                items: const [
-                  BottomNavigationBarItem(icon: Icon(Icons.home_outlined, size: 24.0), label: 'Home'),
-                  BottomNavigationBarItem(icon: Icon(Icons.favorite_border, size: 24.0), label: 'Favoritos'),
-                  BottomNavigationBarItem(icon: Icon(Icons.history_rounded, size: 24.0), label: 'Historial'),
-                  BottomNavigationBarItem(icon: Icon(Icons.account_circle_outlined, size: 24.0), label: 'Perfil'),
-                ],
-              ),
+            child: isAdmin
+                ? BottomNavigationBar(
+                    currentIndex:
+                        currentBottomIndex == -1 ? 0 : currentBottomIndex,
+                    onTap: (i) => safeSetState(() {
+                      _currentPage = null;
+                      _currentPageName = bottomNavKeys[i];
+                    }),
+                    backgroundColor:
+                        FlutterFlowTheme.of(context).primaryBackground,
+                    selectedItemColor: FlutterFlowTheme.of(context).primary,
+                    unselectedItemColor:
+                        FlutterFlowTheme.of(context).secondaryText,
+                    showSelectedLabels: true,
+                    showUnselectedLabels: true,
+                    type: BottomNavigationBarType.fixed,
+                    items: const [
+                      BottomNavigationBarItem(
+                          icon: Icon(Icons.storefront_outlined, size: 24.0),
+                          label: 'Tienda'),
+                      BottomNavigationBarItem(
+                          icon: Icon(Icons.payments_outlined, size: 24.0),
+                          label: 'Pagos'),
+                      BottomNavigationBarItem(
+                          icon: Icon(Icons.local_shipping_outlined, size: 24.0),
+                          label: 'Despachos'),
+                      BottomNavigationBarItem(
+                          icon: Icon(Icons.inventory_2_outlined, size: 24.0),
+                          label: 'Inventario'),
+                      BottomNavigationBarItem(
+                          icon: Icon(Icons.account_circle_outlined, size: 24.0),
+                          label: 'Perfil'),
+                    ],
+                  )
+                : BottomNavigationBar(
+                    currentIndex:
+                        currentBottomIndex == -1 ? 0 : currentBottomIndex,
+                    onTap: (i) => safeSetState(() {
+                      _currentPage = null;
+                      _currentPageName = bottomNavKeys[i];
+                    }),
+                    backgroundColor:
+                        FlutterFlowTheme.of(context).primaryBackground,
+                    selectedItemColor: FlutterFlowTheme.of(context).primary,
+                    unselectedItemColor:
+                        FlutterFlowTheme.of(context).secondaryText,
+                    showSelectedLabels: true,
+                    showUnselectedLabels: true,
+                    type: BottomNavigationBarType.fixed,
+                    items: const [
+                      BottomNavigationBarItem(
+                          icon: Icon(Icons.home_outlined, size: 24.0),
+                          label: 'Home'),
+                      BottomNavigationBarItem(
+                          icon: Icon(Icons.favorite_border, size: 24.0),
+                          label: 'Favoritos'),
+                      BottomNavigationBarItem(
+                          icon: Icon(Icons.history_rounded, size: 24.0),
+                          label: 'Historial'),
+                      BottomNavigationBarItem(
+                          icon: Icon(Icons.account_circle_outlined, size: 24.0),
+                          label: 'Perfil'),
+                    ],
+                  ),
           ),
         );
       },

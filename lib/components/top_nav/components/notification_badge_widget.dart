@@ -10,7 +10,6 @@ import 'package:baul_pandora/flutter_flow/flutter_flow_theme.dart';
 import 'package:baul_pandora/flutter_flow/flutter_flow_icon_button.dart';
 import 'package:baul_pandora/dropdowns/dropdown_notifications/dropdown_notifications_widget.dart';
 import 'package:baul_pandora/services/notification_service.dart';
-import '../../../flutter_flow/flutter_flow_animations.dart';
 
 class NotificationBadgeWidget extends StatelessWidget {
   const NotificationBadgeWidget({super.key});
@@ -27,9 +26,9 @@ class NotificationBadgeWidget extends StatelessWidget {
             badgeContent: Text(
               count.toString(),
               style: FlutterFlowTheme.of(context).titleSmall.override(
-                fontFamily: 'Inter',
-                color: Colors.white,
-              ),
+                    fontFamily: 'Inter',
+                    color: Colors.white,
+                  ),
             ),
             showBadge: count > 0,
             shape: badges.BadgeShape.circle,
@@ -41,7 +40,8 @@ class NotificationBadgeWidget extends StatelessWidget {
             toAnimate: true,
             child: AlignedTooltip(
               content: Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(8.0, 4.0, 8.0, 4.0),
+                padding:
+                    const EdgeInsetsDirectional.fromSTEB(8.0, 4.0, 8.0, 4.0),
                 child: Text(
                   'Notifications',
                   style: FlutterFlowTheme.of(context).labelMedium,

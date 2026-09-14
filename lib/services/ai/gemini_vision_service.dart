@@ -9,7 +9,8 @@ class GeminiVisionService {
   GeminiVisionService._internal();
 
   List<String> _getGeminiApiKeys() {
-    final rawKeys = dotenv.env['GEMINI_API_KEYS'] ?? dotenv.env['GEMINI_API_KEY'] ?? '';
+    final rawKeys =
+        dotenv.env['GEMINI_API_KEYS'] ?? dotenv.env['GEMINI_API_KEY'] ?? '';
     return rawKeys
         .split(',')
         .map((k) => k.trim())
@@ -39,12 +40,15 @@ class GeminiVisionService {
       final modelsToTry = fallbackModels.toSet().toList();
 
       print('GeminiVisionService: Descargando imagen...');
-      final response = await http.get(Uri.parse(imageUrl)).timeout(const Duration(seconds: 15));
+      final response = await http
+          .get(Uri.parse(imageUrl))
+          .timeout(const Duration(seconds: 15));
       if (response.statusCode != 200) {
         throw Exception('Error al descargar la imagen: ${response.statusCode}');
       }
       final imageBytes = response.bodyBytes;
-      print('GeminiVisionService: Imagen descargada, tamaño: ${imageBytes.length} bytes');
+      print(
+          'GeminiVisionService: Imagen descargada, tamaño: ${imageBytes.length} bytes');
 
       final promptText = '''
 Actúa como un auditor bancario estricto. Analiza la imagen y determina si es un comprobante de pago o transferencia financiero legítimo (Pago Móvil, Transferencia Bancaria, Binance Pay, PayPal, Zelle, Zinli, etc.).
@@ -104,7 +108,8 @@ Si NO es un comprobante o es inválido:
         bool keyExhausted = false;
         for (final modelName in modelsToTry) {
           try {
-            print('GeminiVisionService: Intentando modelo $modelName con key (${apiKey.substring(0, 6)}...)...');
+            print(
+                'GeminiVisionService: Intentando modelo $modelName con key (${apiKey.substring(0, 6)}...)...');
             final model = GenerativeModel(
               model: modelName,
               apiKey: apiKey,
@@ -122,14 +127,15 @@ Si NO es un comprobante o es inválido:
             ]).timeout(const Duration(seconds: 25));
 
             text = generateContentResponse.text;
-            if (text != null && text.isNotEmpty) {
+            if (text.isNotEmpty) {
               print('GeminiVisionService: Éxito con modelo $modelName!');
               break;
             }
           } catch (err) {
             print('GeminiVisionService: Falló modelo $modelName: $err');
             lastError = err;
-            if (err.toString().contains('429') || err.toString().contains('Quota exceeded')) {
+            if (err.toString().contains('429') ||
+                err.toString().contains('Quota exceeded')) {
               keyExhausted = true;
               break; // Pasar a la siguiente API Key si esta cuota está agotada
             }
@@ -137,7 +143,8 @@ Si NO es un comprobante o es inválido:
         }
         if (text != null && text.isNotEmpty) break;
         if (keyExhausted) {
-          print('GeminiVisionService: Cuota agotada en esta API Key, probando siguiente proveedor/key...');
+          print(
+              'GeminiVisionService: Cuota agotada en esta API Key, probando siguiente proveedor/key...');
         }
       }
 
@@ -146,36 +153,41 @@ Si NO es un comprobante o es inválido:
         try {
           print('GeminiVisionService: Intentando fallback con OpenRouter...');
           final base64Image = base64Encode(imageBytes);
-          final openRouterRes = await http.post(
-            Uri.parse('https://openrouter.ai/api/v1/chat/completions'),
-            headers: {
-              'Authorization': 'Bearer $openRouterKey',
-              'Content-Type': 'application/json',
-            },
-            body: jsonEncode({
-              'model': 'meta-llama/llama-3.2-11b-vision-instruct:free',
-              'messages': [
-                {
-                  'role': 'user',
-                  'content': [
-                    {'type': 'text', 'text': promptText},
+          final openRouterRes = await http
+              .post(
+                Uri.parse('https://openrouter.ai/api/v1/chat/completions'),
+                headers: {
+                  'Authorization': 'Bearer $openRouterKey',
+                  'Content-Type': 'application/json',
+                },
+                body: jsonEncode({
+                  'model': 'meta-llama/llama-3.2-11b-vision-instruct:free',
+                  'messages': [
                     {
-                      'type': 'image_url',
-                      'image_url': {'url': 'data:image/jpeg;base64,$base64Image'}
+                      'role': 'user',
+                      'content': [
+                        {'type': 'text', 'text': promptText},
+                        {
+                          'type': 'image_url',
+                          'image_url': {
+                            'url': 'data:image/jpeg;base64,$base64Image'
+                          }
+                        }
+                      ]
                     }
-                  ]
-                }
-              ],
-              'response_format': {'type': 'json_object'},
-            }),
-          ).timeout(const Duration(seconds: 25));
+                  ],
+                  'response_format': {'type': 'json_object'},
+                }),
+              )
+              .timeout(const Duration(seconds: 25));
 
           if (openRouterRes.statusCode == 200) {
             final jsonBody = jsonDecode(openRouterRes.body);
             text = jsonBody['choices']?[0]?['message']?['content']?.toString();
             print('GeminiVisionService: Éxito con OpenRouter!');
           } else {
-            print('GeminiVisionService: OpenRouter falló con status ${openRouterRes.statusCode}');
+            print(
+                'GeminiVisionService: OpenRouter falló con status ${openRouterRes.statusCode}');
           }
         } catch (orErr) {
           print('GeminiVisionService: Error en fallback OpenRouter: $orErr');
@@ -183,19 +195,20 @@ Si NO es un comprobante o es inválido:
       }
 
       if (text == null) {
-        print('GeminiVisionService: Todos los proveedores/modelos fallaron o cuota agotada.');
+        print(
+            'GeminiVisionService: Todos los proveedores/modelos fallaron o cuota agotada.');
         throw Exception('API_ERROR: $lastError');
       }
 
       // Limpiar posibles marcas de markdown
       text = text.replaceAll('```json', '').replaceAll('```', '').trim();
-      
-      print('GeminiVisionService: Parseando JSON...');
-      final Map<String, dynamic> result = jsonDecode(text) as Map<String, dynamic>;
-      print('GeminiVisionService: Análisis completado exitosamente: $result');
-      
-      return result;
 
+      print('GeminiVisionService: Parseando JSON...');
+      final Map<String, dynamic> result =
+          jsonDecode(text) as Map<String, dynamic>;
+      print('GeminiVisionService: Análisis completado exitosamente: $result');
+
+      return result;
     } catch (e) {
       print('GeminiVisionService: ERROR CRÍTICO: $e');
       throw Exception('API_ERROR: $e');
