@@ -3,22 +3,19 @@ import 'package:baul_pandora/components/stock_update_modal/stock_update_model.da
 import 'package:baul_pandora/backend/supabase/database/tables/productos.dart';
 
 void main() {
-  test('addToBatch should remove item if quantity becomes <= 0', () {
+  test('addToBatch should add product to queue and toggle remove it', () {
     final model = StockUpdateModel();
     final product = ProductosRow({'id': '1', 'nombre': 'Test'});
     
-    // Add 1
-    model.addToBatch(product, 1, 'CARGA');
+    // Add product
+    model.addToBatch(product);
     expect(model.batchQueue.length, 1);
-    expect(model.batchQueue[0].quantity, 1);
+    expect(model.isSelected(product), true);
     
-    // Add -1 (should remove)
-    model.addToBatch(product, -1, 'SALIDA');
+    // Toggle remove
+    model.toggleSelection(product);
     expect(model.batchQueue.length, 0);
-    
-    // Add 1 then -2 (should remove)
-    model.addToBatch(product, 1, 'CARGA');
-    model.addToBatch(product, -2, 'SALIDA');
-    expect(model.batchQueue.length, 0);
+    expect(model.isSelected(product), false);
   });
 }
+
