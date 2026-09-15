@@ -84,4 +84,7 @@ class ProductosRow extends SupabaseDataRow implements IProduct {
 
   String? get sku => getField<String>('sku');
   set sku(String? value) => setField<String>('sku', value);
+
+  String? get tiendaId => getField<String>('tienda_id');
+  set tiendaId(String? value) => setField<String>('tienda_id', value);
 }

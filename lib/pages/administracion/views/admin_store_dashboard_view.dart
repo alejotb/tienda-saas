@@ -4,7 +4,7 @@ import 'package:baul_pandora/flutter_flow/flutter_flow_util.dart';
 import 'package:baul_pandora/services/store_service.dart';
 import 'package:baul_pandora/services/store_theme_service.dart';
 import 'package:baul_pandora/backend/supabase/supabase.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:baul_pandora/pages/administracion/components/bulk_product_import_modal.dart';
 
 class AdminStoreDashboardView extends StatefulWidget {
   const AdminStoreDashboardView({super.key});
@@ -322,6 +322,23 @@ class _AdminStoreDashboardViewState extends State<AdminStoreDashboardView> {
           icon: Icons.add_box_rounded,
           color: Colors.blue,
           onTap: () => context.pushNamed('productCreate'),
+        ),
+        _buildActionButton(
+          theme,
+          title: 'Importar Catálogo',
+          subtitle: 'Carga masiva CSV / Excel',
+          icon: Icons.file_upload_outlined,
+          color: const Color(0xFF0284C7),
+          onTap: () async {
+            await showDialog(
+              context: context,
+              builder: (dialogContext) => BulkProductImportModal(
+                onImportCompleted: () {
+                  _loadStoreData();
+                },
+              ),
+            );
+          },
         ),
         _buildActionButton(
           theme,

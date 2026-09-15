@@ -12,6 +12,7 @@ import 'package:baul_pandora/index.dart';
 import 'package:baul_pandora/components/stock_update_modal/stock_update_widget.dart';
 import 'package:baul_pandora/components/barcode_scanner_modal.dart' as baul_pandora;
 import 'package:baul_pandora/services/woocommerce_sync_service.dart';
+import 'package:baul_pandora/pages/administracion/components/bulk_product_import_modal.dart';
 
 class AdminProductsView extends StatefulWidget {
   const AdminProductsView({super.key});
@@ -315,6 +316,11 @@ class _AdminProductsViewState extends State<AdminProductsView> {
       dynamic query = SupaFlow.client.from('productos').select('*').eq('es_variacion', false);
       dynamic countQuery = SupaFlow.client.from('productos').select('*').eq('es_variacion', false);
 
+      if (FFAppState().activeStoreId.isNotEmpty) {
+        query = query.eq('tienda_id', FFAppState().activeStoreId);
+        countQuery = countQuery.eq('tienda_id', FFAppState().activeStoreId);
+      }
+
       if (_searchQuery.isNotEmpty) {
         final isUuid = RegExp(r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', caseSensitive: false).hasMatch(_searchQuery);
         if (isUuid) {
@@ -401,6 +407,15 @@ class _AdminProductsViewState extends State<AdminProductsView> {
                       );
                     } else if (value == 3) {
                       await _handleSync();
+                    } else if (value == 4) {
+                      await showDialog(
+                        context: context,
+                        builder: (dialogContext) => BulkProductImportModal(
+                          onImportCompleted: () {
+                            _loadProducts(isRefresh: true);
+                          },
+                        ),
+                      );
                     }
                   },
                   itemBuilder: (context) => [
@@ -414,6 +429,17 @@ class _AdminProductsViewState extends State<AdminProductsView> {
                         ],
                       ),
                     ),
+                    if (_selectedTab == 0)
+                      PopupMenuItem(
+                        value: 4,
+                        child: Row(
+                          children: [
+                            const Icon(Icons.file_upload_outlined, size: 20, color: Color(0xFF0284C7)),
+                            const SizedBox(width: 8),
+                            const Text('Importar CSV / Excel'),
+                          ],
+                        ),
+                      ),
                     if (_selectedTab == 0)
                       PopupMenuItem(
                         value: 2,
@@ -504,6 +530,27 @@ class _AdminProductsViewState extends State<AdminProductsView> {
                                 foregroundColor: FlutterFlowTheme.of(context).primaryText,
                               ),
                             ),
+                            if (_selectedTab == 0) ...[
+                              const SizedBox(width: 12),
+                              ElevatedButton.icon(
+                                onPressed: () async {
+                                  await showDialog(
+                                    context: context,
+                                    builder: (dialogContext) => BulkProductImportModal(
+                                      onImportCompleted: () {
+                                        _loadProducts(isRefresh: true);
+                                      },
+                                    ),
+                                  );
+                                },
+                                icon: const Icon(Icons.file_upload_outlined),
+                                label: const Text('Importar CSV / Excel'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF0284C7),
+                                  foregroundColor: Colors.white,
+                                ),
+                              ),
+                            ],
                             if (_selectedTab == 0) ...[
                               const SizedBox(width: 12),
                               ElevatedButton.icon(
