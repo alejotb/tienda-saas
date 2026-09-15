@@ -3,6 +3,8 @@ import 'package:baul_pandora/flutter_flow/flutter_flow_theme.dart';
 import 'package:baul_pandora/flutter_flow/flutter_flow_util.dart';
 import 'package:baul_pandora/flutter_flow/flutter_flow_widgets.dart';
 import 'package:baul_pandora/index.dart';
+import 'package:baul_pandora/pages/administracion/admin_dashboard_page.dart';
+import 'package:baul_pandora/pages/store_register/store_register_widget.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class NavButtonsWidget extends StatelessWidget {
