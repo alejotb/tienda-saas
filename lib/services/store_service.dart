@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:baul_pandora/backend/supabase/supabase.dart';
 
@@ -17,8 +16,9 @@ class StoreData {
   final String monedaPrincipal;
   final bool activa;
   final String plan;
-
   final bool permiteInvitados;
+  final String? dominioPersonalizado;
+  final String estadoDominio; // 'sin_configurar', 'pendiente', 'conectado'
 
   StoreData({
     required this.id,
@@ -36,6 +36,8 @@ class StoreData {
     required this.activa,
     required this.plan,
     this.permiteInvitados = true,
+    this.dominioPersonalizado,
+    this.estadoDominio = 'sin_configurar',
   });
 
   factory StoreData.fromMap(Map<String, dynamic> map) {
@@ -55,6 +57,8 @@ class StoreData {
       activa: map['activa'] == true,
       plan: map['plan']?.toString() ?? 'free',
       permiteInvitados: map['permite_invitados'] ?? true,
+      dominioPersonalizado: map['dominio_personalizado']?.toString(),
+      estadoDominio: map['estado_dominio']?.toString() ?? (map['dominio_personalizado'] != null ? 'conectado' : 'sin_configurar'),
     );
   }
 }
@@ -101,69 +105,80 @@ class StoreService {
     String? direccionFisica,
     String monedaPrincipal = 'USD',
   }) async {
-    try {
-      final user = SupaFlow.client.auth.currentUser;
-      if (user == null) {
-        throw Exception('El usuario debe estar autenticado para registrar una tienda');
-      }
-
-      // 1. Insertar la tienda en Supabase
-      final response = await SupaFlow.client.from('tiendas').insert({
-        'dueno_id': user.id,
-        'nombre': nombreStore,
-        'slug': slug.toLowerCase().trim(),
-        'logo_url': logoUrl,
-        'banner_url': bannerUrl,
-        'color_primario': colorPrimarioHex,
-        'color_secundario': colorSecundarioHex,
-        'telefono_contacto': telefonoContacto,
-        'email_contacto': emailContacto ?? user.email,
-        'direccion_fisica': direccionFisica,
-        'moneda_principal': monedaPrincipal,
-        'activa': true,
-        'plan': 'free',
-      }).select().single();
-
-      final store = StoreData.fromMap(response);
-
-      // 2. Actualizar metadatos y perfil del usuario en la tabla 'usuarios'
-      await SupaFlow.client.from('usuarios').upsert({
-        'id': user.id,
-        'email': user.email ?? '',
-        'nombre_completo': user.userMetadata?['full_name'] ?? 'Dueño de Tienda',
-        'rol': 'dueno_tienda',
-        'tienda_id': store.id,
-      });
-
-      return store;
-    } catch (e) {
-      debugPrint('Error al registrar la tienda: $e');
-      return null;
+    final user = SupaFlow.client.auth.currentUser;
+    if (user == null) {
+      throw Exception('Debes iniciar sesión para registrar una tienda.');
     }
+
+    final cleanSlug = slug.toLowerCase().replaceAll(RegExp(r'[^a-z0-9\-]'), '').trim();
+
+    final storePayload = {
+      'dueno_id': user.id,
+      'nombre': nombreStore.trim(),
+      'slug': cleanSlug,
+      'logo_url': logoUrl,
+      'banner_url': bannerUrl,
+      'color_primario': colorPrimarioHex,
+      'color_secundario': colorSecundarioHex,
+      'telefono_contacto': telefonoContacto?.trim(),
+      'email_contacto': emailContacto?.trim() ?? user.email,
+      'direccion_fisica': direccionFisica?.trim(),
+      'moneda_principal': monedaPrincipal,
+      'activa': true,
+      'plan': 'free',
+      'permite_invitados': true,
+    };
+
+    final res = await SupaFlow.client
+        .from('tiendas')
+        .insert(storePayload)
+        .select()
+        .single();
+
+    final store = StoreData.fromMap(res);
+
+    // Actualizar usuario en tabla usuarios asignando rol y tienda_id si aplica
+    try {
+      await SupaFlow.client.from('usuarios').update({
+        'tienda_id': store.id,
+        'rol': 'dueno_tienda',
+      }).eq('id', user.id);
+    } catch (e) {
+      debugPrint('Nota: Actualizando rol de usuario en tabla usuarios: $e');
+    }
+
+    return store;
   }
 
-  /// Consulta si un slug ya existe para evitar duplicados
-  Future<bool> checkSlugExists(String slug) async {
+  /// Verifica si un slug de tienda ya está en uso
+  Future<bool> isSlugAvailable(String slug) async {
     try {
-      final cleanSlug = slug.toLowerCase().trim();
+      final cleanSlug = slug.toLowerCase().replaceAll(RegExp(r'[^a-z0-9\-]'), '').trim();
       final res = await SupaFlow.client
           .from('tiendas')
           .select('id')
           .eq('slug', cleanSlug)
           .maybeSingle();
 
-      return res != null;
+      return res == null;
     } catch (e) {
+      debugPrint('Error verificando disponibilidad de slug: $e');
       return false;
     }
   }
 
-  /// Obtiene los datos de la tienda asociada al usuario actual
-  Future<StoreData?> getMyStore() async {
-    try {
-      final user = SupaFlow.client.auth.currentUser;
-      if (user == null) return null;
+  /// Alias para verificar si un slug ya existe (devuelve true si ya existe)
+  Future<bool> checkSlugExists(String slug) async {
+    final available = await isSlugAvailable(slug);
+    return !available;
+  }
 
+  /// Obtiene la tienda asociada al usuario actual
+  Future<StoreData?> getMyStore() async {
+    final user = SupaFlow.client.auth.currentUser;
+    if (user == null) return null;
+
+    try {
       final res = await SupaFlow.client
           .from('tiendas')
           .select()
@@ -200,6 +215,26 @@ class StoreService {
     }
   }
 
+  /// Obtiene una tienda por su dominio personalizado
+  Future<StoreData?> getStoreByDomain(String domain) async {
+    try {
+      final cleanDomain = domain.toLowerCase().trim();
+      final res = await SupaFlow.client
+          .from('tiendas')
+          .select()
+          .eq('dominio_personalizado', cleanDomain)
+          .maybeSingle();
+
+      if (res != null) {
+        return StoreData.fromMap(res);
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error obteniendo tienda por dominio: $e');
+      return null;
+    }
+  }
+
   /// Obtiene una tienda por su ID
   Future<StoreData?> getStoreById(String storeId) async {
     try {
@@ -229,6 +264,45 @@ class StoreService {
       return true;
     } catch (e) {
       debugPrint('Error al actualizar preferencia de invitados: $e');
+      return false;
+    }
+  }
+
+  /// Actualiza el plan de suscripción de la tienda (Free vs Pro)
+  Future<bool> updateStorePlan(String storeId, String newPlan) async {
+    try {
+      final cleanPlan = newPlan.toLowerCase().trim();
+      await SupaFlow.client
+          .from('tiendas')
+          .update({'plan': cleanPlan})
+          .eq('id', storeId);
+      return true;
+    } catch (e) {
+      debugPrint('Error al actualizar plan de la tienda: $e');
+      return false;
+    }
+  }
+
+  /// Configura o elimina el dominio personalizado de una tienda
+  Future<bool> updateCustomDomain(
+    String storeId,
+    String? domain, {
+    String status = 'conectado',
+  }) async {
+    try {
+      final cleanDomain = domain?.toLowerCase().replaceAll('https://', '').replaceAll('http://', '').trim();
+      final payload = {
+        'dominio_personalizado': (cleanDomain != null && cleanDomain.isNotEmpty) ? cleanDomain : null,
+        'estado_dominio': (cleanDomain != null && cleanDomain.isNotEmpty) ? status : 'sin_configurar',
+      };
+
+      await SupaFlow.client
+          .from('tiendas')
+          .update(payload)
+          .eq('id', storeId);
+      return true;
+    } catch (e) {
+      debugPrint('Error al actualizar dominio personalizado: $e');
       return false;
     }
   }

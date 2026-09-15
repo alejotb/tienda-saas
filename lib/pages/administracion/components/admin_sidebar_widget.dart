@@ -30,6 +30,8 @@ class AdminSidebarWidget extends StatelessWidget {
       AdminSidebarItem(view: AdminView.general, label: 'General', icon: Icons.dashboard_rounded),
       AdminSidebarItem(view: AdminView.products, label: 'Productos', icon: Icons.inventory_2_rounded),
       AdminSidebarItem(view: AdminView.orders, label: 'Pedidos', icon: Icons.shopping_bag_rounded),
+      AdminSidebarItem(view: AdminView.subscription, label: 'Mi Plan & Suscripción', icon: Icons.stars_rounded),
+      AdminSidebarItem(view: AdminView.customDomain, label: 'Dominio Propio', icon: Icons.language_rounded),
       AdminSidebarItem(view: AdminView.users, label: 'Usuarios', icon: Icons.people_alt_rounded),
       AdminSidebarItem(view: AdminView.discounts, label: 'Descuentos', icon: Icons.local_offer_rounded),
     ];

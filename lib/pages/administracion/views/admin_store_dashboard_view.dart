@@ -5,6 +5,8 @@ import 'package:baul_pandora/services/store_service.dart';
 import 'package:baul_pandora/services/store_theme_service.dart';
 import 'package:baul_pandora/backend/supabase/supabase.dart';
 import 'package:baul_pandora/pages/administracion/components/bulk_product_import_modal.dart';
+import 'admin_subscription_view.dart';
+import 'admin_custom_domain_view.dart';
 
 class AdminStoreDashboardView extends StatefulWidget {
   const AdminStoreDashboardView({super.key});
@@ -369,6 +371,64 @@ class _AdminStoreDashboardViewState extends State<AdminStoreDashboardView> {
                 );
               }
             }
+          },
+        ),
+        _buildActionButton(
+          theme,
+          title: 'Mi Plan & Suscripción',
+          subtitle: 'Límites, cuota y Plan Pro',
+          icon: Icons.stars_rounded,
+          color: Colors.purple,
+          onTap: () async {
+            await showDialog(
+              context: context,
+              builder: (dialogContext) => Dialog(
+                backgroundColor: Colors.transparent,
+                insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                child: Container(
+                  width: 900,
+                  height: 700,
+                  decoration: BoxDecoration(
+                    color: FlutterFlowTheme.of(context).primaryBackground,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: const AdminSubscriptionView(),
+                  ),
+                ),
+              ),
+            );
+            _loadStoreData();
+          },
+        ),
+        _buildActionButton(
+          theme,
+          title: 'Dominio Propio',
+          subtitle: 'Conectar www.mitienda.com',
+          icon: Icons.language_rounded,
+          color: Colors.teal,
+          onTap: () async {
+            await showDialog(
+              context: context,
+              builder: (dialogContext) => Dialog(
+                backgroundColor: Colors.transparent,
+                insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                child: Container(
+                  width: 850,
+                  height: 650,
+                  decoration: BoxDecoration(
+                    color: FlutterFlowTheme.of(context).primaryBackground,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: const AdminCustomDomainView(),
+                  ),
+                ),
+              ),
+            );
+            _loadStoreData();
           },
         ),
         _buildActionButton(

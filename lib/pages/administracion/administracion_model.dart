@@ -1,4 +1,4 @@
-﻿import 'package:baul_pandora/backend/api_requests/api_calls.dart';
+import 'package:baul_pandora/backend/api_requests/api_calls.dart';
 import 'package:baul_pandora/flutter_flow/flutter_flow_util.dart';
 import 'package:baul_pandora/index.dart';
 import 'administracion_widget.dart' show AdministracionWidget;
@@ -13,6 +13,8 @@ enum AdminView {
   users,
   discounts,
   audit,
+  subscription,
+  customDomain,
 }
 
 class AdministracionModel extends FlutterFlowModel<AdministracionWidget> {
