@@ -49,6 +49,11 @@ class _AdminOrdersViewState extends State<AdminOrdersView> {
       dynamic query = SupaFlow.client.from('pedidos').select('*');
       dynamic countQuery = SupaFlow.client.from('pedidos').select('*');
 
+      if (FFAppState().activeStoreId.isNotEmpty) {
+        query = query.eq('tienda_id', FFAppState().activeStoreId);
+        countQuery = countQuery.eq('tienda_id', FFAppState().activeStoreId);
+      }
+
       if (_selectedStatus != 'todos') {
         query = query.eq('status', _selectedStatus);
         countQuery = countQuery.eq('status', _selectedStatus);

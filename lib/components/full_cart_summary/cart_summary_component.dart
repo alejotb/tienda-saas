@@ -1,6 +1,7 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
+import 'package:baul_pandora/components/whatsapp_order_modal.dart';
 
 class CartSummaryComponent extends StatelessWidget {
   const CartSummaryComponent({
@@ -131,8 +132,43 @@ class CartSummaryComponent extends StatelessWidget {
               ),
             ),
             
-            if (onApartar != null || onComprar != null) ...[
-              const SizedBox(height: 24),
+            if (onApartar != null || onComprar != null || items.isNotEmpty) ...[
+              const SizedBox(height: 20),
+
+              // Botón Pedir por WhatsApp
+              if (items.isNotEmpty)
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF16A34A),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 0,
+                    ),
+                    icon: const Icon(Icons.chat_bubble_rounded, size: 20),
+                    label: const Text(
+                      'Pedir por WhatsApp',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                    ),
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (dialogContext) => WhatsAppOrderModal(
+                          items: items,
+                          subtotal: subtotal,
+                          total: total,
+                          bcvRate: bcvRate,
+                          onOrderPlaced: onApartadoCreado,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+
+              const SizedBox(height: 12),
+
               Row(
                 children: [
                   if (onApartar != null) ...[
@@ -141,7 +177,7 @@ class CartSummaryComponent extends StatelessWidget {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.orange,
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
                         onPressed: isApartarEnabled ? onApartar : null,
@@ -156,11 +192,11 @@ class CartSummaryComponent extends StatelessWidget {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: FlutterFlowTheme.of(context).primary,
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
                         onPressed: isComprarEnabled ? onComprar : null,
-                        child: const Text('Comprar Ahora', style: TextStyle(fontWeight: FontWeight.bold)),
+                        child: const Text('Pagar en Línea', style: TextStyle(fontWeight: FontWeight.bold)),
                       ),
                     ),
                 ],

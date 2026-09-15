@@ -144,6 +144,7 @@ class _CheckoutFooterActionState extends State<CheckoutFooterAction> {
           if (productosNuevos.isNotEmpty) {
             final newPedido = await SupaFlow.client.from('pedidos').insert({
               'user_id': currentUserUid.isEmpty ? null : currentUserUid,
+              'tienda_id': FFAppState().activeStoreId.isNotEmpty ? FFAppState().activeStoreId : null,
               'status': (widget.model.pago?.tipo == 'Efectivo') ? 'pendiente_pago' : 'pagado',
               'total_price': totalFinal,
               'paid_amount_usd': isPagoMovil ? 0.0 : totalFinal, // Guardar monto USD si no es Pago Móvil
