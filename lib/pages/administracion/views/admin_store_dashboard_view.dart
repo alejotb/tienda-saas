@@ -337,6 +337,25 @@ class _AdminStoreDashboardViewState extends State<AdminStoreDashboardView> {
         ),
         _buildActionButton(
           theme,
+          title: 'Permitir Invitados',
+          subtitle: _store!.permiteInvitados ? 'Compras sin registro ON' : 'Compras sin registro OFF',
+          icon: _store!.permiteInvitados ? Icons.person_add_rounded : Icons.person_off_rounded,
+          color: _store!.permiteInvitados ? Colors.green : Colors.grey,
+          onTap: () async {
+            final newValue = !_store!.permiteInvitados;
+            final success = await StoreService.instance.updateGuestSetting(_store!.id, newValue);
+            if (success) {
+              _loadStoreData();
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(newValue ? '✅ Checkout para invitados ACTIVADO' : '🔒 Checkout para invitados DESACTIVADO')),
+                );
+              }
+            }
+          },
+        ),
+        _buildActionButton(
+          theme,
           title: 'Módulos & Extensiones',
           subtitle: 'Conectar WooCommerce / Shopify',
           icon: Icons.extension_rounded,

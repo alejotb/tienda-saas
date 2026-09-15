@@ -18,6 +18,8 @@ class StoreData {
   final bool activa;
   final String plan;
 
+  final bool permiteInvitados;
+
   StoreData({
     required this.id,
     required this.duenoId,
@@ -33,6 +35,7 @@ class StoreData {
     required this.monedaPrincipal,
     required this.activa,
     required this.plan,
+    this.permiteInvitados = true,
   });
 
   factory StoreData.fromMap(Map<String, dynamic> map) {
@@ -51,6 +54,7 @@ class StoreData {
       monedaPrincipal: map['moneda_principal']?.toString() ?? 'USD',
       activa: map['activa'] == true,
       plan: map['plan']?.toString() ?? 'free',
+      permiteInvitados: map['permite_invitados'] ?? true,
     );
   }
 }
@@ -173,6 +177,20 @@ class StoreService {
     } catch (e) {
       debugPrint('Error obteniendo la tienda del usuario: $e');
       return null;
+    }
+  }
+
+  /// Actualiza la preferencia del comerciante para permitir o no compras como invitado
+  Future<bool> updateGuestSetting(String storeId, bool allowGuests) async {
+    try {
+      await SupaFlow.client
+          .from('tiendas')
+          .update({'permite_invitados': allowGuests})
+          .eq('id', storeId);
+      return true;
+    } catch (e) {
+      debugPrint('Error al actualizar preferencia de invitados: $e');
+      return false;
     }
   }
 }

@@ -17,9 +17,11 @@ class LoginPageWidget extends StatefulWidget {
   const LoginPageWidget({
     super.key,
     this.fromPage,
+    this.isClientStoreMode = false,
   });
 
   final String? fromPage;
+  final bool isClientStoreMode;
 
   static String routeName = 'loginPage';
   static String routePath = '/loginPage';
@@ -2158,10 +2160,11 @@ class _LoginPageWidgetState extends State<LoginPageWidget>
                           ).animateOnPageLoad(
                               animationsMap['containerOnPageLoadAnimation']!),
                         ),
-                        const SizedBox(height: 16),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          child: Container(
+                        if (!widget.isClientStoreMode) ...[
+                          const SizedBox(height: 16),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                            child: Container(
                             constraints: const BoxConstraints(maxWidth: 570.0),
                             width: double.infinity,
                             padding: const EdgeInsets.all(16.0),
@@ -2235,7 +2238,7 @@ class _LoginPageWidgetState extends State<LoginPageWidget>
                               ],
                             ),
                           ),
-                        ),
+                        ],
                         const SizedBox(height: 32),
                       ],
                     ),
