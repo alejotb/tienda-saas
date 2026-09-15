@@ -1,3 +1,3 @@
-../../../AppData/Local/Pub/Cache/hosted/pub.dev/page_transition-2.0.9/lib/src/page_transition.dart:65:34: Error: Couldn't find constructor 'CupertinoPageTransitionsBuilder'.
-    this.matchingBuilder = const CupertinoPageTransitionsBuilder(),
-                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+lib/pages/login_page/login_page_widget.dart:2165:34: Error: Can't find ')' to match '('.
+                          Padding(
+                                 ^

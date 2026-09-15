@@ -2164,82 +2164,84 @@ class _LoginPageWidgetState extends State<LoginPageWidget>
                           const SizedBox(height: 16),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                            child: Container(
-                            constraints: const BoxConstraints(maxWidth: 570.0),
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(16.0),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  FlutterFlowTheme.of(context).primary.withValues(alpha: 0.12),
-                                  FlutterFlowTheme.of(context).secondary.withValues(alpha: 0.08),
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              borderRadius: BorderRadius.circular(16.0),
-                              border: Border.all(
-                                color: FlutterFlowTheme.of(context).primary.withValues(alpha: 0.25),
-                                width: 1.5,
-                              ),
-                            ),
-                            child: Row(
-                              children: [
                                 Container(
-                                  padding: const EdgeInsets.all(10.0),
+                                  constraints: const BoxConstraints(maxWidth: 570.0),
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(16.0),
                                   decoration: BoxDecoration(
-                                    color: FlutterFlowTheme.of(context).primary.withValues(alpha: 0.15),
-                                    shape: BoxShape.circle,
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        FlutterFlowTheme.of(context).primary.withValues(alpha: 0.12),
+                                        FlutterFlowTheme.of(context).secondary.withValues(alpha: 0.08),
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(16.0),
+                                    border: Border.all(
+                                      color: FlutterFlowTheme.of(context).primary.withValues(alpha: 0.25),
+                                      width: 1.5,
+                                    ),
                                   ),
-                                  child: Icon(
-                                    Icons.storefront_rounded,
-                                    color: FlutterFlowTheme.of(context).primary,
-                                    size: 26.0,
-                                  ),
-                                ),
-                                const SizedBox(width: 12.0),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                  child: Row(
                                     children: [
-                                      Text(
-                                        '¿Quieres vender o crear tu tienda?',
-                                        style: GoogleFonts.inter(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 14.0,
-                                          color: FlutterFlowTheme.of(context).primaryText,
+                                      Container(
+                                        padding: const EdgeInsets.all(10.0),
+                                        decoration: BoxDecoration(
+                                          color: FlutterFlowTheme.of(context).primary.withValues(alpha: 0.15),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Icon(
+                                          Icons.storefront_rounded,
+                                          color: FlutterFlowTheme.of(context).primary,
+                                          size: 26.0,
                                         ),
                                       ),
-                                      const SizedBox(height: 2.0),
-                                      Text(
-                                        'Crea tu catálogo online personalizado gratis.',
-                                        style: GoogleFonts.inter(
-                                          fontSize: 12.0,
-                                          color: FlutterFlowTheme.of(context).secondaryText,
+                                      const SizedBox(width: 12.0),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              '¿Quieres vender o crear tu tienda?',
+                                              style: GoogleFonts.inter(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14.0,
+                                                color: FlutterFlowTheme.of(context).primaryText,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 2.0),
+                                            Text(
+                                              'Crea tu catálogo online personalizado gratis.',
+                                              style: GoogleFonts.inter(
+                                                fontSize: 12.0,
+                                                color: FlutterFlowTheme.of(context).secondaryText,
+                                              ),
+                                            ),
+                                          ],
                                         ),
+                                      ),
+                                      const SizedBox(width: 8.0),
+                                      ElevatedButton(
+                                        onPressed: () => context.pushNamed('storeRegister'),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: FlutterFlowTheme.of(context).primary,
+                                          foregroundColor: Colors.white,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(10.0),
+                                          ),
+                                          padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
+                                          elevation: 0,
+                                        ),
+                                        child: const Text('Crear Tienda', style: TextStyle(fontWeight: FontWeight.bold)),
                                       ),
                                     ],
                                   ),
                                 ),
-                                const SizedBox(width: 8.0),
-                                ElevatedButton(
-                                  onPressed: () => context.pushNamed('storeRegister'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: FlutterFlowTheme.of(context).primary,
-                                    foregroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10.0),
-                                    ),
-                                    padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
-                                    elevation: 0,
-                                  ),
-                                  child: const Text('Crear Tienda', style: TextStyle(fontWeight: FontWeight.bold)),
-                                ),
-                              ],
+                              ),
                             ),
-                          ),
-                        ],
-                        const SizedBox(height: 32),
+                          ],
+                          const SizedBox(height: 32),
                       ],
                     ),
                   ),
