@@ -262,6 +262,7 @@ class _LoginPageWidgetState extends State<LoginPageWidget>
                                   0.0, 24.0, 0.0, 0.0),
                               child: Column(
                                 children: [
+                                  if (isStoreMode)
                                   Align(
                                     alignment: const Alignment(0.0, 0),
                                     child: FlutterFlowButtonTabBar(
@@ -323,7 +324,36 @@ class _LoginPageWidgetState extends State<LoginPageWidget>
                                         [() async {}, () async {}][i]();
                                       },
                                     ),
-                                  ),
+                                  )
+                                  else
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.all(8.0),
+                                            decoration: BoxDecoration(
+                                              color: FlutterFlowTheme.of(context).primary.withValues(alpha: 0.1),
+                                              borderRadius: BorderRadius.circular(8.0),
+                                            ),
+                                            child: Icon(
+                                              Icons.storefront_rounded,
+                                              color: FlutterFlowTheme.of(context).primary,
+                                              size: 20.0,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 10.0),
+                                          Text(
+                                            'Portal de Comerciantes',
+                                            style: GoogleFonts.inter(
+                                              fontSize: 16.0,
+                                              fontWeight: FontWeight.bold,
+                                              color: FlutterFlowTheme.of(context).primaryText,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                   Expanded(
                                     child: TabBarView(
                                       controller: _model.tabBarController,
