@@ -1,3 +1,4 @@
+import 'package:baul_pandora/services/store_theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:baul_pandora/flutter_flow/flutter_flow_theme.dart';
 import 'package:baul_pandora/flutter_flow/flutter_flow_util.dart';
@@ -38,7 +39,9 @@ class NavButtonsWidget extends StatelessWidget {
           return Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildButton(context, '💼 Crea tu Tienda', StoreRegisterWidget.routeName, isHighlight: true),
+              if (StoreThemeService.instance.currentStore == null && FFAppState().activeStoreId.isEmpty)
+                if (StoreThemeService.instance.currentStore == null && FFAppState().activeStoreId.isEmpty)
+                _buildButton(context, '💼 Crea tu Tienda', StoreRegisterWidget.routeName, isHighlight: true),
               _buildButton(context, 'Mis ordenes', MainOrderHistoryWidget.routeName),
               _buildButton(context, 'Favoritos', MainFavoritesWidget.routeName),
             ],

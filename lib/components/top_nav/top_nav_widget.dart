@@ -1,27 +1,12 @@
 import 'dart:async';
 import 'package:baul_pandora/auth/supabase_auth/auth_util.dart';
-import 'package:baul_pandora/backend/supabase/supabase.dart';
 import 'package:baul_pandora/services/notification_service.dart';
 import 'package:baul_pandora/components/main_logo/main_logo_widget.dart';
-import 'package:baul_pandora/components/barcode_scanner_modal.dart' as baul_pandora;
-import 'package:baul_pandora/dropdowns/dropdown_account/dropdown_account_widget.dart';
-import 'package:baul_pandora/dropdowns/dropdown_account_guest/dropdown_account_guest_widget.dart';
-import 'package:baul_pandora/dropdowns/dropdown_notifications/dropdown_notifications_widget.dart';
-import 'package:baul_pandora/dropdowns/order_summary_new/order_summary_new_widget.dart';
 import 'package:baul_pandora/flutter_flow/flutter_flow_animations.dart';
-import 'package:baul_pandora/flutter_flow/flutter_flow_icon_button.dart';
-import 'package:baul_pandora/flutter_flow/flutter_flow_theme.dart';
 import 'package:baul_pandora/flutter_flow/flutter_flow_util.dart';
-import 'package:baul_pandora/flutter_flow/flutter_flow_widgets.dart';
-import 'package:baul_pandora/index.dart';
-import 'package:aligned_tooltip/aligned_tooltip.dart';
-import 'package:badges/badges.dart' as badges;
-import 'package:aligned_dialog/aligned_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'top_nav_model.dart';
 export 'top_nav_model.dart';
@@ -30,6 +15,7 @@ import 'components/nav_buttons_widget.dart';
 import 'components/notification_badge_widget.dart';
 import 'components/user_profile_widget.dart';
 import 'components/cart_badge_widget.dart';
+import 'components/store_compact_header_widget.dart';
 
 class TopNavWidget extends StatefulWidget {
   const TopNavWidget({super.key});
@@ -101,7 +87,6 @@ class _TopNavWidgetState extends State<TopNavWidget>
     super.dispose();
   }
 
-
   @override
   Widget build(BuildContext context) {
     context.watch<FFAppState>();
@@ -109,9 +94,8 @@ class _TopNavWidgetState extends State<TopNavWidget>
     return Column(
       mainAxisSize: MainAxisSize.max,
       children: [
-
         Padding(
-          padding: const EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 12.0),
+          padding: const EdgeInsetsDirectional.fromSTEB(0.0, 8.0, 0.0, 4.0),
           child: Row(
             mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -138,14 +122,15 @@ class _TopNavWidgetState extends State<TopNavWidget>
                       vsync: this,
                     ),
                   NavButtonsWidget(parentContext: context),
-                  NotificationBadgeWidget(),
-                  CartBadgeWidget(),
-                  UserProfileWidget(),
+                  const NotificationBadgeWidget(),
+                  const CartBadgeWidget(),
+                  const UserProfileWidget(),
                 ],
               ),
             ],
           ),
         ),
+        const StoreCompactHeaderWidget(),
       ],
     );
   }

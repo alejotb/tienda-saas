@@ -1,6 +1,8 @@
 import 'package:baul_pandora/auth/supabase_auth/auth_util.dart';
 import 'package:baul_pandora/backend/supabase/supabase.dart';
 import 'package:baul_pandora/services/cart_service.dart';
+import 'package:baul_pandora/services/store_service.dart';
+import 'package:baul_pandora/services/store_theme_service.dart';
 import 'package:baul_pandora/components/top_nav/top_nav_widget.dart';
 import 'package:baul_pandora/flutter_flow/flutter_flow_theme.dart';
 import 'package:baul_pandora/flutter_flow/flutter_flow_util.dart';
@@ -42,6 +44,12 @@ class _MainHomePageWidgetState extends State<MainHomePageWidget> {
 
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
+      if (FFAppState().activeStoreId.isNotEmpty && StoreThemeService.instance.currentStore == null) {
+        final store = await StoreService.instance.getStoreById(FFAppState().activeStoreId);
+        if (store != null) {
+          StoreThemeService.instance.setStore(store);
+        }
+      }
       if (loggedIn) {
         await CartService.instance.fetchRemoteCart();
         safeSetState(() {});

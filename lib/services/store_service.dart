@@ -180,6 +180,45 @@ class StoreService {
     }
   }
 
+  /// Obtiene una tienda por su slug
+  Future<StoreData?> getStoreBySlug(String slug) async {
+    try {
+      final cleanSlug = slug.toLowerCase().trim();
+      final res = await SupaFlow.client
+          .from('tiendas')
+          .select()
+          .eq('slug', cleanSlug)
+          .maybeSingle();
+
+      if (res != null) {
+        return StoreData.fromMap(res);
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error obteniendo tienda por slug: $e');
+      return null;
+    }
+  }
+
+  /// Obtiene una tienda por su ID
+  Future<StoreData?> getStoreById(String storeId) async {
+    try {
+      final res = await SupaFlow.client
+          .from('tiendas')
+          .select()
+          .eq('id', storeId)
+          .maybeSingle();
+
+      if (res != null) {
+        return StoreData.fromMap(res);
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error obteniendo tienda por ID: $e');
+      return null;
+    }
+  }
+
   /// Actualiza la preferencia del comerciante para permitir o no compras como invitado
   Future<bool> updateGuestSetting(String storeId, bool allowGuests) async {
     try {
