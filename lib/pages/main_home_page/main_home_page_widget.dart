@@ -197,7 +197,17 @@ class _MainHomePageWidgetState extends State<MainHomePageWidget> {
                                         if (code != null && code.isNotEmpty) {
                                           final isUuid = RegExp(r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', caseSensitive: false).hasMatch(code);
                                           final products = await ProductosTable().queryRows(
-                                            queryFn: (q) => isUuid ? q.eq('id', code).limit(1) : q.eq('codigo_barras', code).limit(1),
+                                            queryFn: (q) {
+                                            if (isUuid) {
+                                              q = q.eq('id', code);
+                                            } else {
+                                              q = q.eq('codigo_barras', code);
+                                            }
+                                            if (FFAppState().activeStoreId.isNotEmpty) {
+                                              q = q.eq('tienda_id', FFAppState().activeStoreId);
+                                            }
+                                            return q.limit(1);
+                                          },
                                           );
                                           if (products.isNotEmpty && context.mounted) {
                                             context.pushNamed(
