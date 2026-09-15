@@ -1,3 +1,16 @@
-lib/pages/login_page/login_page_widget.dart:2165:34: Error: Can't find ')' to match '('.
+lib/pages/login_page/login_page_widget.dart:2165:34: Error: Too many positional arguments: 0
+allowed, but 1 found.
+Try removing the extra positional arguments.
                           Padding(
                                  ^
+/C:/flutter/packages/flutter/lib/src/widgets/basic.dart:2319:9: Context: Found this candidate,
+but the arguments don't match.
+  const Padding({super.key, required this.padding, super.child});
+        ^^^^^^^
+lib/pages/login_page/login_page_widget.dart:2242:29: Error: Expected an identifier, but got ')'.
+Try inserting an identifier before ')'.
+                            ),
+                            ^
+lib/pages/login_page/login_page_widget.dart:2242:29: Error: Expected ']' before this.
+                            ),
+                            ^
