@@ -275,7 +275,11 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: LoginPageWidget.routeName,
           path: LoginPageWidget.routePath,
-          builder: (context, params) => const LoginPageWidget(),
+          builder: (context, params) => LoginPageWidget(
+            fromPage: params.getParam('fromPage', ParamType.String),
+            isClientStoreMode: params.getParam('isClientStoreMode', ParamType.bool) ??
+                FFAppState().activeStoreId.isNotEmpty,
+          ),
         ),
         FFRoute(
           name: MainOrderHistoryWidget.routeName,

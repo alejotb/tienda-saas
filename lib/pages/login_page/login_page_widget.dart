@@ -33,6 +33,7 @@ class LoginPageWidget extends StatefulWidget {
 class _LoginPageWidgetState extends State<LoginPageWidget>
     with TickerProviderStateMixin {
   late LoginPageModel _model;
+  bool get isStoreMode => widget.isClientStoreMode || FFAppState().activeStoreId.isNotEmpty;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -1063,6 +1064,7 @@ class _LoginPageWidgetState extends State<LoginPageWidget>
                                                           ],
                                                         ),
                                                       ),
+                                                      if (isStoreMode)
                                                       Align(
                                                         alignment:
                                                             const AlignmentDirectional(
@@ -2060,6 +2062,7 @@ class _LoginPageWidgetState extends State<LoginPageWidget>
                                                       ],
                                                     ),
                                                   ),
+                                                  if (isStoreMode)
                                                   Align(
                                                     alignment:
                                                         const AlignmentDirectional(
@@ -2160,7 +2163,7 @@ class _LoginPageWidgetState extends State<LoginPageWidget>
                           ).animateOnPageLoad(
                               animationsMap['containerOnPageLoadAnimation']!),
                         ),
-                        if (!widget.isClientStoreMode) ...[
+                        if (!isStoreMode) ...[
                           const SizedBox(height: 16),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16.0),

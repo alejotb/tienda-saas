@@ -22,6 +22,12 @@ class FFAppState extends ChangeNotifier {
   Future initializePersistedState() async {
     prefs = await SharedPreferences.getInstance();
     _safeInit(() {
+      _activeStoreId = prefs.getString('ff_activeStoreId') ?? '';
+    });
+    _safeInit(() {
+      _activeStoreSlug = prefs.getString('ff_activeStoreSlug') ?? '';
+    });
+    _safeInit(() {
       _invitado = prefs.getBool('ff_invitado') ?? false;
     });
     _safeInit(() {
@@ -110,6 +116,20 @@ class FFAppState extends ChangeNotifier {
 
   void insertAtIndexInShippingOptions(int index, ShippingOptionsStruct value) {
     shippingOptions.insert(index, value);
+  }
+
+  String _activeStoreId = '';
+  String get activeStoreId => _activeStoreId;
+  set activeStoreId(String value) {
+    _activeStoreId = value;
+    prefs.setString('ff_activeStoreId', value);
+  }
+
+  String _activeStoreSlug = '';
+  String get activeStoreSlug => _activeStoreSlug;
+  set activeStoreSlug(String value) {
+    _activeStoreSlug = value;
+    prefs.setString('ff_activeStoreSlug', value);
   }
 
   bool _invitado = false;
