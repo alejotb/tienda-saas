@@ -19,7 +19,9 @@ import 'package:baul_pandora/pages/administracion/admin_pagos_page.dart';
 import 'package:baul_pandora/pages/administracion/admin_despachos_page.dart';
 import 'package:baul_pandora/pages/administracion/admin_inventario_page.dart';
 import 'package:baul_pandora/pages/administracion/admin_integraciones_page.dart';
+import 'package:baul_pandora/pages/administracion/admin_dashboard_page.dart';
 import 'package:baul_pandora/pages/store_register/store_register_widget.dart';
+import 'package:baul_pandora/services/store_service.dart';
 
 export 'package:go_router/go_router.dart';
 export 'serialization_util.dart';
@@ -37,6 +39,8 @@ class AppStateNotifier extends ChangeNotifier {
   BaseAuthUser? initialUser;
   BaseAuthUser? user;
   UsuariosRow? currentUserRow;
+  StoreData? currentStore;
+  bool get hasStore => currentStore != null;
   bool showSplashImage = true;
   String? _redirectLocation;
 
@@ -74,12 +78,17 @@ class AppStateNotifier extends ChangeNotifier {
             .single();
         currentUserRow = UsuariosRow(data);
         FFAppState().isAdmin = currentUserRow?.isAdmin ?? false;
+
+        // Consultar si el usuario posee una tienda registrada
+        currentStore = await StoreService.instance.getMyStore();
       } catch (e) {
         currentUserRow = null;
+        currentStore = null;
         FFAppState().isAdmin = false;
       }
     } else {
       currentUserRow = null;
+      currentStore = null;
       FFAppState().isAdmin = false;
     }
 
@@ -94,19 +103,29 @@ class AppStateNotifier extends ChangeNotifier {
   }
 }
 
+Widget _getInitialHomeWidget(AppStateNotifier appStateNotifier) {
+  if (!appStateNotifier.loggedIn) {
+    return const LoginPageWidget();
+  }
+  // Si el usuario autenticado posee una tienda o es admin ➔ Va directo a la Administración
+  if (appStateNotifier.hasStore || (appStateNotifier.currentUserRow?.isAdmin ?? false)) {
+    return const AdminDashboardPage();
+  }
+  // Si es un usuario logueado sin tienda registrada ➔ Muestra la vista con opción a crear tienda
+  return const NavBarPage();
+}
+
 GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
       initialLocation: '/',
       debugLogDiagnostics: true,
       refreshListenable: appStateNotifier,
       navigatorKey: appNavigatorKey,
-      errorBuilder: (context, state) =>
-          appStateNotifier.loggedIn ? const NavBarPage() : const LoginPageWidget(),
+      errorBuilder: (context, state) => _getInitialHomeWidget(appStateNotifier),
       routes: [
         FFRoute(
           name: '_initialize',
           path: '/',
-          builder: (context, _) =>
-              appStateNotifier.loggedIn ? const NavBarPage() : const LoginPageWidget(),
+          builder: (context, _) => _getInitialHomeWidget(appStateNotifier),
         ),
         FFRoute(
           name: MainHomePageWidget.routeName,

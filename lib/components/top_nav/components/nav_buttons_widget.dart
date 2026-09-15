@@ -15,7 +15,8 @@ class NavButtonsWidget extends StatelessWidget {
     return ListenableBuilder(
       listenable: AppStateNotifier.instance,
       builder: (context, _) {
-        final isAdmin = (AppStateNotifier.instance.currentUserRow?.isAdmin ?? false) || FFAppState().isAdmin;
+        final hasStore = AppStateNotifier.instance.hasStore;
+        final isAdmin = (AppStateNotifier.instance.currentUserRow?.isAdmin ?? false) || FFAppState().isAdmin || hasStore;
 
         if (!responsiveVisibility(context: context, phone: false, tablet: false)) {
           return const SizedBox.shrink();
@@ -25,16 +26,17 @@ class NavButtonsWidget extends StatelessWidget {
           return Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildButton(context, 'Tienda', MainHomePageWidget.routeName),
-              _buildButton(context, 'Confirmar Pagos', 'adminPagos'),
-              _buildButton(context, 'Despachos', 'adminDespachos'),
+              _buildButton(context, 'Panel Control', AdminDashboardPage.routeName),
               _buildButton(context, 'Inventario', 'adminInventario'),
+              _buildButton(context, 'Pagos', 'adminPagos'),
+              _buildButton(context, 'Despachos', 'adminDespachos'),
             ],
           );
         } else {
           return Row(
             mainAxisSize: MainAxisSize.min,
             children: [
+              _buildButton(context, '💼 Crea tu Tienda', StoreRegisterWidget.routeName, isHighlight: true),
               _buildButton(context, 'Mis ordenes', MainOrderHistoryWidget.routeName),
               _buildButton(context, 'Favoritos', MainFavoritesWidget.routeName),
             ],
@@ -44,13 +46,12 @@ class NavButtonsWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildButton(BuildContext context, String text, String routeName) {
+  Widget _buildButton(BuildContext context, String text, String routeName, {bool isHighlight = false}) {
+    final theme = FlutterFlowTheme.of(context);
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 16.0, 0.0),
       child: FFButtonWidget(
         onPressed: () async {
-          // Si el admin hace clic en los botones de administraciA3n, navegamos cambiando el estado en main.dart
-          // Por ahora, usaremos el mismo mecanismo de go_router que ya existAa.
           context.pushNamed(
             routeName,
             extra: <String, dynamic>{
@@ -64,29 +65,29 @@ class NavButtonsWidget extends StatelessWidget {
         },
         text: text,
         options: FFButtonOptions(
-          height: 44.0,
-          padding: const EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
+          height: 40.0,
+          padding: const EdgeInsetsDirectional.fromSTEB(18.0, 0.0, 18.0, 0.0),
           iconPadding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-          color: Colors.transparent,
-          textStyle: FlutterFlowTheme.of(context).bodyMedium.override(
-                fontFamily: FlutterFlowTheme.of(context).bodyMediumFamily,
-                color: FlutterFlowTheme.of(context).primaryText,
+          color: isHighlight ? theme.primary : Colors.transparent,
+          textStyle: theme.bodyMedium.override(
+                fontFamily: theme.bodyMediumFamily,
+                color: isHighlight ? Colors.white : theme.primaryText,
                 letterSpacing: 0.0,
-                fontWeight: FontWeight.w500,
-                useGoogleFonts: GoogleFonts.asMap().containsKey(FlutterFlowTheme.of(context).bodyMediumFamily),
+                fontWeight: isHighlight ? FontWeight.bold : FontWeight.w500,
+                useGoogleFonts: GoogleFonts.asMap().containsKey(theme.bodyMediumFamily),
               ),
-          elevation: 0.0,
-          borderSide: const BorderSide(
-            color: Colors.transparent,
+          elevation: isHighlight ? 2.0 : 0.0,
+          borderSide: BorderSide(
+            color: isHighlight ? theme.primary : Colors.transparent,
             width: 1.0,
           ),
           borderRadius: BorderRadius.circular(12.0),
-          hoverColor: FlutterFlowTheme.of(context).alternate,
+          hoverColor: isHighlight ? theme.accent1 : theme.alternate,
           hoverBorderSide: BorderSide(
-            color: FlutterFlowTheme.of(context).alternate,
+            color: isHighlight ? theme.primary : theme.alternate,
             width: 1.0,
           ),
-          hoverTextColor: FlutterFlowTheme.of(context).primaryText,
+          hoverTextColor: isHighlight ? theme.primary : theme.primaryText,
         ),
       ),
     );
