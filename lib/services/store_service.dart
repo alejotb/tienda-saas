@@ -234,32 +234,24 @@ class StoreService {
       final stores = await getMyStores(userId: uid);
       final count = stores.length;
 
-      if (count == 0) {
-        return StoreEligibility(
-          canCreate: true,
-          currentStoreCount: 0,
-          hasProPlan: false,
-        );
-      }
-
       final hasPro = stores.any((s) =>
           s.plan.toLowerCase() == 'pro' || s.plan.toLowerCase() == 'premium');
 
-      if (hasPro) {
+      if (hasPro || count < 2) {
         return StoreEligibility(
           canCreate: true,
           currentStoreCount: count,
-          hasProPlan: true,
+          hasProPlan: hasPro,
         );
       }
 
-      // Usuario Free con al menos 1 tienda ya creada
+      // Usuario Free con 2 o más tiendas ya creadas
       return StoreEligibility(
         canCreate: false,
         currentStoreCount: count,
         hasProPlan: false,
         message:
-            'Las cuentas con Plan Free están limitadas a 1 sola tienda. Para crear y gestionar múltiples tiendas con una misma cuenta, actualiza al Plan Pro.',
+            'Las cuentas con Plan Free están limitadas a un máximo de 2 tiendas. Para crear 3 o más tiendas con una misma cuenta, actualiza al Plan Pro.',
       );
     } catch (e) {
       debugPrint('Error verificando elegibilidad de creación de tienda: $e');

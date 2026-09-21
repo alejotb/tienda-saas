@@ -243,7 +243,7 @@ class _AdminSubscriptionViewState extends State<AdminSubscriptionView> {
                         isCurrent: !isPro,
                         accentColor: Colors.blueGrey,
                         features: [
-                          '1 sola tienda por cuenta',
+                          'Hasta 2 tiendas por cuenta',
                           'Hasta 100 productos en catálogo',
                           'Catálogo web público independiente',
                           'Recepción de pedidos por WhatsApp',

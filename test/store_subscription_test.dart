@@ -73,7 +73,7 @@ void main() {
       expect(store.whatsappConfirmado, true);
     });
 
-    test('StoreEligibility evaluates Free plan 1-store quota correctly', () {
+    test('StoreEligibility evaluates Free plan 2-store quota correctly', () {
       // 0 stores -> Allowed
       final eligibilityZero = StoreEligibility(
         canCreate: true,
@@ -83,34 +83,43 @@ void main() {
       expect(eligibilityZero.canCreate, isTrue);
       expect(eligibilityZero.hasProPlan, isFalse);
 
-      // 1 Free store -> Blocked (Free limit is 1 store)
-      final eligibilityFree = StoreEligibility(
-        canCreate: false,
-        currentStoreCount: 1,
-        hasProPlan: false,
-        message: 'Las cuentas con Plan Free están limitadas a 1 sola tienda. Para crear y gestionar múltiples tiendas con una misma cuenta, actualiza al Plan Pro.',
-      );
-      expect(eligibilityFree.canCreate, isFalse);
-      expect(eligibilityFree.hasProPlan, isFalse);
-      expect(eligibilityFree.message, contains('Plan Pro'));
-
-      // 1 Pro store -> Allowed (Multi-store enabled)
-      final eligibilityPro = StoreEligibility(
+      // 1 Free store -> Allowed (Free limit is 2 stores)
+      final eligibilityOneFree = StoreEligibility(
         canCreate: true,
         currentStoreCount: 1,
+        hasProPlan: false,
+      );
+      expect(eligibilityOneFree.canCreate, isTrue);
+      expect(eligibilityOneFree.hasProPlan, isFalse);
+
+      // 2 Free stores -> Blocked (Free limit reached)
+      final eligibilityTwoFree = StoreEligibility(
+        canCreate: false,
+        currentStoreCount: 2,
+        hasProPlan: false,
+        message: 'Las cuentas con Plan Free están limitadas a un máximo de 2 tiendas. Para crear 3 o más tiendas con una misma cuenta, actualiza al Plan Pro.',
+      );
+      expect(eligibilityTwoFree.canCreate, isFalse);
+      expect(eligibilityTwoFree.hasProPlan, isFalse);
+      expect(eligibilityTwoFree.message, contains('Plan Pro'));
+
+      // 2 Pro stores -> Allowed (Multi-store unlimited enabled)
+      final eligibilityPro = StoreEligibility(
+        canCreate: true,
+        currentStoreCount: 2,
         hasProPlan: true,
       );
       expect(eligibilityPro.canCreate, isTrue);
       expect(eligibilityPro.hasProPlan, isTrue);
 
-      // 3 Pro stores -> Allowed (Unlimited stores)
+      // 5 Pro stores -> Allowed (Unlimited stores)
       final eligibilityProMultiple = StoreEligibility(
         canCreate: true,
-        currentStoreCount: 3,
+        currentStoreCount: 5,
         hasProPlan: true,
       );
       expect(eligibilityProMultiple.canCreate, isTrue);
-      expect(eligibilityProMultiple.currentStoreCount, 3);
+      expect(eligibilityProMultiple.currentStoreCount, 5);
     });
   });
 }
