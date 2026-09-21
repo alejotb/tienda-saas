@@ -244,7 +244,12 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
           final res = await SupaFlow.client.auth.signUp(
             email: email,
             password: password,
-            data: {'display_name': name},
+            data: {
+              'display_name': name,
+              'full_name': name,
+              'name': name,
+              'nombre': name,
+            },
           );
           if (res.user != null) {
             final authUser = BaulPandoraSupabaseUser(res.user!);
@@ -278,16 +283,43 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
         throw Exception('No se pudo autenticar la cuenta. Verifica que el correo y contraseña sean correctos.');
       }
 
-      // Upsert usuario
-      if (name.isNotEmpty && currentUserUid.isNotEmpty) {
+      // Actualizar nombre en auth.users metadata y asegurar registro en tabla usuarios
+      if (currentUserUid.isNotEmpty) {
+        if (name.isNotEmpty) {
+          try {
+            await SupaFlow.client.auth.updateUser(
+              UserAttributes(
+                data: {
+                  'display_name': name,
+                  'full_name': name,
+                  'name': name,
+                  'nombre': name,
+                },
+              ),
+            );
+          } catch (e) {
+            debugPrint('Error actualizando user metadata en auth: $e');
+          }
+        }
+
         try {
-          await SupaFlow.client.from('usuarios').upsert({
+          final userPayload = <String, dynamic>{
             'id': currentUserUid,
             'email': email,
-            'display_name': name,
             'is_admin': true,
-          });
-        } catch (_) {}
+            'rol': 'dueno_tienda',
+          };
+          if (name.isNotEmpty) {
+            userPayload['nombre'] = name;
+          }
+          await SupaFlow.client.from('usuarios').upsert(userPayload);
+
+          if (currentUser != null) {
+            await AppStateNotifier.instance.update(currentUser!);
+          }
+        } catch (e) {
+          debugPrint('Error haciendo upsert en tabla usuarios: $e');
+        }
       }
 
       // Validar si el usuario tiene permitido crear una nueva tienda según su plan

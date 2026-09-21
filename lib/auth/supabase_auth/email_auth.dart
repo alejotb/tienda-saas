@@ -11,10 +11,14 @@ Future<User?> emailSignInFunc(
 
 Future<User?> emailCreateAccountFunc(
   String email,
-  String password,
-) async {
-  final AuthResponse res =
-      await SupaFlow.client.auth.signUp(email: email, password: password);
+  String password, [
+  Map<String, dynamic>? data,
+]) async {
+  final AuthResponse res = await SupaFlow.client.auth.signUp(
+    email: email,
+    password: password,
+    data: data,
+  );
 
   // Si Supabase devuelve sesión activa (confirmación de email desactivada), retornamos el usuario directamente.
   if (res.session != null) {

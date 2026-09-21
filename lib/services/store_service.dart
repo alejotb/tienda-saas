@@ -161,14 +161,28 @@ class StoreService {
 
     final store = StoreData.fromMap(res);
 
-    // Actualizar usuario en tabla usuarios asignando rol y tienda_id si aplica
+    // Asegurar que el usuario existe en tabla usuarios y asignarle rol, is_admin y tienda_id
     try {
-      await SupaFlow.client.from('usuarios').update({
+      final userMetadata = user.userMetadata ?? {};
+      final userName = userMetadata['display_name'] ??
+          userMetadata['full_name'] ??
+          userMetadata['name'] ??
+          userMetadata['nombre'];
+
+      final userMap = <String, dynamic>{
+        'id': user.id,
+        'email': user.email,
         'tienda_id': store.id,
         'rol': 'dueno_tienda',
-      }).eq('id', user.id);
+        'is_admin': true,
+      };
+      if (userName != null && userName.toString().trim().isNotEmpty) {
+        userMap['nombre'] = userName.toString().trim();
+      }
+
+      await SupaFlow.client.from('usuarios').upsert(userMap);
     } catch (e) {
-      debugPrint('Nota: Actualizando rol de usuario en tabla usuarios: $e');
+      debugPrint('Nota: Actualizando / creando usuario en tabla usuarios: $e');
     }
 
     return store;

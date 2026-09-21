@@ -218,43 +218,57 @@ class SupabaseAuthManager extends AuthManager
         currentUser = authUser;
         await AppStateNotifier.instance.update(authUser);
 
-        // Sincronizar información de Google (nombre y foto)
+        // Sincronizar / crear información del usuario en tabla 'usuarios'
         try {
           final metadata = user?.userMetadata;
-          if (metadata != null) {
-            final fullName = metadata['full_name']?.toString() ?? metadata['name']?.toString();
-            final avatarUrl = metadata['avatar_url']?.toString() ?? metadata['picture']?.toString();
-            
-            if (fullName != null || avatarUrl != null) {
-              final existingUser = await UsuariosTable().querySingleRow(
-                queryFn: (q) => q.eq('id', authUser.uid!),
+          final fullName = metadata?['display_name']?.toString() ??
+              metadata?['full_name']?.toString() ??
+              metadata?['name']?.toString() ??
+              metadata?['nombre']?.toString();
+          final avatarUrl = metadata?['avatar_url']?.toString() ??
+              metadata?['picture']?.toString() ??
+              metadata?['photo_path']?.toString();
+
+          final existingUser = await UsuariosTable().querySingleRow(
+            queryFn: (q) => q.eq('id', authUser.uid!),
+          );
+
+          if (existingUser.isEmpty) {
+            await SupaFlow.client.from('usuarios').insert({
+              'id': authUser.uid!,
+              'email': user?.email,
+              if (fullName != null && fullName.isNotEmpty) 'nombre': fullName,
+              if (avatarUrl != null && avatarUrl.isNotEmpty) 'photo_path': avatarUrl,
+              'rol': 'cliente',
+              'is_admin': false,
+            });
+          } else {
+            final userRow = existingUser.first;
+            bool needsUpdate = false;
+            final updateData = <String, dynamic>{};
+
+            if (fullName != null &&
+                fullName.isNotEmpty &&
+                (userRow.nombre == null || userRow.nombre!.isEmpty)) {
+              updateData['nombre'] = fullName;
+              needsUpdate = true;
+            }
+            if (avatarUrl != null &&
+                avatarUrl.isNotEmpty &&
+                (userRow.photoPath == null || userRow.photoPath!.isEmpty)) {
+              updateData['photo_path'] = avatarUrl;
+              needsUpdate = true;
+            }
+
+            if (needsUpdate) {
+              await UsuariosTable().update(
+                data: updateData,
+                matchingRows: (rows) => rows.eq('id', authUser.uid!),
               );
-              
-              if (existingUser.isNotEmpty) {
-                final userRow = existingUser.first;
-                bool needsUpdate = false;
-                final updateData = <String, dynamic>{};
-                
-                if (fullName != null && (userRow.nombre == null || userRow.nombre!.isEmpty)) {
-                  updateData['nombre'] = fullName;
-                  needsUpdate = true;
-                }
-                if (avatarUrl != null && (userRow.photoPath == null || userRow.photoPath!.isEmpty)) {
-                  updateData['photo_path'] = avatarUrl;
-                  needsUpdate = true;
-                }
-                
-                if (needsUpdate) {
-                  await UsuariosTable().update(
-                    data: updateData,
-                    matchingRows: (rows) => rows.eq('id', authUser.uid!),
-                  );
-                }
-              }
             }
           }
         } catch (e) {
-          debugPrint('Error updating user from Google metadata: $e');
+          debugPrint('Error sincronizando usuario en tabla usuarios: $e');
         }
 
         // Synchronize favorites upon successful login
