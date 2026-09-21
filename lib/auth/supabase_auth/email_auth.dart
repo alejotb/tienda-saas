@@ -16,9 +16,9 @@ Future<User?> emailCreateAccountFunc(
   final AuthResponse res =
       await SupaFlow.client.auth.signUp(email: email, password: password);
 
-  // If the Supabase project is configured to not let users sign in until the
-  // email has been confirmed, the user returned in the AuthResponse still has
-  // all the user info. But since the user shouldn't be able to sign in without
-  // their email verified, return a null User.
+  // Si Supabase devuelve sesión activa (confirmación de email desactivada), retornamos el usuario directamente.
+  if (res.session != null) {
+    return res.user;
+  }
   return res.user?.lastSignInAt == null ? null : res.user;
 }
