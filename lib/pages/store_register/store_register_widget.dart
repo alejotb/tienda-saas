@@ -352,6 +352,17 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
       appBar: AppBar(
         backgroundColor: theme.secondaryBackground,
         elevation: 1,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          tooltip: 'Volver a Iniciar Sesión / Inicio',
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.goNamed('loginPage');
+            }
+          },
+        ),
         title: Text(
           'Crear Nueva Tienda',
           style: theme.titleLarge.override(
@@ -360,6 +371,19 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
           ),
         ),
         centerTitle: true,
+        actions: [
+          TextButton.icon(
+            onPressed: () {
+              context.goNamed('loginPage');
+            },
+            icon: const Icon(Icons.login_rounded, size: 18),
+            label: const Text('Iniciar Sesión'),
+            style: TextButton.styleFrom(
+              foregroundColor: theme.primary,
+            ),
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -620,6 +644,23 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
                             : 'Crear Cuenta y Continuar ->'),
                     style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                   ),
+          ),
+        ),
+        const SizedBox(height: 20),
+        Center(
+          child: TextButton.icon(
+            onPressed: () {
+              context.goNamed('loginPage');
+            },
+            icon: Icon(Icons.arrow_back_rounded, size: 18, color: theme.secondaryText),
+            label: Text(
+              'Salir y volver a la página inicial para iniciar sesión',
+              style: TextStyle(
+                color: theme.secondaryText,
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
+            ),
           ),
         ),
       ],
