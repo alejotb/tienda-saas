@@ -7,6 +7,8 @@ import 'package:baul_pandora/services/store_service.dart';
 import 'package:baul_pandora/services/store_theme_service.dart';
 import 'package:baul_pandora/backend/supabase/supabase.dart';
 import 'package:baul_pandora/auth/supabase_auth/auth_util.dart';
+import 'package:baul_pandora/auth/supabase_auth/supabase_user_provider.dart';
+import 'package:baul_pandora/components/otp_verification_dialog.dart';
 import 'package:baul_pandora/pages/store_register/store_register_model.dart';
 export 'package:baul_pandora/pages/store_register/store_register_model.dart';
 
@@ -107,29 +109,111 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
       if (!loggedIn) {
         final email = _model.emailController.text.trim();
         final password = _model.passwordController.text;
+        final name = _model.nameController.text.trim();
 
-        final authUser = await authManager.createAccountWithEmail(
-          context,
-          email,
-          password,
-        );
+        try {
+          final res = await SupaFlow.client.auth.signUp(
+            email: email,
+            password: password,
+            data: {
+              if (name.isNotEmpty) 'display_name': name,
+            },
+          );
 
-        if (authUser == null && !loggedIn) {
-          // Intentar iniciar sesión si la cuenta ya existía con esa clave
-          await authManager.signInWithEmail(context, email, password);
+          if (res.session != null && res.user != null) {
+            final authUser = BaulPandoraSupabaseUser(res.user!);
+            currentUser = authUser;
+            await AppStateNotifier.instance.update(authUser);
+          } else {
+            // Supabase requiere verificación de correo vía código OTP de 6 dígitos
+            if (mounted) {
+              final verified = await OtpVerificationDialog.show(
+                context,
+                email: email,
+                title: 'Confirma tu correo',
+                subtitle:
+                    'Ingresa el código de 6 dígitos que enviamos a:\n$email para verificar tu cuenta y registrar tu tienda.',
+              );
+
+              if (!verified || !loggedIn) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                          'Debes ingresar el código de verificación para completar el registro.'),
+                      backgroundColor: Colors.amber,
+                    ),
+                  );
+                }
+                setState(() => _isLoading = false);
+                return;
+              }
+            }
+          }
+        } on AuthException catch (e) {
+          // Si el usuario ya está registrado, intentar iniciar sesión
+          final isAlreadyRegistered =
+              e.message.toLowerCase().contains('already registered') ||
+                  e.message.toLowerCase().contains('ya registrado');
+
+          if (isAlreadyRegistered) {
+            try {
+              final signInRes = await SupaFlow.client.auth.signInWithPassword(
+                email: email,
+                password: password,
+              );
+              if (signInRes.user != null) {
+                final authUser = BaulPandoraSupabaseUser(signInRes.user!);
+                currentUser = authUser;
+                await AppStateNotifier.instance.update(authUser);
+              }
+            } on AuthException catch (signInErr) {
+              final isUnconfirmed =
+                  signInErr.message.toLowerCase().contains('not confirmed') ||
+                      signInErr.message.toLowerCase().contains('no confirmado');
+
+              if (isUnconfirmed) {
+                try {
+                  await SupaFlow.client.auth.resend(
+                    type: OtpType.signup,
+                    email: email,
+                  );
+                } catch (_) {}
+
+                if (mounted) {
+                  final verified = await OtpVerificationDialog.show(
+                    context,
+                    email: email,
+                    title: 'Confirma tu correo',
+                    subtitle:
+                        'Tu cuenta aún no está confirmada. Ingresa el código de 6 dígitos enviado a:\n$email',
+                  );
+
+                  if (!verified || !loggedIn) {
+                    setState(() => _isLoading = false);
+                    return;
+                  }
+                }
+              } else {
+                rethrow;
+              }
+            }
+          } else {
+            rethrow;
+          }
         }
 
         if (!loggedIn) {
-          throw Exception('No se pudo crear la cuenta de usuario. Verifica los datos e intenta nuevamente.');
+          throw Exception('No se pudo verificar la cuenta. Intenta nuevamente.');
         }
 
         // Actualizar nombre en la tabla usuarios si está disponible
-        if (_model.nameController.text.trim().isNotEmpty && currentUserUid.isNotEmpty) {
+        if (name.isNotEmpty && currentUserUid.isNotEmpty) {
           try {
             await SupaFlow.client.from('usuarios').upsert({
               'id': currentUserUid,
               'email': email,
-              'display_name': _model.nameController.text.trim(),
+              'display_name': name,
               'is_admin': true,
             });
           } catch (_) {}

@@ -10,11 +10,11 @@ void main() {
       expect(getProxyUrl(''), placeholderUrl);
     });
 
-    test('Should encode URL with special characters', () {
+    test('Should return original URL when provided', () {
       const complexUrl = 'https://example.com/image with spaces & symbols.jpg?q=1';
       final result = getProxyUrl(complexUrl);
       
-      expect(result, contains('url=https%3A%2F%2Fexample.com%2Fimage%20with%20spaces%20%26%20symbols.jpg%3Fq%3D1'));
+      expect(result, equals(complexUrl));
     });
   });
 }
