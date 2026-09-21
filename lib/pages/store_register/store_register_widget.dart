@@ -25,6 +25,8 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
   late StoreRegisterModel _model;
   int _currentStep = 0;
   bool _isLoading = false;
+  bool _isAuthenticatingStep0 = false;
+  bool _isExistingAccountMode = false;
   bool _obscurePassword = true;
   Uint8List? _logoBytes;
   Uint8List? _bannerBytes;
@@ -84,6 +86,136 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
     _model.slugController.text = slug;
   }
 
+  Future<void> _handleStep0Account() async {
+    if (loggedIn) {
+      setState(() => _currentStep = 1);
+      return;
+    }
+
+    final email = _model.emailController.text.trim();
+    final password = _model.passwordController.text;
+    final name = _model.nameController.text.trim();
+
+    if (!_isExistingAccountMode && name.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor ingresa tu nombre completo')),
+      );
+      return;
+    }
+
+    if (email.isEmpty || !email.contains('@')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor ingresa un correo electrónico válido')),
+      );
+      return;
+    }
+
+    if (password.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('La contraseña debe tener al menos 6 caracteres')),
+      );
+      return;
+    }
+
+    setState(() => _isAuthenticatingStep0 = true);
+
+    try {
+      if (_isExistingAccountMode) {
+        // Iniciar sesión con cuenta existente
+        final signInRes = await SupaFlow.client.auth.signInWithPassword(
+          email: email,
+          password: password,
+        );
+        if (signInRes.user != null) {
+          final authUser = BaulPandoraSupabaseUser(signInRes.user!);
+          currentUser = authUser;
+          await AppStateNotifier.instance.update(authUser);
+        }
+      } else {
+        // Crear cuenta nueva
+        try {
+          final res = await SupaFlow.client.auth.signUp(
+            email: email,
+            password: password,
+            data: {
+              if (name.isNotEmpty) 'display_name': name,
+            },
+          );
+          if (res.user != null) {
+            final authUser = BaulPandoraSupabaseUser(res.user!);
+            currentUser = authUser;
+            await AppStateNotifier.instance.update(authUser);
+          }
+        } on AuthException catch (e) {
+          final isAlreadyRegistered =
+              e.message.toLowerCase().contains('already registered') ||
+                  e.message.toLowerCase().contains('ya registrado');
+
+          if (isAlreadyRegistered) {
+            // Intentar iniciar sesión automáticamente
+            final signInRes = await SupaFlow.client.auth.signInWithPassword(
+              email: email,
+              password: password,
+            );
+            if (signInRes.user != null) {
+              final authUser = BaulPandoraSupabaseUser(signInRes.user!);
+              currentUser = authUser;
+              await AppStateNotifier.instance.update(authUser);
+            }
+          } else if (e.statusCode == '429' || e.message.toLowerCase().contains('rate limit')) {
+            throw Exception(
+              'Límite de solicitudes de registro en Supabase (Error 429). Si ya creaste tu cuenta, cambia a "Ya tengo cuenta" para iniciar sesión, o espera unos minutos.',
+            );
+          } else {
+            rethrow;
+          }
+        }
+      }
+
+      if (!loggedIn) {
+        throw Exception('No se pudo autenticar la cuenta. Verifica que el correo y contraseña sean correctos.');
+      }
+
+      // Upsert usuario
+      if (name.isNotEmpty && currentUserUid.isNotEmpty) {
+        try {
+          await SupaFlow.client.from('usuarios').upsert({
+            'id': currentUserUid,
+            'email': email,
+            'display_name': name,
+            'is_admin': true,
+          });
+        } catch (_) {}
+      }
+
+      if (mounted) {
+        setState(() {
+          _currentStep = 1;
+        });
+      }
+    } on AuthException catch (e) {
+      if (mounted) {
+        String msg = e.message;
+        if (e.message.toLowerCase().contains('invalid login credentials')) {
+          msg = 'Credenciales incorrectas: Este correo ya existe con otra contraseña. Por favor verifica tu clave o usa el modo "Ya tengo cuenta".';
+        } else if (e.statusCode == '429' || e.message.toLowerCase().contains('rate limit')) {
+          msg = 'Límite de solicitudes alcanzado en Supabase (Error 429). Cambia a "Ya tengo cuenta" si ya te registraste, o espera unos minutos.';
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(msg), backgroundColor: Colors.red),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString().replaceAll('Exception: ', '')), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isAuthenticatingStep0 = false);
+    }
+  }
+
   Future<void> _submitRegistration() async {
     setState(() => _isLoading = true);
 
@@ -104,7 +236,7 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
         return;
       }
 
-      // 2. Si el usuario no está autenticado, crear su cuenta de usuario en Supabase Auth o iniciar sesión
+      // 2. Si el usuario no está autenticado, intentar autenticarlo
       if (!loggedIn) {
         final email = _model.emailController.text.trim();
         final password = _model.passwordController.text;
@@ -118,14 +250,12 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
               if (name.isNotEmpty) 'display_name': name,
             },
           );
-
           if (res.user != null) {
             final authUser = BaulPandoraSupabaseUser(res.user!);
             currentUser = authUser;
             await AppStateNotifier.instance.update(authUser);
           }
         } catch (_) {
-          // Si el usuario ya existía o hubo conflicto, intentar iniciar sesión
           try {
             final signInRes = await SupaFlow.client.auth.signInWithPassword(
               email: email,
@@ -136,24 +266,13 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
               currentUser = authUser;
               await AppStateNotifier.instance.update(authUser);
             }
-          } catch (signInErr) {
-            debugPrint('Error en login durante registro de tienda: $signInErr');
-          }
+          } catch (_) {}
         }
 
         if (!loggedIn) {
-          final authUser = await authManager.signInWithEmail(context, email, password);
-          if (authUser != null) {
-            currentUser = authUser;
-            await AppStateNotifier.instance.update(authUser);
-          }
+          throw Exception('Debes estar autenticado para crear la tienda. Revisa los datos de tu cuenta en el Paso 1.');
         }
 
-        if (!loggedIn) {
-          throw Exception('No se pudo autenticar la cuenta de usuario. Verifica los datos e intenta nuevamente.');
-        }
-
-        // Actualizar nombre en la tabla usuarios si está disponible
         if (name.isNotEmpty && currentUserUid.isNotEmpty) {
           try {
             await SupaFlow.client.from('usuarios').upsert({
@@ -342,9 +461,9 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
           Container(
             padding: const EdgeInsets.all(16.0),
             decoration: BoxDecoration(
-              color: theme.primary.withValues(alpha: 0.1),
+              color: theme.primary.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12.0),
-              border: Border.all(color: theme.primary.withValues(alpha: 0.3)),
+              border: Border.all(color: theme.primary.withOpacity(0.3)),
             ),
             child: Row(
               children: [
@@ -377,16 +496,78 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
           ),
           const SizedBox(height: 24),
         ] else ...[
-          TextField(
-            controller: _model.nameController,
-            decoration: InputDecoration(
-              labelText: 'Nombre Completo / Razón Social',
-              hintText: 'Ej. Juan Pérez',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              prefixIcon: const Icon(Icons.person_outline),
+          // Selector de Modo (Nueva Cuenta vs Ya tengo cuenta)
+          Container(
+            decoration: BoxDecoration(
+              color: theme.primaryBackground,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: theme.alternate),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: InkWell(
+                    onTap: () => setState(() => _isExistingAccountMode = false),
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      decoration: BoxDecoration(
+                        color: !_isExistingAccountMode ? theme.primary : Colors.transparent,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'Crear Cuenta Nueva',
+                          style: TextStyle(
+                            color: !_isExistingAccountMode ? Colors.white : theme.secondaryText,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: InkWell(
+                    onTap: () => setState(() => _isExistingAccountMode = true),
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      decoration: BoxDecoration(
+                        color: _isExistingAccountMode ? theme.primary : Colors.transparent,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'Ya tengo Cuenta',
+                          style: TextStyle(
+                            color: _isExistingAccountMode ? Colors.white : theme.secondaryText,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
+
+          if (!_isExistingAccountMode) ...[
+            TextField(
+              controller: _model.nameController,
+              decoration: InputDecoration(
+                labelText: 'Nombre Completo / Razón Social',
+                hintText: 'Ej. Juan Pérez',
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                prefixIcon: const Icon(Icons.person_outline),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
           TextField(
             controller: _model.emailController,
             keyboardType: TextInputType.emailAddress,
@@ -402,7 +583,9 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
             controller: _model.passwordController,
             obscureText: _obscurePassword,
             decoration: InputDecoration(
-              labelText: 'Contraseña de Acceso (mínimo 6 caracteres)',
+              labelText: _isExistingAccountMode
+                  ? 'Contraseña de tu Cuenta'
+                  : 'Contraseña de Acceso (mínimo 6 caracteres)',
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               prefixIcon: const Icon(Icons.lock_outline),
               suffixIcon: IconButton(
@@ -417,42 +600,26 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: () {
-              if (!loggedIn) {
-                final name = _model.nameController.text.trim();
-                final email = _model.emailController.text.trim();
-                final password = _model.passwordController.text;
-
-                if (name.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Por favor ingresa tu nombre completo')),
-                  );
-                  return;
-                }
-                if (email.isEmpty || !email.contains('@')) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Por favor ingresa un correo electrónico válido')),
-                  );
-                  return;
-                }
-                if (password.length < 6) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('La contraseña debe tener al menos 6 caracteres')),
-                  );
-                  return;
-                }
-              }
-              setState(() => _currentStep = 1);
-            },
+            onPressed: _isAuthenticatingStep0 ? null : _handleStep0Account,
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 16),
               backgroundColor: theme.primary,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            child: const Text(
-              'Continuar a Datos del Negocio ->',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-            ),
+            child: _isAuthenticatingStep0
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                  )
+                : Text(
+                    loggedIn
+                        ? 'Continuar a Datos del Negocio ->'
+                        : (_isExistingAccountMode
+                            ? 'Iniciar Sesión y Continuar ->'
+                            : 'Crear Cuenta y Continuar ->'),
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
           ),
         ),
       ],
