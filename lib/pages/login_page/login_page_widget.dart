@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:baul_pandora/services/store_service.dart';
 import 'login_page_model.dart';
 export 'login_page_model.dart';
 
@@ -164,12 +165,18 @@ class _LoginPageWidgetState extends State<LoginPageWidget>
     AppStateNotifier.instance.stopShowingSplashImage();
 
     if (context.mounted) {
-      if (widget.fromPage != null && widget.fromPage!.startsWith('/')) {
-        context.go(widget.fromPage!);
+      // Si el usuario no tiene tienda y no es superadmin, llevarlo a configurar su tienda
+      final store = await StoreService.instance.getMyStore();
+      if (store == null && (AppStateNotifier.instance.currentUserRow?.isAdmin != true)) {
+        context.goNamed('storeRegister');
       } else {
-        context.goNamedAuth(
-            widget.fromPage ?? MainHomePageWidget.routeName,
-            context.mounted);
+        if (widget.fromPage != null && widget.fromPage!.startsWith('/')) {
+          context.go(widget.fromPage!);
+        } else {
+          context.goNamedAuth(
+              widget.fromPage ?? (store != null ? 'adminStore' : MainHomePageWidget.routeName),
+              context.mounted);
+        }
       }
     }
   }
@@ -262,7 +269,6 @@ class _LoginPageWidgetState extends State<LoginPageWidget>
                                   0.0, 24.0, 0.0, 0.0),
                               child: Column(
                                 children: [
-                                  if (isStoreMode)
                                   Align(
                                     alignment: const Alignment(0.0, 0),
                                     child: FlutterFlowButtonTabBar(
@@ -324,36 +330,7 @@ class _LoginPageWidgetState extends State<LoginPageWidget>
                                         [() async {}, () async {}][i]();
                                       },
                                     ),
-                                  )
-                                  else
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
-                                      child: Row(
-                                        children: [
-                                          Container(
-                                            padding: const EdgeInsets.all(8.0),
-                                            decoration: BoxDecoration(
-                                              color: FlutterFlowTheme.of(context).primary.withValues(alpha: 0.1),
-                                              borderRadius: BorderRadius.circular(8.0),
-                                            ),
-                                            child: Icon(
-                                              Icons.storefront_rounded,
-                                              color: FlutterFlowTheme.of(context).primary,
-                                              size: 20.0,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 10.0),
-                                          Text(
-                                            'Portal de Comerciantes',
-                                            style: GoogleFonts.inter(
-                                              fontSize: 16.0,
-                                              fontWeight: FontWeight.bold,
-                                              color: FlutterFlowTheme.of(context).primaryText,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
+                                  ),
                                   Expanded(
                                     child: TabBarView(
                                       controller: _model.tabBarController,
@@ -1817,22 +1794,15 @@ class _LoginPageWidgetState extends State<LoginPageWidget>
                                                         }
 
                                                         if (context.mounted) {
-                                                          context.goNamedAuth(
-                                                              CreateProfileWidget
-                                                                  .routeName,
+                                                          final store = await StoreService.instance.getMyStore();
+                                                          if (store == null) {
+                                                            context.goNamed('storeRegister');
+                                                          } else {
+                                                            context.goNamedAuth(
+                                                              widget.fromPage ?? 'adminStore',
                                                               context.mounted,
-                                                              queryParameters: {
-                                                                'editProfile':
-                                                                    serializeParam(
-                                                                  false,
-                                                                  ParamType.bool,
-                                                                ),
-                                                                'fromPage':
-                                                                    serializeParam(
-                                                                  widget.fromPage,
-                                                                  ParamType.String,
-                                                                ),
-                                                              }.withoutNulls);
+                                                            );
+                                                          }
                                                         }
                                                       },
                                                       text: 'Registrarse',
@@ -2205,86 +2175,6 @@ class _LoginPageWidgetState extends State<LoginPageWidget>
                           ).animateOnPageLoad(
                               animationsMap['containerOnPageLoadAnimation']!),
                         ),
-                        if (!isStoreMode) ...[
-                          const SizedBox(height: 16),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                            child: Container(
-                              constraints: const BoxConstraints(maxWidth: 570.0),
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(16.0),
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    FlutterFlowTheme.of(context).primary.withValues(alpha: 0.12),
-                                    FlutterFlowTheme.of(context).secondary.withValues(alpha: 0.08),
-                                  ],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
-                                borderRadius: BorderRadius.circular(16.0),
-                                border: Border.all(
-                                  color: FlutterFlowTheme.of(context).primary.withValues(alpha: 0.25),
-                                  width: 1.5,
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(10.0),
-                                    decoration: BoxDecoration(
-                                      color: FlutterFlowTheme.of(context).primary.withValues(alpha: 0.15),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Icon(
-                                      Icons.storefront_rounded,
-                                      color: FlutterFlowTheme.of(context).primary,
-                                      size: 26.0,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12.0),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          '¿Quieres vender o crear tu tienda?',
-                                          style: GoogleFonts.inter(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 14.0,
-                                            color: FlutterFlowTheme.of(context).primaryText,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 2.0),
-                                        Text(
-                                          'Crea tu catálogo online personalizado gratis.',
-                                          style: GoogleFonts.inter(
-                                            fontSize: 12.0,
-                                            color: FlutterFlowTheme.of(context).secondaryText,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8.0),
-                                  ElevatedButton(
-                                    onPressed: () => context.pushNamed('storeRegister'),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: FlutterFlowTheme.of(context).primary,
-                                      foregroundColor: Colors.white,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10.0),
-                                      ),
-                                      padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
-                                      elevation: 0,
-                                    ),
-                                    child: const Text('Crear Tienda', style: TextStyle(fontWeight: FontWeight.bold)),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
                         const SizedBox(height: 32),
                       ],
                     ),

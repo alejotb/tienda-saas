@@ -5,9 +5,7 @@ import 'package:baul_pandora/flutter_flow/flutter_flow_theme.dart';
 import 'package:baul_pandora/flutter_flow/flutter_flow_util.dart';
 import 'package:baul_pandora/services/store_service.dart';
 import 'package:baul_pandora/services/store_theme_service.dart';
-import 'package:baul_pandora/backend/supabase/supabase.dart';
 import 'package:baul_pandora/auth/supabase_auth/auth_util.dart';
-import 'package:baul_pandora/auth/supabase_auth/supabase_user_provider.dart';
 import 'package:baul_pandora/pages/store_register/store_register_model.dart';
 export 'package:baul_pandora/pages/store_register/store_register_model.dart';
 
@@ -25,9 +23,6 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
   late StoreRegisterModel _model;
   int _currentStep = 0;
   bool _isLoading = false;
-  bool _isAuthenticatingStep0 = false;
-  bool _isExistingAccountMode = false;
-  bool _obscurePassword = true;
   Uint8List? _logoBytes;
   Uint8List? _bannerBytes;
   String? _logoFileName;
@@ -48,9 +43,17 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
   void initState() {
     super.initState();
     _model = StoreRegisterModel();
-    if (loggedIn) {
-      _model.emailController.text = currentUserEmail;
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!loggedIn) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Por favor inicia sesión o crea tu cuenta para registrar tu tienda.'),
+            duration: Duration(seconds: 4),
+          ),
+        );
+        context.goNamed('loginPage');
+      }
+    });
   }
 
   @override
@@ -86,7 +89,7 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
     _model.slugController.text = slug;
   }
 
-    void _showPlanLimitUpgradeDialog(String message) {
+  void _showPlanLimitUpgradeDialog(String message) {
     final theme = FlutterFlowTheme.of(context);
 
     showDialog(
@@ -166,223 +169,46 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
     );
   }
 
-  Future<void> _handleStep0Account() async {
-    if (loggedIn) {
-      final eligibility = await StoreService.instance.checkStoreCreationEligibility();
-      if (!eligibility.canCreate) {
-        if (mounted) {
-          _showPlanLimitUpgradeDialog(eligibility.message ??
-              'Las cuentas con Plan Free están limitadas a 1 sola tienda. Para crear y administrar múltiples tiendas, actualiza al Plan Pro.');
-        }
-        return;
-      }
-      setState(() => _currentStep = 1);
-      return;
-    }
-
-    final email = _model.emailController.text.trim();
-    final password = _model.passwordController.text;
-    final name = _model.nameController.text.trim();
-
-    if (!_isExistingAccountMode && name.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor ingresa tu nombre completo')),
-      );
-      return;
-    }
-
-    if (email.isEmpty || !email.contains('@')) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor ingresa un correo electrónico válido')),
-      );
-      return;
-    }
-
-    if (password.length < 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('La contraseña debe tener al menos 6 caracteres')),
-      );
-      return;
-    }
-
-    setState(() => _isAuthenticatingStep0 = true);
-
-    try {
-      if (_isExistingAccountMode) {
-        // Iniciar sesión con cuenta existente
-        final signInRes = await SupaFlow.client.auth.signInWithPassword(
-          email: email,
-          password: password,
-        );
-        if (signInRes.user != null) {
-          final authUser = BaulPandoraSupabaseUser(signInRes.user!);
-          currentUser = authUser;
-          await AppStateNotifier.instance.update(authUser);
-        }
-      } else {
-        // Crear cuenta nueva
-        try {
-          final res = await SupaFlow.client.auth.signUp(
-            email: email,
-            password: password,
-            data: {
-              if (name.isNotEmpty) 'display_name': name,
-            },
-          );
-          if (res.user != null) {
-            final authUser = BaulPandoraSupabaseUser(res.user!);
-            currentUser = authUser;
-            await AppStateNotifier.instance.update(authUser);
-          }
-        } on AuthException catch (e) {
-          final isAlreadyRegistered =
-              e.message.toLowerCase().contains('already registered') ||
-                  e.message.toLowerCase().contains('ya registrado');
-
-          if (isAlreadyRegistered) {
-            // Intentar iniciar sesión automáticamente
-            final signInRes = await SupaFlow.client.auth.signInWithPassword(
-              email: email,
-              password: password,
-            );
-            if (signInRes.user != null) {
-              final authUser = BaulPandoraSupabaseUser(signInRes.user!);
-              currentUser = authUser;
-              await AppStateNotifier.instance.update(authUser);
-            }
-          } else if (e.statusCode == '429' || e.message.toLowerCase().contains('rate limit')) {
-            throw Exception(
-              'Límite de solicitudes de registro en Supabase (Error 429). Si ya creaste tu cuenta, cambia a "Ya tengo cuenta" para iniciar sesión, o espera unos minutos.',
-            );
-          } else {
-            rethrow;
-          }
-        }
-      }
-
-      if (!loggedIn) {
-        throw Exception('No se pudo autenticar la cuenta. Verifica que el correo y contraseña sean correctos.');
-      }
-
-      // Upsert usuario
-      if (name.isNotEmpty && currentUserUid.isNotEmpty) {
-        try {
-          await SupaFlow.client.from('usuarios').upsert({
-            'id': currentUserUid,
-            'email': email,
-            'display_name': name,
-            'is_admin': true,
-          });
-        } catch (_) {}
-      }
-
-      // Validar si el usuario tiene permitido crear una nueva tienda según su plan
-      final eligibility = await StoreService.instance.checkStoreCreationEligibility();
-      if (!eligibility.canCreate) {
-        if (mounted) {
-          _showPlanLimitUpgradeDialog(eligibility.message ??
-              'Las cuentas con Plan Free están limitadas a un máximo de 2 tiendas. Para crear 3 o más tiendas, actualiza al Plan Pro.');
-        }
-        return;
-      }
-
-      if (mounted) {
-        setState(() {
-          _currentStep = 1;
-        });
-      }
-    } on AuthException catch (e) {
-      if (mounted) {
-        String msg = e.message;
-        if (e.message.toLowerCase().contains('invalid login credentials')) {
-          msg = 'Credenciales incorrectas: Este correo ya existe en Supabase Auth con otra clave. Ingresa la contraseña original o elimínalo desde el panel de Supabase.';
-        } else if (e.statusCode == '429' || e.message.toLowerCase().contains('rate limit') || e.message.toLowerCase().contains('too many requests')) {
-          msg = 'Límite de solicitudes de Supabase (Error 429). Por seguridad, Supabase limita intentos de registro por hora. Espera unos minutos o prueba con otro correo de prueba.';
-        } else if (e.message.toLowerCase().contains('email not confirmed')) {
-          msg = 'Correo no confirmado: Desactiva "Confirm email" en Supabase (Authentication > Providers > Email) para registro directo sin confirmación.';
-        }
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(msg), backgroundColor: Colors.red, duration: const Duration(seconds: 5)),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString().replaceAll('Exception: ', '')), backgroundColor: Colors.red, duration: const Duration(seconds: 5)),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isAuthenticatingStep0 = false);
-    }
-  }
-
   Future<void> _submitRegistration() async {
+    if (!loggedIn) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Debes iniciar sesión para registrar una tienda.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      context.goNamed('loginPage');
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {
-      // 1. Validar si el slug ya está en uso
+      // 1. Validar límite de tiendas por usuario
+      final eligibility = await StoreService.instance.checkStoreCreationEligibility();
+      if (!eligibility.canCreate) {
+        if (mounted) {
+          _showPlanLimitUpgradeDialog(eligibility.message ??
+              'Las cuentas con Plan Free están limitadas a 2 tiendas. Para crear más tiendas, actualiza al Plan Pro.');
+        }
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      // 2. Validar si el slug ya está en uso
       final slug = _model.slugController.text.trim().toLowerCase();
       final slugExists = await StoreService.instance.checkSlugExists(slug);
       if (slugExists) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('El identificador (slug) ya está registrado por otra tienda. Elige otro.'),
+              content: Text('El enlace (slug) ya está registrado por otra tienda. Elige otro.'),
               backgroundColor: Colors.red,
             ),
           );
         }
         setState(() => _isLoading = false);
         return;
-      }
-
-      // 2. Si el usuario no está autenticado, intentar autenticarlo
-      if (!loggedIn) {
-        final email = _model.emailController.text.trim();
-        final password = _model.passwordController.text;
-        final name = _model.nameController.text.trim();
-
-        try {
-          final res = await SupaFlow.client.auth.signUp(
-            email: email,
-            password: password,
-            data: {
-              if (name.isNotEmpty) 'display_name': name,
-            },
-          );
-          if (res.user != null) {
-            final authUser = BaulPandoraSupabaseUser(res.user!);
-            currentUser = authUser;
-            await AppStateNotifier.instance.update(authUser);
-          }
-        } catch (_) {
-          try {
-            final signInRes = await SupaFlow.client.auth.signInWithPassword(
-              email: email,
-              password: password,
-            );
-            if (signInRes.user != null) {
-              final authUser = BaulPandoraSupabaseUser(signInRes.user!);
-              currentUser = authUser;
-              await AppStateNotifier.instance.update(authUser);
-            }
-          } catch (_) {}
-        }
-
-        if (!loggedIn) {
-          throw Exception('Debes estar autenticado para crear la tienda. Revisa los datos de tu cuenta en el Paso 1.');
-        }
-
-        if (name.isNotEmpty && currentUserUid.isNotEmpty) {
-          try {
-            await SupaFlow.client.from('usuarios').upsert({
-              'id': currentUserUid,
-              'email': email,
-              'display_name': name,
-              'is_admin': true,
-            });
-          } catch (_) {}
-        }
       }
 
       // 3. Subir logo y banner a Supabase Storage si se seleccionaron
@@ -426,7 +252,7 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
 
         if (mounted) {
           setState(() {
-            _currentStep = 3; // Mostrar pantalla final de éxito
+            _currentStep = 2; // Mostrar pantalla final de éxito
           });
         }
       } else {
@@ -454,7 +280,7 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
         elevation: 1,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
-          tooltip: 'Volver a Iniciar Sesión / Inicio',
+          tooltip: 'Volver',
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -472,17 +298,19 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
         ),
         centerTitle: true,
         actions: [
-          TextButton.icon(
-            onPressed: () {
-              context.goNamed('loginPage');
-            },
-            icon: const Icon(Icons.login_rounded, size: 18),
-            label: const Text('Iniciar Sesión'),
-            style: TextButton.styleFrom(
-              foregroundColor: theme.primary,
+          if (loggedIn)
+            Padding(
+              padding: const EdgeInsets.only(right: 12.0),
+              child: Center(
+                child: Text(
+                  currentUserEmail,
+                  style: theme.bodySmall.override(
+                    fontFamily: 'Inter',
+                    color: theme.secondaryText,
+                  ),
+                ),
+              ),
             ),
-          ),
-          const SizedBox(width: 8),
         ],
       ),
       body: SafeArea(
@@ -496,10 +324,9 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
                 const SizedBox(height: 32),
 
                 // Pasos del Wizard
-                if (_currentStep == 0) _buildStepAccount(theme),
-                if (_currentStep == 1) _buildStepStoreInfo(theme),
-                if (_currentStep == 2) _buildStepBranding(theme),
-                if (_currentStep == 3) _buildStepSuccess(theme),
+                if (_currentStep == 0) _buildStepStoreInfo(theme),
+                if (_currentStep == 1) _buildStepBranding(theme),
+                if (_currentStep == 2) _buildStepSuccess(theme),
               ],
             ),
           ),
@@ -511,13 +338,11 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
   Widget _buildProgressHeader(FlutterFlowTheme theme) {
     return Row(
       children: [
-        _buildStepDot(theme, 0, 'Cuenta'),
+        _buildStepDot(theme, 0, 'Negocio'),
         _buildStepLine(theme, 0),
-        _buildStepDot(theme, 1, 'Negocio'),
+        _buildStepDot(theme, 1, 'Branding'),
         _buildStepLine(theme, 1),
-        _buildStepDot(theme, 2, 'Branding'),
-        _buildStepLine(theme, 2),
-        _buildStepDot(theme, 3, '¡Listo!'),
+        _buildStepDot(theme, 2, '¡Listo!'),
       ],
     );
   }
@@ -562,218 +387,13 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
     );
   }
 
-  // --- PASO 0: Crear Cuenta de Usuario / Iniciar Sesión ---
-  Widget _buildStepAccount(FlutterFlowTheme theme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Paso 1: Datos de tu Cuenta',
-          style: theme.headlineSmall.override(
-            fontFamily: 'Inter',
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'Crea tu cuenta de administrador para gestionar tus productos, pedidos y pagos.',
-          style: theme.bodyMedium,
-        ),
-        const SizedBox(height: 24),
-
-        if (loggedIn) ...[
-          Container(
-            padding: const EdgeInsets.all(16.0),
-            decoration: BoxDecoration(
-              color: theme.primary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12.0),
-              border: Border.all(color: theme.primary.withOpacity(0.3)),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.account_circle, color: theme.primary, size: 36),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Sesión activa como:',
-                        style: TextStyle(fontSize: 12, color: theme.secondaryText),
-                      ),
-                      Text(
-                        currentUserEmail,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                      ),
-                    ],
-                  ),
-                ),
-                TextButton(
-                  onPressed: () async {
-                    await authManager.signOut();
-                    setState(() {});
-                  },
-                  child: const Text('Cambiar cuenta'),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-        ] else ...[
-          // Selector de Modo (Nueva Cuenta vs Ya tengo cuenta)
-          Container(
-            decoration: BoxDecoration(
-              color: theme.primaryBackground,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: theme.alternate),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: InkWell(
-                    onTap: () => setState(() => _isExistingAccountMode = false),
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      decoration: BoxDecoration(
-                        color: !_isExistingAccountMode ? theme.primary : Colors.transparent,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Center(
-                        child: Text(
-                          'Crear Cuenta Nueva',
-                          style: TextStyle(
-                            color: !_isExistingAccountMode ? Colors.white : theme.secondaryText,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: InkWell(
-                    onTap: () => setState(() => _isExistingAccountMode = true),
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      decoration: BoxDecoration(
-                        color: _isExistingAccountMode ? theme.primary : Colors.transparent,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Center(
-                        child: Text(
-                          'Ya tengo Cuenta',
-                          style: TextStyle(
-                            color: _isExistingAccountMode ? Colors.white : theme.secondaryText,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          if (!_isExistingAccountMode) ...[
-            TextField(
-              controller: _model.nameController,
-              decoration: InputDecoration(
-                labelText: 'Nombre Completo / Razón Social',
-                hintText: 'Ej. Juan Pérez',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                prefixIcon: const Icon(Icons.person_outline),
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
-          TextField(
-            controller: _model.emailController,
-            keyboardType: TextInputType.emailAddress,
-            decoration: InputDecoration(
-              labelText: 'Correo Electrónico',
-              hintText: 'tu@correo.com',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              prefixIcon: const Icon(Icons.email_outlined),
-            ),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _model.passwordController,
-            obscureText: _obscurePassword,
-            decoration: InputDecoration(
-              labelText: _isExistingAccountMode
-                  ? 'Contraseña de tu Cuenta'
-                  : 'Contraseña de Acceso (mínimo 6 caracteres)',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              prefixIcon: const Icon(Icons.lock_outline),
-              suffixIcon: IconButton(
-                icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
-                onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-              ),
-            ),
-          ),
-          const SizedBox(height: 32),
-        ],
-
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: _isAuthenticatingStep0 ? null : _handleStep0Account,
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              backgroundColor: theme.primary,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            child: _isAuthenticatingStep0
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                  )
-                : Text(
-                    loggedIn
-                        ? 'Continuar a Datos del Negocio ->'
-                        : (_isExistingAccountMode
-                            ? 'Iniciar Sesión y Continuar ->'
-                            : 'Crear Cuenta y Continuar ->'),
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                  ),
-          ),
-        ),
-        const SizedBox(height: 20),
-        Center(
-          child: TextButton.icon(
-            onPressed: () {
-              context.goNamed('loginPage');
-            },
-            icon: Icon(Icons.arrow_back_rounded, size: 18, color: theme.secondaryText),
-            label: Text(
-              'Salir y volver a la página inicial para iniciar sesión',
-              style: TextStyle(
-                color: theme.secondaryText,
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
   // --- PASO 1: Datos del Negocio / Tienda ---
   Widget _buildStepStoreInfo(FlutterFlowTheme theme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Paso 2: Información del Negocio',
+          'Paso 1: Información del Negocio',
           style: theme.headlineSmall.override(
             fontFamily: 'Inter',
             fontWeight: FontWeight.bold,
@@ -818,43 +438,46 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
         ),
         const SizedBox(height: 32),
 
-        Row(
-          children: [
-            Expanded(
-              child: OutlinedButton(
-                onPressed: () => setState(() => _currentStep = 0),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                child: const Text('Atrás'),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: () {
+              if (_model.storeNameController.text.trim().isEmpty ||
+                  _model.slugController.text.trim().isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Ingresa el nombre y enlace de tu tienda')),
+                );
+                return;
+              }
+              setState(() => _currentStep = 1);
+            },
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              backgroundColor: theme.primary,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: const Text(
+              'Continuar a Branding ->',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ),
+        const SizedBox(height: 20),
+        Center(
+          child: TextButton.icon(
+            onPressed: () {
+              context.goNamed('loginPage');
+            },
+            icon: Icon(Icons.arrow_back_rounded, size: 18, color: theme.secondaryText),
+            label: Text(
+              'Volver al inicio',
+              style: TextStyle(
+                color: theme.secondaryText,
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
               ),
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: ElevatedButton(
-                onPressed: () {
-                  if (_model.storeNameController.text.trim().isEmpty ||
-                      _model.slugController.text.trim().isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Ingresa el nombre y enlace de tu tienda')),
-                    );
-                    return;
-                  }
-                  setState(() => _currentStep = 2);
-                },
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  backgroundColor: theme.primary,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                child: const Text(
-                  'Continuar a Branding ->',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ],
     );
@@ -866,7 +489,7 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Paso 3: Identidad Visual & Colores',
+          'Paso 2: Identidad Visual & Colores',
           style: theme.headlineSmall.override(
             fontFamily: 'Inter',
             fontWeight: FontWeight.bold,
@@ -938,7 +561,7 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
           children: [
             Expanded(
               child: OutlinedButton(
-                onPressed: () => setState(() => _currentStep = 1),
+                onPressed: () => setState(() => _currentStep = 0),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

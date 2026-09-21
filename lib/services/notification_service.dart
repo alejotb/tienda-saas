@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:baul_pandora/backend/supabase/supabase.dart';
 import 'package:baul_pandora/auth/supabase_auth/auth_util.dart';
 
@@ -104,9 +105,19 @@ class NotificationService {
 
   /// Returns a stream of unread notification count for the current user.
   Stream<int> getUnreadCountStream() {
-    return SupaFlow.client
-        .from('notificaciones_usuario')
-        .stream(primaryKey: ['id'])
-        .map((event) => event.where((n) => n['user_id'] == currentUserUid && n['leido'] == false).length);
+    if (!loggedIn) return Stream.value(0);
+    try {
+      return SupaFlow.client
+          .from('notificaciones_usuario')
+          .stream(primaryKey: ['id'])
+          .map((event) => event.where((n) => n['user_id'] == currentUserUid && n['leido'] == false).length)
+          .handleError((e) {
+            debugPrint('Nota: Stream de notificaciones no disponible: $e');
+            return 0;
+          });
+    } catch (e) {
+      debugPrint('Nota: Error iniciando stream de notificaciones: $e');
+      return Stream.value(0);
+    }
   }
 }
