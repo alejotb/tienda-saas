@@ -138,7 +138,7 @@ class _LoginPageWidgetState extends State<LoginPageWidget>
           context.go(widget.fromPage!);
         } else {
           context.goNamedAuth(
-              widget.fromPage ?? (store != null ? 'adminStore' : MainHomePageWidget.routeName),
+              widget.fromPage ?? (store != null ? 'administracion' : MainHomePageWidget.routeName),
               context.mounted);
         }
       }

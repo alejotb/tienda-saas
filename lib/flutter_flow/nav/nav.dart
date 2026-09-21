@@ -299,7 +299,10 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           name: AdminPagosPage.routeName,
           path: AdminPagosPage.routePath,
           builder: (context, params) {
-            if (appStateNotifier.currentUserRow?.isAdmin != true) {
+            if (appStateNotifier.currentUserRow?.isAdmin != true &&
+                !appStateNotifier.hasStore &&
+                !FFAppState().isAdmin &&
+                FFAppState().activeStoreId.isEmpty) {
               return const LoginPageWidget();
             }
             return params.isEmpty
@@ -311,7 +314,10 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           name: AdminDespachosPage.routeName,
           path: AdminDespachosPage.routePath,
           builder: (context, params) {
-            if (appStateNotifier.currentUserRow?.isAdmin != true) {
+            if (appStateNotifier.currentUserRow?.isAdmin != true &&
+                !appStateNotifier.hasStore &&
+                !FFAppState().isAdmin &&
+                FFAppState().activeStoreId.isEmpty) {
               return const LoginPageWidget();
             }
             return params.isEmpty
@@ -323,7 +329,10 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           name: AdminInventarioPage.routeName,
           path: AdminInventarioPage.routePath,
           builder: (context, params) {
-            if (appStateNotifier.currentUserRow?.isAdmin != true) {
+            if (appStateNotifier.currentUserRow?.isAdmin != true &&
+                !appStateNotifier.hasStore &&
+                !FFAppState().isAdmin &&
+                FFAppState().activeStoreId.isEmpty) {
               return const LoginPageWidget();
             }
             return params.isEmpty
@@ -335,7 +344,10 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           name: AdminAuditoriaPage.routeName,
           path: AdminAuditoriaPage.routePath,
           builder: (context, params) {
-            if (appStateNotifier.currentUserRow?.isAdmin != true) {
+            if (appStateNotifier.currentUserRow?.isAdmin != true &&
+                !appStateNotifier.hasStore &&
+                !FFAppState().isAdmin &&
+                FFAppState().activeStoreId.isEmpty) {
               return const LoginPageWidget();
             }
             return params.isEmpty
@@ -357,8 +369,26 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           name: AdministracionWidget.routeName,
           path: AdministracionWidget.routePath,
           builder: (context, params) {
-            if (appStateNotifier.currentUserRow?.isAdmin != true) {
-              return const LoginPageWidget(); // Or a "Forbidden" page
+            if (appStateNotifier.currentUserRow?.isAdmin != true &&
+                !appStateNotifier.hasStore &&
+                !FFAppState().isAdmin &&
+                FFAppState().activeStoreId.isEmpty) {
+              return const LoginPageWidget();
+            }
+            return params.isEmpty
+                ? const NavBarPage(initialPage: 'administracion')
+                : const AdministracionWidget();
+          },
+        ),
+        FFRoute(
+          name: 'adminStore',
+          path: '/adminStore',
+          builder: (context, params) {
+            if (appStateNotifier.currentUserRow?.isAdmin != true &&
+                !appStateNotifier.hasStore &&
+                !FFAppState().isAdmin &&
+                FFAppState().activeStoreId.isEmpty) {
+              return const LoginPageWidget();
             }
             return params.isEmpty
                 ? const NavBarPage(initialPage: 'administracion')

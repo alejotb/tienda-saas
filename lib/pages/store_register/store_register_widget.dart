@@ -178,7 +178,7 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
           ElevatedButton(
             onPressed: () {
               Navigator.of(dialogCtx).pop();
-              context.goNamed('adminStore');
+              context.goNamed('administracion');
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.purple,
@@ -399,6 +399,12 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
         FFAppState().activeStoreId = store.id;
         FFAppState().activeStoreSlug = store.slug;
         FFAppState().isAdmin = true;
+
+        if (currentUser != null) {
+          try {
+            await AppStateNotifier.instance.update(currentUser!);
+          } catch (_) {}
+        }
 
         if (mounted) {
           setState(() {
@@ -1572,8 +1578,15 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
-              onPressed: () {
-                context.goNamed('adminStore');
+              onPressed: () async {
+                if (currentUser != null) {
+                  try {
+                    await AppStateNotifier.instance.update(currentUser!);
+                  } catch (_) {}
+                }
+                if (context.mounted) {
+                  context.goNamed('administracion');
+                }
               },
               icon: const Icon(Icons.dashboard_rounded, size: 18),
               label: const Text('Ir a mi Panel de Control'),

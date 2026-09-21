@@ -168,7 +168,7 @@ class _StoreSelectorModalState extends State<StoreSelectorModal> {
             onPressed: () {
               Navigator.of(dialogCtx).pop();
               Navigator.of(context).pop();
-              context.goNamed('adminStore');
+              context.goNamed('administracion');
             },
             icon: const Icon(Icons.stars_rounded, size: 18),
             label: const Text('Ver Planes Pro'),
