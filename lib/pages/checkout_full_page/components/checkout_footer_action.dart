@@ -211,9 +211,9 @@ class _CheckoutFooterActionState extends State<CheckoutFooterAction> {
               emisorNombre = currentUserObj.userMetadata?['full_name'] as String? ?? '';
               if (emisorNombre.isEmpty) {
                 try {
-                  final userRow = await SupaFlow.client.from('usuarios').select('nombre').eq('id', currentUserObj.id).maybeSingle();
-                  if (userRow != null && userRow['nombre'] != null) {
-                    emisorNombre = userRow['nombre'] as String;
+                  final userRow = await SupaFlow.client.from('usuarios').select().eq('id', currentUserObj.id).maybeSingle();
+                  if (userRow != null) {
+                    emisorNombre = (userRow['nombre_completo'] ?? userRow['nombre'] ?? '') as String;
                   }
                 } catch (_) {}
               }

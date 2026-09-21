@@ -177,7 +177,7 @@ class StoreService {
         'is_admin': true,
       };
       if (userName != null && userName.toString().trim().isNotEmpty) {
-        userMap['nombre'] = userName.toString().trim();
+        userMap['nombre_completo'] = userName.toString().trim();
       }
 
       await SupaFlow.client.from('usuarios').upsert(userMap);

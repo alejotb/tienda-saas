@@ -96,7 +96,7 @@ class _AdminUsersViewState extends State<AdminUsersView> {
       future: UsuariosTable().queryRows(
         queryFn: (q) {
           if (_searchQuery.isNotEmpty) {
-            q = q.or('nombre.ilike.%$_searchQuery%,email.ilike.%$_searchQuery%');
+            q = q.or('nombre_completo.ilike.%$_searchQuery%,email.ilike.%$_searchQuery%');
           }
           return q;
         },

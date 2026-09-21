@@ -340,11 +340,11 @@ class CartService {
               try {
                 final userRow = await SupaFlow.client
                     .from('usuarios')
-                    .select('nombre')
+                    .select()
                     .eq('id', currentUserObj.id)
                     .maybeSingle();
-                if (userRow != null && userRow['nombre'] != null) {
-                  emisorNombre = userRow['nombre'] as String;
+                if (userRow != null) {
+                  emisorNombre = (userRow['nombre_completo'] ?? userRow['nombre'] ?? '') as String;
                 }
               } catch (_) {}
             }
@@ -461,11 +461,11 @@ class CartService {
             try {
               final userRow = await SupaFlow.client
                   .from('usuarios')
-                  .select('nombre')
+                  .select()
                   .eq('id', currentUserObj.id)
                   .maybeSingle();
-              if (userRow != null && userRow['nombre'] != null) {
-                emisorNombre = userRow['nombre'] as String;
+              if (userRow != null) {
+                emisorNombre = (userRow['nombre_completo'] ?? userRow['nombre'] ?? '') as String;
               }
             } catch (_) {}
           }

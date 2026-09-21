@@ -310,7 +310,7 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
             'rol': 'dueno_tienda',
           };
           if (name.isNotEmpty) {
-            userPayload['nombre'] = name;
+            userPayload['nombre_completo'] = name;
           }
           await SupaFlow.client.from('usuarios').upsert(userPayload);
 

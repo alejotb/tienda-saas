@@ -237,7 +237,7 @@ class SupabaseAuthManager extends AuthManager
             await SupaFlow.client.from('usuarios').insert({
               'id': authUser.uid!,
               'email': user?.email,
-              if (fullName != null && fullName.isNotEmpty) 'nombre': fullName,
+              if (fullName != null && fullName.isNotEmpty) 'nombre_completo': fullName,
               if (avatarUrl != null && avatarUrl.isNotEmpty) 'photo_path': avatarUrl,
               'rol': 'cliente',
               'is_admin': false,
@@ -249,8 +249,8 @@ class SupabaseAuthManager extends AuthManager
 
             if (fullName != null &&
                 fullName.isNotEmpty &&
-                (userRow.nombre == null || userRow.nombre!.isEmpty)) {
-              updateData['nombre'] = fullName;
+                (userRow.nombreCompleto == null || userRow.nombreCompleto!.isEmpty)) {
+              updateData['nombre_completo'] = fullName;
               needsUpdate = true;
             }
             if (avatarUrl != null &&

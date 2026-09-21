@@ -20,7 +20,7 @@ class UserService {
       if (user == null) return {'success': false, 'message': 'No hay usuario autenticado'};
 
       final updates = <String, dynamic>{
-        'nombre': name,
+        'nombre_completo': name,
       };
 
       if (imagePath != null && imagePath.isNotEmpty) {

@@ -20,8 +20,11 @@ class UsuariosRow extends SupabaseDataRow {
   DateTime get createdAt => getField<DateTime>('created_at')!;
   set createdAt(DateTime value) => setField<DateTime>('created_at', value);
 
-  String? get nombre => getField<String>('nombre');
-  set nombre(String? value) => setField<String>('nombre', value);
+  String? get nombre => getField<String>('nombre_completo') ?? getField<String>('nombre');
+  set nombre(String? value) => setField<String>('nombre_completo', value);
+
+  String? get nombreCompleto => getField<String>('nombre_completo') ?? getField<String>('nombre');
+  set nombreCompleto(String? value) => setField<String>('nombre_completo', value);
 
   String? get telefono => getField<String>('telefono');
   set telefono(String? value) => setField<String>('telefono', value);

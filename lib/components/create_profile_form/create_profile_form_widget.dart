@@ -164,7 +164,7 @@ class _CreateProfileFormWidgetState extends State<CreateProfileFormWidget> {
                 try {
                   await UsuariosTable().update(
                     data: {
-                      'nombre': _model.yourNameTextController.text,
+                      'nombre_completo': _model.yourNameTextController.text,
                       'telefono': _model.telefonoTextController.text,
                       'photo_path': _model.uploadedFileUrl,
                     },

@@ -544,7 +544,7 @@ class _EditProfileFormWidgetState extends State<EditProfileFormWidget> {
                       
                       await UsuariosTable().update(
                         data: {
-                          'nombre': _model.yourNameTextController.text,
+                          'nombre_completo': _model.yourNameTextController.text,
                           'telefono': _model.telefonoTextController.text,
                           'photo_path': newPhotoPath,
                         },
