@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:baul_pandora/flutter_flow/flutter_flow_theme.dart';
 import 'package:baul_pandora/flutter_flow/flutter_flow_util.dart';
 import 'package:baul_pandora/services/store_service.dart';
@@ -33,6 +35,11 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
   String? _logoFileName;
   String? _bannerFileName;
 
+  // Controlador y timer para el carrusel de imágenes/tiendas en desktop
+  late PageController _sliderController;
+  int _currentSlideIndex = 0;
+  Timer? _sliderTimer;
+
   final List<String> _presetColors = [
     '#6366F1', // Indigo
     '#3B82F6', // Blue
@@ -52,10 +59,29 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
       _currentStep = 1; // Si ya inició sesión, pasar directo a datos del negocio
       _model.emailController.text = currentUserEmail;
     }
+
+    _sliderController = PageController();
+    _startSliderTimer();
+  }
+
+  void _startSliderTimer() {
+    _sliderTimer?.cancel();
+    _sliderTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      if (!mounted || !_sliderController.hasClients) return;
+      final totalSlides = _getSlides(FlutterFlowTheme.of(context)).length;
+      final nextIndex = (_currentSlideIndex + 1) % totalSlides;
+      _sliderController.animateToPage(
+        nextIndex,
+        duration: const Duration(milliseconds: 600),
+        curve: Curves.easeInOutCubic,
+      );
+    });
   }
 
   @override
   void dispose() {
+    _sliderTimer?.cancel();
+    _sliderController.dispose();
     _model.dispose();
     super.dispose();
   }
@@ -149,18 +175,17 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
             onPressed: () => Navigator.of(dialogCtx).pop(),
             child: Text('Cerrar', style: TextStyle(color: theme.secondaryText)),
           ),
-          ElevatedButton.icon(
+          ElevatedButton(
             onPressed: () {
               Navigator.of(dialogCtx).pop();
               context.goNamed('adminStore');
             },
-            icon: const Icon(Icons.dashboard_rounded, size: 18),
-            label: const Text('Ir a Mi Tienda'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: theme.primary,
+              backgroundColor: Colors.purple,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
+            child: const Text('Gestionar mis Tiendas'),
           ),
         ],
       ),
@@ -173,7 +198,7 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
       if (!eligibility.canCreate) {
         if (mounted) {
           _showPlanLimitUpgradeDialog(eligibility.message ??
-              'Las cuentas con Plan Free están limitadas a 2 tiendas. Para crear más tiendas, actualiza al Plan Pro.');
+              'Las cuentas con Plan Free están limitadas a un máximo de 2 tiendas. Para crear más tiendas, actualiza al Plan Pro.');
         }
         return;
       }
@@ -185,21 +210,14 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
     final password = _model.passwordController.text;
     final name = _model.nameController.text.trim();
 
-    if (!_isExistingAccountMode && name.isEmpty) {
+    if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor ingresa tu nombre completo')),
+        const SnackBar(content: Text('Por favor completa el correo y la contraseña')),
       );
       return;
     }
 
-    if (email.isEmpty || !email.contains('@')) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor ingresa un correo electrónico válido')),
-      );
-      return;
-    }
-
-    if (password.length < 6) {
+    if (!_isExistingAccountMode && password.length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('La contraseña debe tener al menos 6 caracteres')),
       );
@@ -210,25 +228,23 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
 
     try {
       if (_isExistingAccountMode) {
-        // Iniciar sesión con cuenta existente
-        final signInRes = await SupaFlow.client.auth.signInWithPassword(
+        GoRouter.of(context).prepareAuthEvent();
+        final res = await SupaFlow.client.auth.signInWithPassword(
           email: email,
           password: password,
         );
-        if (signInRes.user != null) {
-          final authUser = BaulPandoraSupabaseUser(signInRes.user!);
+        if (res.user != null) {
+          final authUser = BaulPandoraSupabaseUser(res.user!);
           currentUser = authUser;
           await AppStateNotifier.instance.update(authUser);
         }
       } else {
-        // Crear cuenta nueva
+        GoRouter.of(context).prepareAuthEvent();
         try {
           final res = await SupaFlow.client.auth.signUp(
             email: email,
             password: password,
-            data: {
-              if (name.isNotEmpty) 'display_name': name,
-            },
+            data: {'display_name': name},
           );
           if (res.user != null) {
             final authUser = BaulPandoraSupabaseUser(res.user!);
@@ -236,12 +252,9 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
             await AppStateNotifier.instance.update(authUser);
           }
         } on AuthException catch (e) {
-          final isAlreadyRegistered =
-              e.message.toLowerCase().contains('already registered') ||
-                  e.message.toLowerCase().contains('ya registrado');
-
-          if (isAlreadyRegistered) {
-            // Intentar iniciar sesión automáticamente
+          if (e.message.toLowerCase().contains('already registered') ||
+              e.message.toLowerCase().contains('user already exists') ||
+              e.statusCode == '422') {
             final signInRes = await SupaFlow.client.auth.signInWithPassword(
               email: email,
               password: password,
@@ -409,12 +422,13 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
+    final isDesktop = MediaQuery.sizeOf(context).width >= 992.0;
 
     return Scaffold(
       backgroundColor: theme.primaryBackground,
       appBar: AppBar(
         backgroundColor: theme.secondaryBackground,
-        elevation: 1,
+        elevation: 0.5,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           tooltip: 'Volver a Iniciar Sesión / Inicio',
@@ -426,14 +440,28 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
             }
           },
         ),
-        title: Text(
-          'Crear Nueva Tienda',
-          style: theme.titleLarge.override(
-            fontFamily: 'Inter',
-            fontWeight: FontWeight.bold,
-          ),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: theme.primary.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(Icons.storefront_rounded, color: theme.primary, size: 20),
+            ),
+            const SizedBox(width: 10),
+            Text(
+              'Crear Nueva Tienda',
+              style: theme.titleMedium.override(
+                fontFamily: 'Inter',
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
         ),
-        centerTitle: true,
+        centerTitle: false,
         actions: [
           TextButton.icon(
             onPressed: () {
@@ -445,27 +473,575 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
               foregroundColor: theme.primary,
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 12),
         ],
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              children: [
-                // Indicador de Progreso
-                _buildProgressHeader(theme),
-                const SizedBox(height: 32),
+        child: isDesktop
+            ? Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Columna Izquierda: Formulario compacto
+                  Expanded(
+                    flex: 5,
+                    child: Center(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 28.0),
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 500.0),
+                          child: _buildFormCard(theme),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Columna Derecha: Slider interactivo de tiendas / beneficios
+                  Expanded(
+                    flex: 6,
+                    child: Container(
+                      margin: const EdgeInsets.all(20.0),
+                      child: _buildStoreShowcaseSlider(theme),
+                    ),
+                  ),
+                ],
+              )
+            : Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20.0),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 560.0),
+                    child: _buildFormCard(theme),
+                  ),
+                ),
+              ),
+      ),
+    );
+  }
 
-                // Pasos del Wizard
-                if (_currentStep == 0) _buildStepAccount(theme),
-                if (_currentStep == 1) _buildStepStoreInfo(theme),
-                if (_currentStep == 2) _buildStepBranding(theme),
-                if (_currentStep == 3) _buildStepSuccess(theme),
+  Widget _buildFormCard(FlutterFlowTheme theme) {
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.secondaryBackground,
+        borderRadius: BorderRadius.circular(16.0),
+        border: Border.all(color: theme.alternate.withValues(alpha: 0.6)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(28.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Indicador de Progreso
+          _buildProgressHeader(theme),
+          const SizedBox(height: 28),
+
+          // Pasos del Wizard
+          if (_currentStep == 0) _buildStepAccount(theme),
+          if (_currentStep == 1) _buildStepStoreInfo(theme),
+          if (_currentStep == 2) _buildStepBranding(theme),
+          if (_currentStep == 3) _buildStepSuccess(theme),
+        ],
+      ),
+    );
+  }
+
+  // --- Slider / Carrusel de Tiendas en Desktop ---
+  Widget _buildStoreShowcaseSlider(FlutterFlowTheme theme) {
+    final slides = _getSlides(theme);
+
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24.0),
+        gradient: LinearGradient(
+          colors: [
+            theme.primary.withValues(alpha: 0.95),
+            const Color(0xFF1E1B4B), // Deep Indigo Dark
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: theme.primary.withValues(alpha: 0.25),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24.0),
+        child: Stack(
+          children: [
+            // Patrón de fondo decorativo
+            Positioned(
+              top: -60,
+              right: -60,
+              child: Container(
+                width: 240,
+                height: 240,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withValues(alpha: 0.06),
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: -80,
+              left: -40,
+              child: Container(
+                width: 280,
+                height: 280,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withValues(alpha: 0.04),
+                ),
+              ),
+            ),
+
+            // PageView para los slides
+            PageView.builder(
+              controller: _sliderController,
+              onPageChanged: (index) {
+                setState(() => _currentSlideIndex = index);
+              },
+              itemCount: slides.length,
+              itemBuilder: (context, index) {
+                final slide = slides[index];
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(40, 48, 40, 80),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Badge superior y Título
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.18),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(slide.icon, color: Colors.white, size: 16),
+                                const SizedBox(width: 6),
+                                Text(
+                                  slide.tag,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: 0.3,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 18),
+                          Text(
+                            slide.title,
+                            style: GoogleFonts.interTight(
+                              color: Colors.white,
+                              fontSize: 26,
+                              fontWeight: FontWeight.bold,
+                              height: 1.25,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            slide.subtitle,
+                            style: GoogleFonts.inter(
+                              color: Colors.white.withValues(alpha: 0.82),
+                              fontSize: 14,
+                              height: 1.5,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      // Vista previa visual / Card mockup
+                      Center(
+                        child: slide.previewWidget,
+                      ),
+
+                      // Bullets de características
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: slide.bulletPoints.map((point) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.check_circle_rounded, color: Color(0xFF4ADE80), size: 16),
+                                const SizedBox(width: 6),
+                                Text(
+                                  point,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+
+            // Controles inferiores (Indicador de puntos + Flechas)
+            Positioned(
+              bottom: 24,
+              left: 36,
+              right: 36,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Puntos indicadores
+                  Row(
+                    children: List.generate(slides.length, (i) {
+                      final isActive = i == _currentSlideIndex;
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        margin: const EdgeInsets.only(right: 6),
+                        width: isActive ? 24 : 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: isActive ? Colors.white : Colors.white.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      );
+                    }),
+                  ),
+
+                  // Botones Anterior / Siguiente
+                  Row(
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          _sliderController.previousPage(
+                            duration: const Duration(milliseconds: 400),
+                            curve: Curves.easeInOut,
+                          );
+                        },
+                        icon: const Icon(Icons.chevron_left_rounded, color: Colors.white, size: 28),
+                        splashRadius: 20,
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          _sliderController.nextPage(
+                            duration: const Duration(milliseconds: 400),
+                            curve: Curves.easeInOut,
+                          );
+                        },
+                        icon: const Icon(Icons.chevron_right_rounded, color: Colors.white, size: 28),
+                        splashRadius: 20,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  List<_SlideItem> _getSlides(FlutterFlowTheme theme) {
+    return [
+      _SlideItem(
+        tag: 'Catálogo Digital 24/7',
+        icon: Icons.storefront_rounded,
+        title: 'Tu tienda online activa y vendiendo siempre',
+        subtitle: 'Publica tus productos con fotos, precios y variantes de forma ordenada para que tus clientes compren fácil.',
+        bulletPoints: ['Sin comisiones por venta', 'Enlace directo a tu catálogo', 'Carga ultrarrápida'],
+        previewWidget: _buildCatalogMockupCard(),
+      ),
+      _SlideItem(
+        tag: 'Pedidos por WhatsApp',
+        icon: Icons.chat_rounded,
+        title: 'Recibe los pedidos listos en tu WhatsApp',
+        subtitle: 'Tus clientes arman su carrito de compras y te envían el resumen detallado para concretar el pago al instante.',
+        bulletPoints: ['Cálculo de totales automático', 'Notificación en tu teléfono', 'Atención directa'],
+        previewWidget: _buildWhatsAppMockupCard(),
+      ),
+      _SlideItem(
+        tag: 'Personalización Total',
+        icon: Icons.palette_rounded,
+        title: 'La identidad de tu marca en cada detalle',
+        subtitle: 'Elige tu paleta de colores, sube tu logo, define tu banner y haz que tu tienda luzca 100% profesional.',
+        bulletPoints: ['Paleta de colores', 'Logo y Banner propio', 'Dominio personalizado'],
+        previewWidget: _buildBrandingMockupCard(),
+      ),
+      _SlideItem(
+        tag: 'Control y Métricas',
+        icon: Icons.trending_up_rounded,
+        title: 'Administra inventario y monitorea tus ventas',
+        subtitle: 'Carga masiva de productos desde Excel/CSV, gestión de stock y panel de control pensado para crecer.',
+        bulletPoints: ['Importación Excel/CSV', 'Alertas de stock', 'Multi-tienda integrada'],
+        previewWidget: _buildMetricsMockupCard(),
+      ),
+    ];
+  }
+
+  // --- Widgets visuales de Mockup para el slider ---
+  Widget _buildCatalogMockupCard() {
+    return Container(
+      width: 320,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: const BoxDecoration(color: Color(0xFF6366F1), shape: BoxShape.circle),
+                child: const Icon(Icons.shopping_bag_rounded, color: Colors.white, size: 18),
+              ),
+              const SizedBox(width: 10),
+              const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Modas Express', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+                  Text('tuapp.com/modas-express', style: TextStyle(color: Colors.white70, fontSize: 10)),
+                ],
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                decoration: BoxDecoration(color: const Color(0xFF22C55E), borderRadius: BorderRadius.circular(6)),
+                child: const Text('Abierto', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            height: 30,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: const Row(
+              children: [
+                Icon(Icons.search, color: Colors.white70, size: 16),
+                SizedBox(width: 6),
+                Text('Buscar ropa, calzado...', style: TextStyle(color: Colors.white70, fontSize: 11)),
               ],
             ),
           ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              _buildMiniProductCard('Camisa Casual', '\$25.00', Icons.checkroom_rounded),
+              const SizedBox(width: 8),
+              _buildMiniProductCard('Zapatillas Sport', '\$48.00', Icons.roller_skating_rounded),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMiniProductCard(String name, String price, IconData icon) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              height: 44,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Center(child: Icon(icon, color: Colors.white, size: 24)),
+            ),
+            const SizedBox(height: 6),
+            Text(name, style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600), maxLines: 1),
+            Text(price, style: const TextStyle(color: Color(0xFF4ADE80), fontSize: 11, fontWeight: FontWeight.bold)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWhatsAppMockupCard() {
+    return Container(
+      width: 320,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: const BoxDecoration(color: Color(0xFF25D366), shape: BoxShape.circle),
+                child: const Icon(Icons.chat_bubble_rounded, color: Colors.white, size: 16),
+              ),
+              const SizedBox(width: 8),
+              const Text('Pedido Recibido #1042', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+              const Spacer(),
+              const Text('Hace 2 min', style: TextStyle(color: Colors.white60, fontSize: 10)),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color(0xFF075E54).withValues(alpha: 0.6),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('🛒 *Nuevo Pedido Web*', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                SizedBox(height: 4),
+                Text('• 2x Camisa Casual (\$50.00)\n• 1x Zapatillas Sport (\$48.00)', style: TextStyle(color: Colors.white70, fontSize: 10)),
+                Divider(color: Colors.white24, height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Total a Pagar:', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11)),
+                    Text('\$98.00 USD', style: TextStyle(color: Color(0xFF4ADE80), fontWeight: FontWeight.bold, fontSize: 12)),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBrandingMockupCard() {
+    return Container(
+      width: 320,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildColorDot(const Color(0xFF6366F1), true),
+              _buildColorDot(const Color(0xFF10B981), false),
+              _buildColorDot(const Color(0xFFF59E0B), false),
+              _buildColorDot(const Color(0xFFEF4444), false),
+              _buildColorDot(const Color(0xFFEC4899), false),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)]),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.auto_awesome, color: Colors.white, size: 20),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text('Tema: Moderno & Vibrante\nAdaptado a tu marca', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildColorDot(Color color, bool isSelected) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      width: 28,
+      height: 28,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+        border: isSelected ? Border.all(color: Colors.white, width: 2.5) : null,
+      ),
+      child: isSelected ? const Icon(Icons.check, color: Colors.white, size: 14) : null,
+    );
+  }
+
+  Widget _buildMetricsMockupCard() {
+    return Container(
+      width: 320,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        children: [
+          _buildMetricPill('Ventas Hoy', '\$340.00', Icons.attach_money, const Color(0xFF4ADE80)),
+          const SizedBox(width: 8),
+          _buildMetricPill('Pedidos', '12', Icons.receipt_long, const Color(0xFF60A5FA)),
+          const SizedBox(width: 8),
+          _buildMetricPill('Productos', '48', Icons.inventory_2, const Color(0xFFFBBF24)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMetricPill(String title, String val, IconData icon, Color color) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, color: color, size: 16),
+            const SizedBox(height: 4),
+            Text(title, style: const TextStyle(color: Colors.white70, fontSize: 9)),
+            Text(val, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 12)),
+          ],
         ),
       ),
     );
@@ -492,15 +1068,16 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
     return Column(
       children: [
         CircleAvatar(
-          radius: 16,
+          radius: 15,
           backgroundColor: isDone || isCurrent ? theme.primary : theme.alternate,
           child: isDone
-              ? const Icon(Icons.check, size: 16, color: Colors.white)
+              ? const Icon(Icons.check, size: 15, color: Colors.white)
               : Text(
                   '${stepIndex + 1}',
                   style: TextStyle(
                     color: isCurrent ? Colors.white : theme.secondaryText,
                     fontWeight: FontWeight.bold,
+                    fontSize: 12,
                   ),
                 ),
         ),
@@ -510,6 +1087,7 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
           style: theme.bodySmall.override(
             fontFamily: 'Inter',
             fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
+            fontSize: 11,
           ),
         ),
       ],
@@ -535,38 +1113,43 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
           style: theme.headlineSmall.override(
             fontFamily: 'Inter',
             fontWeight: FontWeight.bold,
+            fontSize: 20,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         Text(
           'Crea tu cuenta de administrador para gestionar tus productos, pedidos y pagos.',
-          style: theme.bodyMedium,
+          style: theme.bodySmall.override(
+            fontFamily: 'Inter',
+            color: theme.secondaryText,
+          ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 20),
 
         if (loggedIn) ...[
           Container(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(14.0),
             decoration: BoxDecoration(
-              color: theme.primary.withValues(alpha: 0.1),
+              color: theme.primary.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(12.0),
-              border: Border.all(color: theme.primary.withValues(alpha: 0.3)),
+              border: Border.all(color: theme.primary.withValues(alpha: 0.25)),
             ),
             child: Row(
               children: [
-                Icon(Icons.account_circle, color: theme.primary, size: 36),
-                const SizedBox(width: 12),
+                Icon(Icons.account_circle, color: theme.primary, size: 32),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         'Sesión activa como:',
-                        style: TextStyle(fontSize: 12, color: theme.secondaryText),
+                        style: TextStyle(fontSize: 11, color: theme.secondaryText),
                       ),
                       Text(
                         currentUserEmail,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
@@ -576,18 +1159,18 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
                     await authManager.signOut();
                     setState(() {});
                   },
-                  child: const Text('Cambiar cuenta'),
+                  child: const Text('Cambiar', style: TextStyle(fontSize: 12)),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
         ] else ...[
           // Selector de Modo (Nueva Cuenta vs Ya tengo cuenta)
           Container(
             decoration: BoxDecoration(
               color: theme.primaryBackground,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(10),
               border: Border.all(color: theme.alternate),
             ),
             child: Row(
@@ -595,20 +1178,20 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
                 Expanded(
                   child: InkWell(
                     onTap: () => setState(() => _isExistingAccountMode = false),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(10),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      padding: const EdgeInsets.symmetric(vertical: 8),
                       decoration: BoxDecoration(
                         color: !_isExistingAccountMode ? theme.primary : Colors.transparent,
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Center(
                         child: Text(
-                          'Crear Cuenta Nueva',
+                          'Crear Cuenta',
                           style: TextStyle(
                             color: !_isExistingAccountMode ? Colors.white : theme.secondaryText,
                             fontWeight: FontWeight.bold,
-                            fontSize: 13,
+                            fontSize: 12,
                           ),
                         ),
                       ),
@@ -618,9 +1201,9 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
                 Expanded(
                   child: InkWell(
                     onTap: () => setState(() => _isExistingAccountMode = true),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(10),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      padding: const EdgeInsets.symmetric(vertical: 8),
                       decoration: BoxDecoration(
                         color: _isExistingAccountMode ? theme.primary : Colors.transparent,
                         borderRadius: BorderRadius.circular(10),
@@ -631,7 +1214,7 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
                           style: TextStyle(
                             color: _isExistingAccountMode ? Colors.white : theme.secondaryText,
                             fontWeight: FontWeight.bold,
-                            fontSize: 13,
+                            fontSize: 12,
                           ),
                         ),
                       ),
@@ -641,7 +1224,7 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
               ],
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
 
           if (!_isExistingAccountMode) ...[
             TextField(
@@ -649,11 +1232,12 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
               decoration: InputDecoration(
                 labelText: 'Nombre Completo / Razón Social',
                 hintText: 'Ej. Juan Pérez',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                prefixIcon: const Icon(Icons.person_outline),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                prefixIcon: const Icon(Icons.person_outline, size: 20),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
           ],
           TextField(
             controller: _model.emailController,
@@ -661,27 +1245,29 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
             decoration: InputDecoration(
               labelText: 'Correo Electrónico',
               hintText: 'tu@correo.com',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              prefixIcon: const Icon(Icons.email_outlined),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              prefixIcon: const Icon(Icons.email_outlined, size: 20),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           TextField(
             controller: _model.passwordController,
             obscureText: _obscurePassword,
             decoration: InputDecoration(
               labelText: _isExistingAccountMode
-                  ? 'Contraseña de tu Cuenta'
-                  : 'Contraseña de Acceso (mínimo 6 caracteres)',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              prefixIcon: const Icon(Icons.lock_outline),
+                  ? 'Contraseña'
+                  : 'Contraseña (mínimo 6 caracteres)',
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              prefixIcon: const Icon(Icons.lock_outline, size: 20),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               suffixIcon: IconButton(
-                icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
+                icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, size: 20),
                 onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
               ),
             ),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 20),
         ],
 
         SizedBox(
@@ -689,14 +1275,15 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
           child: ElevatedButton(
             onPressed: _isAuthenticatingStep0 ? null : _handleStep0Account,
             style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 16),
+              padding: const EdgeInsets.symmetric(vertical: 14),
               backgroundColor: theme.primary,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              elevation: 0,
             ),
             child: _isAuthenticatingStep0
                 ? const SizedBox(
-                    width: 20,
-                    height: 20,
+                    width: 18,
+                    height: 18,
                     child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                   )
                 : Text(
@@ -705,23 +1292,23 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
                         : (_isExistingAccountMode
                             ? 'Iniciar Sesión y Continuar ->'
                             : 'Crear Cuenta y Continuar ->'),
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
                   ),
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 14),
         Center(
           child: TextButton.icon(
             onPressed: () {
               context.goNamed('loginPage');
             },
-            icon: Icon(Icons.arrow_back_rounded, size: 18, color: theme.secondaryText),
+            icon: Icon(Icons.arrow_back_rounded, size: 16, color: theme.secondaryText),
             label: Text(
-              'Salir y volver a la página inicial para iniciar sesión',
+              'Salir y volver a Iniciar Sesión',
               style: TextStyle(
                 color: theme.secondaryText,
                 fontWeight: FontWeight.w600,
-                fontSize: 14,
+                fontSize: 13,
               ),
             ),
           ),
@@ -740,46 +1327,53 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
           style: theme.headlineSmall.override(
             fontFamily: 'Inter',
             fontWeight: FontWeight.bold,
+            fontSize: 20,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         Text(
-          'Define el nombre comercial y el enlace personalizado de tu catálogo online.',
-          style: theme.bodyMedium,
+          'Define el nombre comercial y el enlace de tu catálogo online.',
+          style: theme.bodySmall.override(
+            fontFamily: 'Inter',
+            color: theme.secondaryText,
+          ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 20),
 
         TextField(
           controller: _model.storeNameController,
           onChanged: _onStoreNameChanged,
           decoration: InputDecoration(
             labelText: 'Nombre de la Tienda (ej. Modas Express)',
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            prefixIcon: const Icon(Icons.storefront_rounded),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+            prefixIcon: const Icon(Icons.storefront_rounded, size: 20),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
         TextField(
           controller: _model.slugController,
           decoration: InputDecoration(
             labelText: 'Enlace de la Tienda (Slug / URL)',
             prefixText: 'tuapp.com/',
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            prefixIcon: const Icon(Icons.link_rounded),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+            prefixIcon: const Icon(Icons.link_rounded, size: 20),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
         TextField(
           controller: _model.phoneController,
           keyboardType: TextInputType.phone,
           decoration: InputDecoration(
-            labelText: 'Teléfono de Contacto (WhatsApp para pedidos)',
+            labelText: 'Teléfono WhatsApp (para recibir pedidos)',
             hintText: '+58 412 1234567',
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            prefixIcon: const Icon(Icons.phone_rounded),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+            prefixIcon: const Icon(Icons.phone_rounded, size: 20),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           ),
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: 24),
 
         Row(
           children: [
@@ -787,13 +1381,13 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
               child: OutlinedButton(
                 onPressed: () => setState(() => _currentStep = 0),
                 style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
-                child: const Text('Atrás'),
+                child: const Text('Atrás', style: TextStyle(fontSize: 13)),
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 12),
             Expanded(
               child: ElevatedButton(
                 onPressed: () {
@@ -807,13 +1401,14 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
                   setState(() => _currentStep = 2);
                 },
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                   backgroundColor: theme.primary,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  elevation: 0,
                 ),
                 child: const Text(
-                  'Continuar a Branding ->',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  'Continuar ->',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
                 ),
               ),
             ),
@@ -823,7 +1418,7 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
     );
   }
 
-  // --- PASO 2: Branding e Identidad Visual (Logo, Banner, Colores) ---
+  // --- PASO 2: Branding e Identidad Visual (Logo, Colores) ---
   Widget _buildStepBranding(FlutterFlowTheme theme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -833,26 +1428,30 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
           style: theme.headlineSmall.override(
             fontFamily: 'Inter',
             fontWeight: FontWeight.bold,
+            fontSize: 20,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         Text(
-          'Personaliza el logo y los colores distintivos de tu tienda.',
-          style: theme.bodyMedium,
+          'Personaliza el logo y el color distintivo de tu tienda.',
+          style: theme.bodySmall.override(
+            fontFamily: 'Inter',
+            color: theme.secondaryText,
+          ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 18),
 
         // Subida de Logo
-        Text('Logo de la Tienda (Opcional)', style: theme.bodyMedium.override(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8),
+        Text('Logo de la Tienda (Opcional)', style: theme.bodyMedium.override(fontWeight: FontWeight.bold, fontSize: 13)),
+        const SizedBox(height: 6),
         GestureDetector(
           onTap: () => _pickImage(true),
           child: Container(
-            height: 100,
+            height: 90,
             width: double.infinity,
             decoration: BoxDecoration(
-              color: theme.secondaryBackground,
-              borderRadius: BorderRadius.circular(12),
+              color: theme.primaryBackground,
+              borderRadius: BorderRadius.circular(10),
               border: Border.all(color: theme.alternate),
             ),
             child: _logoBytes != null
@@ -860,42 +1459,50 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
                 : const Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.add_photo_alternate_outlined, size: 36),
+                      Icon(Icons.add_photo_alternate_outlined, size: 30),
                       SizedBox(height: 4),
-                      Text('Haz clic para subir el Logo'),
+                      Text('Haz clic para subir el Logo', style: TextStyle(fontSize: 12)),
                     ],
                   ),
           ),
         ),
 
-        const SizedBox(height: 24),
+        const SizedBox(height: 18),
 
         // Selector de Color Primario
-        Text('Color Principal de la Marca', style: theme.bodyMedium.override(fontWeight: FontWeight.bold)),
+        Text('Color Principal de la Marca', style: theme.bodyMedium.override(fontWeight: FontWeight.bold, fontSize: 13)),
         const SizedBox(height: 8),
         Wrap(
-          spacing: 12,
-          runSpacing: 12,
+          spacing: 10,
+          runSpacing: 10,
           children: _presetColors.map((colorHex) {
             final isSelected = _model.primaryColorHex == colorHex;
             final color = Color(int.parse(colorHex.replaceFirst('#', 'ff'), radix: 16));
             return GestureDetector(
               onTap: () => setState(() => _model.primaryColorHex = colorHex),
               child: Container(
-                width: 44,
-                height: 44,
+                width: 38,
+                height: 38,
                 decoration: BoxDecoration(
                   color: color,
                   shape: BoxShape.circle,
-                  border: isSelected ? Border.all(color: Colors.black, width: 3) : null,
+                  border: isSelected ? Border.all(color: Colors.black, width: 2.5) : null,
+                  boxShadow: [
+                    if (isSelected)
+                      BoxShadow(
+                        color: color.withValues(alpha: 0.4),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                  ],
                 ),
-                child: isSelected ? const Icon(Icons.check, color: Colors.white) : null,
+                child: isSelected ? const Icon(Icons.check, color: Colors.white, size: 18) : null,
               ),
             );
           }).toList(),
         ),
 
-        const SizedBox(height: 32),
+        const SizedBox(height: 24),
 
         Row(
           children: [
@@ -903,30 +1510,31 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
               child: OutlinedButton(
                 onPressed: () => setState(() => _currentStep = 1),
                 style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
-                child: const Text('Atrás'),
+                child: const Text('Atrás', style: TextStyle(fontSize: 13)),
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 12),
             Expanded(
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _submitRegistration,
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                   backgroundColor: theme.primary,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  elevation: 0,
                 ),
                 child: _isLoading
                     ? const SizedBox(
-                        height: 20,
-                        width: 20,
+                        height: 18,
+                        width: 18,
                         child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                       )
                     : const Text(
                         '¡Crear Mi Tienda!',
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
                       ),
               ),
             ),
@@ -940,36 +1548,41 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
   Widget _buildStepSuccess(FlutterFlowTheme theme) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
-            const Icon(Icons.check_circle_rounded, size: 80, color: Color(0xFF16A34A)),
-            const SizedBox(height: 16),
+            const Icon(Icons.check_circle_rounded, size: 70, color: Color(0xFF16A34A)),
+            const SizedBox(height: 14),
             Text(
               '¡Tu Tienda ha sido creada!',
-              style: theme.headlineMedium.override(
+              style: theme.headlineSmall.override(
                 fontFamily: 'Inter',
                 fontWeight: FontWeight.bold,
+                fontSize: 20,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
-              'La tienda "${_model.storeNameController.text}" está lista. Ya puedes comenzar a subir productos y gestionar pedidos.',
+              'La tienda "${_model.storeNameController.text}" está lista. Ya puedes comenzar a subir productos y recibir pedidos por WhatsApp.',
               textAlign: TextAlign.center,
-              style: theme.bodyMedium,
+              style: theme.bodySmall.override(
+                fontFamily: 'Inter',
+                color: theme.secondaryText,
+              ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: () {
                 context.goNamed('adminStore');
               },
-              icon: const Icon(Icons.dashboard_rounded),
-              label: const Text('Ir a mi Panel de Administración'),
+              icon: const Icon(Icons.dashboard_rounded, size: 18),
+              label: const Text('Ir a mi Panel de Control'),
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                 backgroundColor: theme.primary,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                elevation: 0,
               ),
             ),
           ],
@@ -977,4 +1590,22 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
       ),
     );
   }
+}
+
+class _SlideItem {
+  final String tag;
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final List<String> bulletPoints;
+  final Widget previewWidget;
+
+  const _SlideItem({
+    required this.tag,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.bulletPoints,
+    required this.previewWidget,
+  });
 }
