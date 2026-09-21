@@ -238,87 +238,45 @@ class _ProductGridWidgetState extends State<ProductGridWidget>
                 Expanded(
                   child: Stack(
                     children: [
-                      Align(
-                        alignment: const AlignmentDirectional(0.0, 0.0),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.max,
-                          children: [
-                            InkWell(
-                              splashColor: Colors.transparent,
-                              focusColor: Colors.transparent,
-                              hoverColor: Colors.transparent,
-                              highlightColor: Colors.transparent,
-                              onTap: () async {
-                                if (_model.indexImages! > 0) {
-                                  _model.indexImages = _model.indexImages! + -1;
-                                  safeSetState(() {});
-                                }
-                              },
-                              child: Icon(
-                                Icons.arrow_back_ios,
-                                color: _model.indexImages! > 0
-                                    ? FlutterFlowTheme.of(context).primaryText
-                                    : FlutterFlowTheme.of(context)
-                                        .secondaryText,
-                                size: 34.0,
-                               ),
+                      Positioned.fill(
+                        child: Hero(
+                          tag: 'grid-${widget.productoRow?.id}-${functions.getProxyUrl(images.elementAtOrNull(_model.indexImages!))}',
+                          transitionOnUserGestures: true,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(10.0),
+                            child: CachedNetworkImage(
+                              fadeInDuration:
+                                  const Duration(milliseconds: 500),
+                              fadeOutDuration:
+                                  const Duration(milliseconds: 500),
+                              imageUrl: functions.getProxyUrl(images.elementAtOrNull(_model.indexImages!)),
+                              width: double.infinity,
+                              height: double.infinity,
+                              fit: BoxFit.cover,
                             ),
-                            Expanded(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.max,
-                                children: [
-                                  Expanded(
-                                    child: Hero(
-                                      tag: 'grid-${widget.productoRow?.id}-${functions.getProxyUrl(images.elementAtOrNull(_model.indexImages!))}',
-                                      transitionOnUserGestures: true,
-                                      child: ClipRRect(
-                                        borderRadius:
-                                            BorderRadius.circular(10.0),
-                                        child: CachedNetworkImage(
-                                          fadeInDuration:
-                                              const Duration(milliseconds: 500),
-                                          fadeOutDuration:
-                                              const Duration(milliseconds: 500),
-                                          imageUrl: functions.getProxyUrl(images.elementAtOrNull(_model.indexImages!)),
-                                          width: double.infinity,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsetsDirectional.fromSTEB(
-                                  10.0, 0.0, 0.0, 0.0),
-                              child: InkWell(
-                                splashColor: Colors.transparent,
-                                focusColor: Colors.transparent,
-                                hoverColor: Colors.transparent,
-                                highlightColor: Colors.transparent,
-                                onTap: () async {
-                                  if (_model.indexImages! <
-                                      (images.length - 1)) {
-                                    _model.indexImages =
-                                        _model.indexImages! + 1;
-                                    safeSetState(() {});
-                                  }
-                                },
-                                child: Icon(
-                                  Icons.arrow_forward_ios,
-                                  color: _model.indexImages! <
-                                          (images.length - 1)
-                                      ? FlutterFlowTheme.of(context).primaryText
-                                      : FlutterFlowTheme.of(context)
-                                          .secondaryText,
-                                  size: 34.0,
-                                ),
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
                       ),
+                      if (images.length > 1)
+                        Align(
+                          alignment: const AlignmentDirectional(-1.0, -1.0),
+                          child: Padding(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
+                                8.0, 8.0, 0.0, 0.0),
+                            child: Container(
+                              padding: const EdgeInsets.all(4.0),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withValues(alpha: 0.5),
+                                borderRadius: BorderRadius.circular(6.0),
+                              ),
+                              child: const Icon(
+                                Icons.collections_rounded,
+                                color: Colors.white,
+                                size: 14.0,
+                              ),
+                            ),
+                          ),
+                        ),
                       Align(
                         alignment: const AlignmentDirectional(1.0, -1.0),
                         child: Padding(

@@ -198,28 +198,8 @@ class _TarjetaProductoWidgetState extends State<TarjetaProductoWidget>
             child: Row(
               mainAxisSize: MainAxisSize.max,
               children: [
-                Row(
-                  mainAxisSize: MainAxisSize.max,
+                Stack(
                   children: [
-                    InkWell(
-                      splashColor: Colors.transparent,
-                      focusColor: Colors.transparent,
-                      hoverColor: Colors.transparent,
-                      highlightColor: Colors.transparent,
-                      onTap: () async {
-                        if (_model.indexImages! > 0) {
-                          _model.indexImages = _model.indexImages! + -1;
-                          safeSetState(() {});
-                        }
-                      },
-                      child: Icon(
-                        Icons.arrow_back_ios,
-                        color: _model.indexImages! > 0
-                            ? FlutterFlowTheme.of(context).primaryText
-                            : FlutterFlowTheme.of(context).secondaryText,
-                        size: 20.0,
-                      ),
-                    ),
                     Hero(
                       tag: 'list-${widget.productoRow?.id}-${functions.getProxyUrl(widget.productoRow?.imagePath
                           ?.elementAtOrNull(_model.indexImages!))}',
@@ -235,7 +215,6 @@ class _TarjetaProductoWidgetState extends State<TarjetaProductoWidget>
                           width: 120.0,
                           height: 120.0,
                           fit: BoxFit.cover,
-                          // --- NUEVO: Placeholder mientras carga ---
                           placeholder: (context, url) => Container(
                             color:
                                 FlutterFlowTheme.of(context).primaryBackground,
@@ -246,10 +225,9 @@ class _TarjetaProductoWidgetState extends State<TarjetaProductoWidget>
                               ),
                             ),
                           ),
-                          // --- NUEVO: El salvavidas si la imagen falla o no se puede decodificar ---
                           errorWidget: (context, url, error) {
                             print(
-                                '❌ Error cargando imagen: $url \nError: $error'); // Esto nos dirá en consola CUÁL es la URL rota
+                                '❌ Error cargando imagen: $url \nError: $error');
                             return Container(
                               color: FlutterFlowTheme.of(context)
                                   .secondaryBackground,
@@ -264,34 +242,26 @@ class _TarjetaProductoWidgetState extends State<TarjetaProductoWidget>
                         ),
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsetsDirectional.fromSTEB(
-                          10.0, 0.0, 0.0, 0.0),
-                      child: InkWell(
-                        splashColor: Colors.transparent,
-                        focusColor: Colors.transparent,
-                        hoverColor: Colors.transparent,
-                        highlightColor: Colors.transparent,
-                        onTap: () async {
-                          if (_model.indexImages! <
-                              ((widget.productoRow?.imagePath?.length ?? 0) -
-                                  1)) {
-                            _model.indexImages = _model.indexImages! + 1;
-                            safeSetState(() {});
-                          }
-                        },
-                        child: Icon(
-                          Icons.arrow_forward_ios,
-                          color: _model.indexImages! <
-                                  ((widget.productoRow?.imagePath?.length ??
-                                          0) -
-                                      1)
-                              ? FlutterFlowTheme.of(context).primaryText
-                              : FlutterFlowTheme.of(context).secondaryText,
-                          size: 20.0,
+                    if ((widget.productoRow?.imagePath?.length ?? 0) > 1)
+                      Align(
+                        alignment: const AlignmentDirectional(-1.0, -1.0),
+                        child: Padding(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
+                              6.0, 6.0, 0.0, 0.0),
+                          child: Container(
+                            padding: const EdgeInsets.all(4.0),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.5),
+                              borderRadius: BorderRadius.circular(6.0),
+                            ),
+                            child: const Icon(
+                              Icons.collections_rounded,
+                              color: Colors.white,
+                              size: 14.0,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
                   ],
                 ),
                 Expanded(

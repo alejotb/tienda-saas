@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:baul_pandora/components/related_products_component.dart';
 import 'package:baul_pandora/backend/supabase/supabase.dart';
 import 'package:baul_pandora/components/gradient_button/gradient_button_widget.dart';
@@ -39,6 +40,9 @@ class ProductDetailsWidget extends StatefulWidget {
 class _ProductDetailsWidgetState extends State<ProductDetailsWidget>
     with TickerProviderStateMixin {
   late ProductDetailsModel _model;
+  late PageController _imagePageController;
+  Timer? _autoSlideTimer;
+  bool _userInteractedWithSlider = false;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -48,11 +52,14 @@ class _ProductDetailsWidgetState extends State<ProductDetailsWidget>
   void initState() {
     super.initState();
     _model = createModel(context, () => ProductDetailsModel());
+    _imagePageController = PageController(initialPage: _model.index);
 
     _loadVariations();
 
     // Cargar productos relacionados
     _loadRelatedProducts();
+
+    _setupAutoSlideTimer();
 
     animationsMap.addAll({
       'rowOnPageLoadAnimation': AnimationInfo(
@@ -136,6 +143,31 @@ class _ProductDetailsWidgetState extends State<ProductDetailsWidget>
         ],
       ),
     });
+  }
+
+  void _setupAutoSlideTimer() {
+    _autoSlideTimer?.cancel();
+    _autoSlideTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
+      if (!mounted || !_imagePageController.hasClients || _userInteractedWithSlider) return;
+      final images = _model.combinedImages.isNotEmpty
+          ? _model.combinedImages
+          : (widget.productRef?.imagePath ?? []);
+      if (images.length <= 1) return;
+      final next = (_model.index + 1) % images.length;
+      _imagePageController.animateToPage(
+        next,
+        duration: const Duration(milliseconds: 550),
+        curve: Curves.easeInOutCubic,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _autoSlideTimer?.cancel();
+    _imagePageController.dispose();
+    _model.dispose();
+    super.dispose();
   }
 
   Future<void> _loadRelatedProducts() async {
@@ -379,12 +411,6 @@ class _ProductDetailsWidgetState extends State<ProductDetailsWidget>
     );
   }
 
-  @override
-  void dispose() {
-    _model.dispose();
-    super.dispose();
-  }
-
 
 
   @override
@@ -560,73 +586,132 @@ class _ProductDetailsWidgetState extends State<ProductDetailsWidget>
                                                     mainAxisSize: MainAxisSize.max,
                                                     crossAxisAlignment: CrossAxisAlignment.start,
                                                     children: [
-                                                      Padding(
-                                                        padding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 16.0),
-                                                        child: Row(
-                                                          mainAxisSize: MainAxisSize.max,
-                                                          mainAxisAlignment: MainAxisAlignment.center,
-                                                          children: [
-                                                             InkWell(
-                                                               onTap: () async {
-                                                                  if (_model.index > 0) {
-                                                                    _model.index = _model.index - 1;
-                                                                    safeSetState(() {
-                                                                      _updateProductBasedOnImageIndex();
-                                                                    });
-                                                                  }
-                                                               },
-                                                               child: Icon(
-                                                                 Icons.arrow_back_ios,
-                                                                 color: _model.index > 0
-                                                                     ? FlutterFlowTheme.of(context).primaryText
-                                                                     : FlutterFlowTheme.of(context).secondaryText,
-                                                                 size: isMobileWidth(context) ? 30.0 : 60.0,
-                                                               ),
-                                                             ),
-                                                             Expanded(
-                                                               child: Hero(
-                                                                 tag: functions.getProxyUrl(images.elementAtOrNull(_model.index)) ?? 'product-img',
-                                                                 transitionOnUserGestures: true,
-                                                                 child: ClipRRect(
-                                                                   borderRadius: BorderRadius.circular(10.0),
-                                                                   child: Image.network(
-                                                                     functions.getProxyUrl(images.elementAtOrNull(_model.index)) ?? '',
-                                                                     width: 1000.0,
-                                                                     height: isMobileWidth(context) ? 200.0 : 800.0,
-                                                                     fit: BoxFit.cover,
-                                                                     errorBuilder: (context, error, stackTrace) => Container(
-                                                                       width: 1000.0,
-                                                                       height: isMobileWidth(context) ? 200.0 : 800.0,
-                                                                       color: Colors.grey[300],
-                                                                       child: const Icon(Icons.broken_image, size: 50, color: Colors.grey),
-                                                                     ),
+                                                       Padding(
+                                                         padding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 16.0),
+                                                         child: Column(
+                                                           mainAxisSize: MainAxisSize.min,
+                                                           children: [
+                                                             Stack(
+                                                               alignment: Alignment.center,
+                                                               children: [
+                                                                 ClipRRect(
+                                                                   borderRadius: BorderRadius.circular(14.0),
+                                                                   child: SizedBox(
+                                                                     width: double.infinity,
+                                                                     height: isMobileWidth(context) ? 380.0 : 540.0,
+                                                                     child: images.isEmpty
+                                                                         ? Container(
+                                                                             color: FlutterFlowTheme.of(context).primaryBackground,
+                                                                             child: Center(
+                                                                               child: Icon(
+                                                                                 Icons.image_not_supported_outlined,
+                                                                                 size: 64,
+                                                                                 color: FlutterFlowTheme.of(context).secondaryText,
+                                                                               ),
+                                                                             ),
+                                                                           )
+                                                                         : PageView.builder(
+                                                                             controller: _imagePageController,
+                                                                             onPageChanged: (idx) {
+                                                                               _userInteractedWithSlider = true;
+                                                                               _model.index = idx;
+                                                                               safeSetState(() {
+                                                                                 _updateProductBasedOnImageIndex();
+                                                                               });
+                                                                             },
+                                                                             itemCount: images.length,
+                                                                             itemBuilder: (context, imgIdx) {
+                                                                               final imgUrl = functions.getProxyUrl(images.elementAtOrNull(imgIdx)) ?? '';
+                                                                               return Hero(
+                                                                                 tag: 'product-img-$imgIdx',
+                                                                                 transitionOnUserGestures: true,
+                                                                                 child: Container(
+                                                                                   color: FlutterFlowTheme.of(context).primaryBackground.withValues(alpha: 0.5),
+                                                                                   child: Image.network(
+                                                                                     imgUrl,
+                                                                                     width: double.infinity,
+                                                                                     height: double.infinity,
+                                                                                     fit: BoxFit.contain,
+                                                                                     errorBuilder: (context, error, stackTrace) => Container(
+                                                                                       color: FlutterFlowTheme.of(context).primaryBackground,
+                                                                                       child: Center(
+                                                                                         child: Icon(
+                                                                                           Icons.broken_image,
+                                                                                           size: 50,
+                                                                                           color: FlutterFlowTheme.of(context).secondaryText,
+                                                                                         ),
+                                                                                       ),
+                                                                                     ),
+                                                                                   ),
+                                                                                 ),
+                                                                               );
+                                                                             },
+                                                                           ),
                                                                    ),
                                                                  ),
-                                                               ),
+
+                                                                 // Badge superior estilo Instagram: 1/4
+                                                                 if (images.length > 1)
+                                                                   Positioned(
+                                                                     top: 12,
+                                                                     right: 12,
+                                                                     child: Container(
+                                                                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                                                       decoration: BoxDecoration(
+                                                                         color: Colors.black.withValues(alpha: 0.65),
+                                                                         borderRadius: BorderRadius.circular(16),
+                                                                         border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                                                                       ),
+                                                                       child: Text(
+                                                                         '${_model.index + 1}/${images.length}',
+                                                                         style: const TextStyle(
+                                                                           color: Colors.white,
+                                                                           fontSize: 12,
+                                                                           fontWeight: FontWeight.bold,
+                                                                           letterSpacing: 0.5,
+                                                                         ),
+                                                                       ),
+                                                                     ),
+                                                                   ),
+                                                               ],
                                                              ),
-                                                             Padding(
-                                                               padding: const EdgeInsetsDirectional.fromSTEB(10.0, 0.0, 0.0, 0.0),
-                                                               child: InkWell(
-                                                                 onTap: () async {
-                                                                   if (_model.index < (images.length - 1)) {
-                                                                     _model.index = _model.index + 1;
-                                                                     safeSetState(() {
-                                                                       _updateProductBasedOnImageIndex();
-                                                                     });
-                                                                   }
-                                                                 },
-                                                                 child: Icon(
-                                                                   Icons.arrow_forward_ios_outlined,
-                                                                   color: (_model.index < images.length - 1)
-                                                                       ? FlutterFlowTheme.of(context).primaryText
-                                                                       : FlutterFlowTheme.of(context).secondaryText,
-                                                                   size: isMobileWidth(context) ? 30.0 : 60.0,
+
+                                                             // Indicador de Puntos (Dots) estilo Instagram
+                                                             if (images.length > 1)
+                                                               Padding(
+                                                                 padding: const EdgeInsets.only(top: 12.0, bottom: 4.0),
+                                                                 child: Row(
+                                                                   mainAxisAlignment: MainAxisAlignment.center,
+                                                                   children: List.generate(images.length, (i) {
+                                                                     final isSelected = i == _model.index;
+                                                                     return GestureDetector(
+                                                                       onTap: () {
+                                                                         _userInteractedWithSlider = true;
+                                                                         _imagePageController.animateToPage(
+                                                                           i,
+                                                                           duration: const Duration(milliseconds: 350),
+                                                                           curve: Curves.easeInOut,
+                                                                         );
+                                                                       },
+                                                                       child: AnimatedContainer(
+                                                                         duration: const Duration(milliseconds: 250),
+                                                                         margin: const EdgeInsets.symmetric(horizontal: 3.5),
+                                                                         width: isSelected ? 20.0 : 7.0,
+                                                                         height: 7.0,
+                                                                         decoration: BoxDecoration(
+                                                                           color: isSelected
+                                                                               ? FlutterFlowTheme.of(context).primary
+                                                                               : FlutterFlowTheme.of(context).secondaryText.withValues(alpha: 0.35),
+                                                                           borderRadius: BorderRadius.circular(4.0),
+                                                                         ),
+                                                                       ),
+                                                                     );
+                                                                   }),
                                                                  ),
                                                                ),
-                                                             ),
-                                                          ],
-                                                        ),
-                                                      ),
+                                                           ],
+                                                         ),
+                                                       ),
                                                       if (responsiveVisibility(context: context, phone: false, tablet: false))
                                                         Padding(
                                                           padding: const EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
