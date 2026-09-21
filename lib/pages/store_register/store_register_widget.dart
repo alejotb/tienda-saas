@@ -281,7 +281,7 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
       if (!eligibility.canCreate) {
         if (mounted) {
           _showPlanLimitUpgradeDialog(eligibility.message ??
-              'Las cuentas con Plan Free están limitadas a 1 sola tienda. Para crear y administrar múltiples tiendas, actualiza al Plan Pro.');
+              'Las cuentas con Plan Free están limitadas a un máximo de 2 tiendas. Para crear 3 o más tiendas, actualiza al Plan Pro.');
         }
         return;
       }
@@ -295,18 +295,20 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
       if (mounted) {
         String msg = e.message;
         if (e.message.toLowerCase().contains('invalid login credentials')) {
-          msg = 'Credenciales incorrectas: Este correo ya existe con otra contraseña. Por favor verifica tu clave o usa el modo "Ya tengo cuenta".';
-        } else if (e.statusCode == '429' || e.message.toLowerCase().contains('rate limit')) {
-          msg = 'Límite de solicitudes alcanzado en Supabase (Error 429). Cambia a "Ya tengo cuenta" si ya te registraste, o espera unos minutos.';
+          msg = 'Credenciales incorrectas: Este correo ya existe en Supabase Auth con otra clave. Ingresa la contraseña original o elimínalo desde el panel de Supabase.';
+        } else if (e.statusCode == '429' || e.message.toLowerCase().contains('rate limit') || e.message.toLowerCase().contains('too many requests')) {
+          msg = 'Límite de solicitudes de Supabase (Error 429). Por seguridad, Supabase limita intentos de registro por hora. Espera unos minutos o prueba con otro correo de prueba.';
+        } else if (e.message.toLowerCase().contains('email not confirmed')) {
+          msg = 'Correo no confirmado: Desactiva "Confirm email" en Supabase (Authentication > Providers > Email) para registro directo sin confirmación.';
         }
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(msg), backgroundColor: Colors.red),
+          SnackBar(content: Text(msg), backgroundColor: Colors.red, duration: const Duration(seconds: 5)),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString().replaceAll('Exception: ', '')), backgroundColor: Colors.red),
+          SnackBar(content: Text(e.toString().replaceAll('Exception: ', '')), backgroundColor: Colors.red, duration: const Duration(seconds: 5)),
         );
       }
     } finally {
