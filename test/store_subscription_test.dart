@@ -72,5 +72,45 @@ void main() {
       expect(store.whatsappActivo, true);
       expect(store.whatsappConfirmado, true);
     });
+
+    test('StoreEligibility evaluates Free plan 1-store quota correctly', () {
+      // 0 stores -> Allowed
+      final eligibilityZero = StoreEligibility(
+        canCreate: true,
+        currentStoreCount: 0,
+        hasProPlan: false,
+      );
+      expect(eligibilityZero.canCreate, isTrue);
+      expect(eligibilityZero.hasProPlan, isFalse);
+
+      // 1 Free store -> Blocked (Free limit is 1 store)
+      final eligibilityFree = StoreEligibility(
+        canCreate: false,
+        currentStoreCount: 1,
+        hasProPlan: false,
+        message: 'Las cuentas con Plan Free están limitadas a 1 sola tienda. Para crear y gestionar múltiples tiendas con una misma cuenta, actualiza al Plan Pro.',
+      );
+      expect(eligibilityFree.canCreate, isFalse);
+      expect(eligibilityFree.hasProPlan, isFalse);
+      expect(eligibilityFree.message, contains('Plan Pro'));
+
+      // 1 Pro store -> Allowed (Multi-store enabled)
+      final eligibilityPro = StoreEligibility(
+        canCreate: true,
+        currentStoreCount: 1,
+        hasProPlan: true,
+      );
+      expect(eligibilityPro.canCreate, isTrue);
+      expect(eligibilityPro.hasProPlan, isTrue);
+
+      // 3 Pro stores -> Allowed (Unlimited stores)
+      final eligibilityProMultiple = StoreEligibility(
+        canCreate: true,
+        currentStoreCount: 3,
+        hasProPlan: true,
+      );
+      expect(eligibilityProMultiple.canCreate, isTrue);
+      expect(eligibilityProMultiple.currentStoreCount, 3);
+    });
   });
 }

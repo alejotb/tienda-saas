@@ -1,6 +1,7 @@
 import 'package:baul_pandora/auth/supabase_auth/auth_util.dart';
 import 'package:baul_pandora/components/modal_edit/modal_edit_widget.dart';
 import 'package:baul_pandora/components/whatsapp_connection_modal.dart';
+import 'package:baul_pandora/components/store_selector_modal.dart';
 import 'package:baul_pandora/flutter_flow/flutter_flow_theme.dart';
 import 'package:baul_pandora/flutter_flow/flutter_flow_util.dart';
 import 'package:baul_pandora/flutter_flow/flutter_flow_widgets.dart';
@@ -85,6 +86,20 @@ class ProfileSettingsList extends StatelessWidget {
               if (FFAppState().activeStoreId.isNotEmpty ||
                   (AppStateNotifier.instance.currentUserRow?.isAdmin ?? false) ||
                   FFAppState().isAdmin) ...[
+                Divider(height: 1.0, thickness: 1.0, color: FlutterFlowTheme.of(context).alternate),
+                _buildSettingsItem(
+                  context,
+                  icon: Icon(Icons.storefront_rounded, color: FlutterFlowTheme.of(context).primary, size: 24.0),
+                  text: 'Mis Tiendas / Cambiar Tienda',
+                  onTap: () async {
+                    await StoreSelectorModal.show(
+                      context,
+                      onStoreSelected: (store) async {
+                        await updateCallback();
+                      },
+                    );
+                  },
+                ),
                 Divider(height: 1.0, thickness: 1.0, color: FlutterFlowTheme.of(context).alternate),
                 _buildSettingsItem(
                   context,

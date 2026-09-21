@@ -2,6 +2,20 @@ import 'package:flutter/foundation.dart';
 import 'package:baul_pandora/backend/supabase/supabase.dart';
 import 'package:baul_pandora/services/store_theme_service.dart';
 
+class StoreEligibility {
+  final bool canCreate;
+  final int currentStoreCount;
+  final bool hasProPlan;
+  final String? message;
+
+  StoreEligibility({
+    required this.canCreate,
+    required this.currentStoreCount,
+    required this.hasProPlan,
+    this.message,
+  });
+}
+
 class StoreData {
   final String id;
   final String duenoId;
@@ -183,26 +197,101 @@ class StoreService {
     return !available;
   }
 
-  /// Obtiene la tienda asociada al usuario actual
-  Future<StoreData?> getMyStore() async {
-    final user = SupaFlow.client.auth.currentUser;
-    if (user == null) return null;
+  /// Obtiene todas las tiendas asociadas al usuario actual
+  Future<List<StoreData>> getMyStores({String? userId}) async {
+    final uid = userId ?? SupaFlow.client.auth.currentUser?.id;
+    if (uid == null || uid.isEmpty) return [];
 
     try {
       final res = await SupaFlow.client
           .from('tiendas')
           .select()
-          .eq('dueno_id', user.id)
-          .maybeSingle();
+          .eq('dueno_id', uid)
+          .order('nombre', ascending: true);
 
-      if (res != null) {
-        return StoreData.fromMap(res);
+      if (res is List) {
+        return (res as List).map((map) => StoreData.fromMap(map as Map<String, dynamic>)).toList();
       }
-      return null;
+      return [];
+    } catch (e) {
+      debugPrint('Error obteniendo tiendas del usuario: $e');
+      return [];
+    }
+  }
+
+  /// Verifica la elegibilidad de un usuario para crear una nueva tienda según su plan
+  Future<StoreEligibility> checkStoreCreationEligibility({String? userId}) async {
+    final uid = userId ?? SupaFlow.client.auth.currentUser?.id;
+    if (uid == null || uid.isEmpty) {
+      return StoreEligibility(
+        canCreate: true,
+        currentStoreCount: 0,
+        hasProPlan: false,
+      );
+    }
+
+    try {
+      final stores = await getMyStores(userId: uid);
+      final count = stores.length;
+
+      if (count == 0) {
+        return StoreEligibility(
+          canCreate: true,
+          currentStoreCount: 0,
+          hasProPlan: false,
+        );
+      }
+
+      final hasPro = stores.any((s) =>
+          s.plan.toLowerCase() == 'pro' || s.plan.toLowerCase() == 'premium');
+
+      if (hasPro) {
+        return StoreEligibility(
+          canCreate: true,
+          currentStoreCount: count,
+          hasProPlan: true,
+        );
+      }
+
+      // Usuario Free con al menos 1 tienda ya creada
+      return StoreEligibility(
+        canCreate: false,
+        currentStoreCount: count,
+        hasProPlan: false,
+        message:
+            'Las cuentas con Plan Free están limitadas a 1 sola tienda. Para crear y gestionar múltiples tiendas con una misma cuenta, actualiza al Plan Pro.',
+      );
+    } catch (e) {
+      debugPrint('Error verificando elegibilidad de creación de tienda: $e');
+      return StoreEligibility(
+        canCreate: true,
+        currentStoreCount: 0,
+        hasProPlan: false,
+      );
+    }
+  }
+
+  /// Obtiene la tienda activa asociada al usuario actual
+  Future<StoreData?> getMyStore({String? userId}) async {
+    final uid = userId ?? SupaFlow.client.auth.currentUser?.id;
+    if (uid == null || uid.isEmpty) return null;
+
+    try {
+      final stores = await getMyStores(userId: uid);
+      if (stores.isEmpty) return null;
+
+      // Si hay un activeStoreId configurado en AppState y coincide con una de las tiendas del usuario
+      // se devuelve esa tienda, de lo contrario la primera.
+      return stores.first;
     } catch (e) {
       debugPrint('Error obteniendo la tienda del usuario: $e');
       return null;
     }
+  }
+
+  /// Cambia la tienda activa del comerciante y actualiza el tema global
+  void switchActiveStore(StoreData store) {
+    StoreThemeService.instance.setStore(store);
   }
 
   /// Obtiene una tienda por su slug

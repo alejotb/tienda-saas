@@ -86,8 +86,96 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
     _model.slugController.text = slug;
   }
 
+    void _showPlanLimitUpgradeDialog(String message) {
+    final theme = FlutterFlowTheme.of(context);
+
+    showDialog(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.purple.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.stars_rounded, color: Colors.purple, size: 28),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Text(
+                'Límite de Tiendas (Plan Free)',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              message,
+              style: theme.bodyMedium.override(fontFamily: 'Inter', fontSize: 14),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.purple.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.purple.withValues(alpha: 0.2)),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.check_circle_rounded, color: Colors.purple, size: 20),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Plan Pro (\$14.99/mes): Tiendas múltiples ilimitadas, dominio propio y productos sin límite.',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.purple),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogCtx).pop(),
+            child: Text('Cerrar', style: TextStyle(color: theme.secondaryText)),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.of(dialogCtx).pop();
+              context.goNamed('adminStore');
+            },
+            icon: const Icon(Icons.dashboard_rounded, size: 18),
+            label: const Text('Ir a Mi Tienda'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: theme.primary,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _handleStep0Account() async {
     if (loggedIn) {
+      final eligibility = await StoreService.instance.checkStoreCreationEligibility();
+      if (!eligibility.canCreate) {
+        if (mounted) {
+          _showPlanLimitUpgradeDialog(eligibility.message ??
+              'Las cuentas con Plan Free están limitadas a 1 sola tienda. Para crear y administrar múltiples tiendas, actualiza al Plan Pro.');
+        }
+        return;
+      }
       setState(() => _currentStep = 1);
       return;
     }
@@ -186,6 +274,16 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
             'is_admin': true,
           });
         } catch (_) {}
+      }
+
+      // Validar si el usuario tiene permitido crear una nueva tienda según su plan
+      final eligibility = await StoreService.instance.checkStoreCreationEligibility();
+      if (!eligibility.canCreate) {
+        if (mounted) {
+          _showPlanLimitUpgradeDialog(eligibility.message ??
+              'Las cuentas con Plan Free están limitadas a 1 sola tienda. Para crear y administrar múltiples tiendas, actualiza al Plan Pro.');
+        }
+        return;
       }
 
       if (mounted) {

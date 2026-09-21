@@ -5,6 +5,7 @@ import 'package:baul_pandora/services/store_service.dart';
 import 'package:baul_pandora/services/store_theme_service.dart';
 import 'package:baul_pandora/backend/supabase/supabase.dart';
 import 'package:baul_pandora/pages/administracion/components/bulk_product_import_modal.dart';
+import 'package:baul_pandora/components/store_selector_modal.dart';
 import 'admin_subscription_view.dart';
 import 'admin_custom_domain_view.dart';
 
@@ -250,15 +251,96 @@ class _AdminStoreDashboardViewState extends State<AdminStoreDashboardView> {
             ),
           ),
 
-          // Botón de Crear Nueva / Cambiar Tienda
-          OutlinedButton.icon(
-            onPressed: () => context.pushNamed('storeRegister'),
-            icon: const Icon(Icons.add_rounded, size: 18),
-            label: const Text('Nueva Tienda'),
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
+          // Botones de Cambiar Tienda y Nueva Tienda
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              OutlinedButton.icon(
+                onPressed: () {
+                  StoreSelectorModal.show(
+                    context,
+                    onStoreSelected: (selectedStore) {
+                      _loadStoreData();
+                    },
+                  );
+                },
+                icon: const Icon(Icons.swap_horiz_rounded, size: 18),
+                label: const Text('Cambiar Tienda'),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+              const SizedBox(width: 8),
+              ElevatedButton.icon(
+                onPressed: () async {
+                  final eligibility = await StoreService.instance.checkStoreCreationEligibility();
+                  if (!eligibility.canCreate) {
+                    if (mounted) {
+                      showDialog(
+                        context: context,
+                        builder: (dialogCtx) => AlertDialog(
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          title: const Row(
+                            children: [
+                              Icon(Icons.stars_rounded, color: Colors.purple, size: 28),
+                              SizedBox(width: 8),
+                              Text('Límite de Tiendas'),
+                            ],
+                          ),
+                          content: Text(
+                            eligibility.message ?? 'Actualiza a Plan Pro para gestionar múltiples tiendas.',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(dialogCtx).pop(),
+                              child: const Text('Cerrar'),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                Navigator.of(dialogCtx).pop();
+                                showDialog(
+                                  context: context,
+                                  builder: (ctx) => Dialog(
+                                    backgroundColor: Colors.transparent,
+                                    child: Container(
+                                      width: 900,
+                                      height: 700,
+                                      decoration: BoxDecoration(
+                                        color: FlutterFlowTheme.of(context).primaryBackground,
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(20),
+                                        child: const AdminSubscriptionView(),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(backgroundColor: Colors.purple, foregroundColor: Colors.white),
+                              child: const Text('Ver Plan Pro'),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+                    return;
+                  }
+                  if (context.mounted) {
+                    context.pushNamed('storeRegister');
+                  }
+                },
+                icon: const Icon(Icons.add_rounded, size: 18),
+                label: const Text('Nueva'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: theme.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+            ],
           ),
         ],
       ),

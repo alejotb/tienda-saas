@@ -243,6 +243,7 @@ class _AdminSubscriptionViewState extends State<AdminSubscriptionView> {
                         isCurrent: !isPro,
                         accentColor: Colors.blueGrey,
                         features: [
+                          '1 sola tienda por cuenta',
                           'Hasta 100 productos en catálogo',
                           'Catálogo web público independiente',
                           'Recepción de pedidos por WhatsApp',
@@ -266,6 +267,7 @@ class _AdminSubscriptionViewState extends State<AdminSubscriptionView> {
                         isHighlight: true,
                         accentColor: Colors.purple,
                         features: [
+                          '🏢 Múltiples Tiendas ILIMITADAS (Multi-Store)',
                           '👑 Productos ILIMITADOS',
                           '🌐 Dominio Propio (www.mitienda.com)',
                           '🚫 Cero Anuncios de Publicidad',
