@@ -1,9 +1,11 @@
 import 'package:baul_pandora/auth/supabase_auth/auth_util.dart';
 import 'package:baul_pandora/components/modal_edit/modal_edit_widget.dart';
+import 'package:baul_pandora/components/whatsapp_connection_modal.dart';
 import 'package:baul_pandora/flutter_flow/flutter_flow_theme.dart';
 import 'package:baul_pandora/flutter_flow/flutter_flow_util.dart';
 import 'package:baul_pandora/flutter_flow/flutter_flow_widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../main_profile_model.dart';
 
 class ProfileSettingsList extends StatelessWidget {
@@ -80,7 +82,23 @@ class ProfileSettingsList extends StatelessWidget {
                   _showLanguageModal(context);
                 },
               ),
-              if ((AppStateNotifier.instance.currentUserRow?.isAdmin ?? false) || FFAppState().isAdmin) ...[
+              if (FFAppState().activeStoreId.isNotEmpty ||
+                  (AppStateNotifier.instance.currentUserRow?.isAdmin ?? false) ||
+                  FFAppState().isAdmin) ...[
+                Divider(height: 1.0, thickness: 1.0, color: FlutterFlowTheme.of(context).alternate),
+                _buildSettingsItem(
+                  context,
+                  icon: const FaIcon(FontAwesomeIcons.whatsapp, color: Color(0xFF25D366), size: 24.0),
+                  text: 'Conexión con WhatsApp',
+                  onTap: () async {
+                    await WhatsAppConnectionModal.show(
+                      context,
+                      onSaved: () async {
+                        await updateCallback();
+                      },
+                    );
+                  },
+                ),
                 Divider(height: 1.0, thickness: 1.0, color: FlutterFlowTheme.of(context).alternate),
                 _buildSettingsItem(
                   context,

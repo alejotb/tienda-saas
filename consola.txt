@@ -1,16 +1,7 @@
-lib/pages/login_page/login_page_widget.dart:2165:34: Error: Too many positional arguments: 0
-allowed, but 1 found.
-Try removing the extra positional arguments.
-                          Padding(
-                                 ^
-/C:/flutter/packages/flutter/lib/src/widgets/basic.dart:2319:9: Context: Found this candidate,
-but the arguments don't match.
-  const Padding({super.key, required this.padding, super.child});
-        ^^^^^^^
-lib/pages/login_page/login_page_widget.dart:2242:29: Error: Expected an identifier, but got ')'.
-Try inserting an identifier before ')'.
-                            ),
-                            ^
-lib/pages/login_page/login_page_widget.dart:2242:29: Error: Expected ']' before this.
-                            ),
-                            ^
+tarting application from main method in: org-dartlang-app:///web_entrypoint.dart.
+oxklenzljlffrlyoavag.supabase.co/auth/v1/signup?:1  Failed to load resource: the server responded with a status of 429 ()
+ddc_module_loader.js:1728 Hot restarting application from main method in: org-dartlang-app:///web_entrypoint.dart (generation: 1).
+oxklenzljlffrlyoavag.supabase.co/auth/v1/signup?:1  Failed to load resource: the server responded with a status of 429 ()
+oxklenzljlffrlyoavag.supabase.co/auth/v1/token?grant_type=password:1  Failed to load resource: the server responded with a status of 400 ()
+js_primitives.dart:28 Error en login durante registro de tienda: AuthApiException(message: Invalid login credentials, statusCode: 400, code: invalid_credentials)
+oxklenzljlffrlyoavag.supabase.co/auth/v1/token?grant_type=password:1  Failed to load resource: the server responded with a status of 400 ()

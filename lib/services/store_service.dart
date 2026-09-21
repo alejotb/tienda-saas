@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:baul_pandora/backend/supabase/supabase.dart';
+import 'package:baul_pandora/services/store_theme_service.dart';
 
 class StoreData {
   final String id;
@@ -19,6 +20,8 @@ class StoreData {
   final bool permiteInvitados;
   final String? dominioPersonalizado;
   final String estadoDominio; // 'sin_configurar', 'pendiente', 'conectado'
+  final bool whatsappActivo;
+  final bool whatsappConfirmado;
 
   StoreData({
     required this.id,
@@ -38,9 +41,14 @@ class StoreData {
     this.permiteInvitados = true,
     this.dominioPersonalizado,
     this.estadoDominio = 'sin_configurar',
+    this.whatsappActivo = true,
+    this.whatsappConfirmado = false,
   });
 
   factory StoreData.fromMap(Map<String, dynamic> map) {
+    final phone = map['telefono_contacto']?.toString();
+    final hasPhone = phone != null && phone.trim().isNotEmpty;
+
     return StoreData(
       id: map['id']?.toString() ?? '',
       duenoId: map['dueno_id']?.toString() ?? '',
@@ -50,7 +58,7 @@ class StoreData {
       bannerUrl: map['banner_url']?.toString(),
       colorPrimario: map['color_primario']?.toString() ?? '#6366F1',
       colorSecundario: map['color_secundario']?.toString() ?? '#4F46E5',
-      telefonoContacto: map['telefono_contacto']?.toString(),
+      telefonoContacto: phone,
       emailContacto: map['email_contacto']?.toString(),
       direccionFisica: map['direccion_fisica']?.toString(),
       monedaPrincipal: map['moneda_principal']?.toString() ?? 'USD',
@@ -59,6 +67,8 @@ class StoreData {
       permiteInvitados: map['permite_invitados'] ?? true,
       dominioPersonalizado: map['dominio_personalizado']?.toString(),
       estadoDominio: map['estado_dominio']?.toString() ?? (map['dominio_personalizado'] != null ? 'conectado' : 'sin_configurar'),
+      whatsappActivo: map['whatsapp_activo'] == true || (map['whatsapp_activo'] == null && hasPhone),
+      whatsappConfirmado: map['whatsapp_confirmado'] == true,
     );
   }
 }
@@ -303,6 +313,37 @@ class StoreService {
       return true;
     } catch (e) {
       debugPrint('Error al actualizar dominio personalizado: $e');
+      return false;
+    }
+  }
+
+  /// Actualiza la configuración y confirmación de WhatsApp de la tienda
+  Future<bool> updateStoreWhatsApp({
+    required String storeId,
+    required String phone,
+    required bool activo,
+    required bool confirmado,
+  }) async {
+    try {
+      final cleanPhone = phone.replaceAll(RegExp(r'[^0-9+]'), '').trim();
+      final payload = {
+        'telefono_contacto': cleanPhone,
+        'whatsapp_activo': activo,
+        'whatsapp_confirmado': confirmado,
+      };
+
+      await SupaFlow.client
+          .from('tiendas')
+          .update(payload)
+          .eq('id', storeId);
+
+      final updated = await getStoreById(storeId);
+      if (updated != null) {
+        StoreThemeService.instance.setStore(updated);
+      }
+      return true;
+    } catch (e) {
+      debugPrint('Error al actualizar WhatsApp de la tienda: $e');
       return false;
     }
   }

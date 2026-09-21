@@ -1,6 +1,5 @@
 import 'package:baul_pandora/auth/supabase_auth/auth_util.dart';
 import 'package:baul_pandora/components/main_logo/main_logo_widget.dart';
-import 'package:baul_pandora/components/otp_verification_dialog.dart';
 import 'package:baul_pandora/flutter_flow/flutter_flow_animations.dart';
 import 'package:baul_pandora/flutter_flow/flutter_flow_button_tabbar.dart';
 import 'package:baul_pandora/flutter_flow/flutter_flow_theme.dart';
@@ -1805,23 +1804,12 @@ class _LoginPageWidgetState extends State<LoginPageWidget>
 
                                                         if (user == null &&
                                                             !loggedIn) {
-                                                          if (context.mounted) {
-                                                            final verified =
-                                                                await OtpVerificationDialog
-                                                                    .show(
-                                                              context,
-                                                              email: email,
-                                                              title:
-                                                                  'Confirma tu correo',
-                                                              subtitle:
-                                                                  'Ingresa el código de 6 dígitos que enviamos a:\n$email para verificar tu cuenta.',
-                                                            );
-
-                                                            if (!verified ||
-                                                                !loggedIn) {
-                                                              return;
-                                                            }
-                                                          }
+                                                          await authManager
+                                                              .signInWithEmail(
+                                                            context,
+                                                            email,
+                                                            password,
+                                                          );
                                                         }
 
                                                         if (!loggedIn) {

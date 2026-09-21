@@ -47,6 +47,30 @@ void main() {
       expect(store.permiteInvitados, true);
       expect(store.dominioPersonalizado, isNull);
       expect(store.estadoDominio, 'sin_configurar');
+      expect(store.whatsappActivo, false);
+      expect(store.whatsappConfirmado, false);
+    });
+
+    test('StoreData.fromMap parses whatsapp fields and phone number correctly', () {
+      final map = {
+        'id': 'store-wa',
+        'dueno_id': 'user-wa',
+        'nombre': 'Tienda WA',
+        'slug': 'tienda-wa',
+        'color_primario': '#6366F1',
+        'color_secundario': '#4F46E5',
+        'moneda_principal': 'USD',
+        'activa': true,
+        'telefono_contacto': '+584121234567',
+        'whatsapp_activo': true,
+        'whatsapp_confirmado': true,
+      };
+
+      final store = StoreData.fromMap(map);
+
+      expect(store.telefonoContacto, '+584121234567');
+      expect(store.whatsappActivo, true);
+      expect(store.whatsappConfirmado, true);
     });
   });
 }
