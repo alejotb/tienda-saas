@@ -174,7 +174,6 @@ class StoreService {
         'email': user.email,
         'tienda_id': store.id,
         'rol': 'dueno_tienda',
-        'is_admin': true,
       };
       if (userName != null && userName.toString().trim().isNotEmpty) {
         userMap['nombre_completo'] = userName.toString().trim();

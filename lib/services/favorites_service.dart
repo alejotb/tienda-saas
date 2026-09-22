@@ -34,11 +34,14 @@ class FavoritesService {
       // 1. Fetch remote favorites
       final data = await Supabase.instance.client
           .from('usuarios')
-          .select('favoriteitems')
+          .select()
           .eq('id', user.id)
-          .single();
+          .maybeSingle();
 
-      final List<dynamic> remoteFavsRaw = data['favoriteitems'] ?? [];
+      if (data == null) return;
+
+      final dynamic raw = data['favorite_items'] ?? data['favoriteitems'] ?? data['favoriteItems'];
+      final List<dynamic> remoteFavsRaw = raw is List ? raw : [];
       final List<String> remoteFavs = remoteFavsRaw.map((e) => e.toString()).toList();
 
       // 2. Merge with local favorites (Union)
@@ -48,10 +51,8 @@ class FavoritesService {
       // 3. Update both sources
       FFAppState().itemsFavoritos = mergedFavs;
       await _syncWithRemote(mergedFavs);
-
-      print('Favorites synchronized successfully. Total: ${mergedFavs.length}');
     } catch (e) {
-      print('Error synchronizing favorites: $e');
+      // Favorites sync fails gracefully if the column does not exist in schema
     }
   }
 
@@ -63,10 +64,15 @@ class FavoritesService {
     try {
       await Supabase.instance.client
           .from('usuarios')
-          .update({'favoriteitems': favorites})
+          .update({'favorite_items': favorites})
           .eq('id', user.id);
-    } catch (e) {
-      print('Error updating remote favorites: $e');
+    } catch (_) {
+      try {
+        await Supabase.instance.client
+            .from('usuarios')
+            .update({'favoriteitems': favorites})
+            .eq('id', user.id);
+      } catch (_) {}
     }
   }
 }

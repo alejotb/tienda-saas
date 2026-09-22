@@ -306,7 +306,6 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
           final userPayload = <String, dynamic>{
             'id': currentUserUid,
             'email': email,
-            'is_admin': true,
             'rol': 'dueno_tienda',
           };
           if (name.isNotEmpty) {

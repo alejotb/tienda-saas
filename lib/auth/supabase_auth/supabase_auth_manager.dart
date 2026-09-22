@@ -244,7 +244,6 @@ class SupabaseAuthManager extends AuthManager
               if (fullName != null && fullName.isNotEmpty) 'nombre_completo': fullName,
               if (avatarUrl != null && avatarUrl.isNotEmpty) 'photo_path': avatarUrl,
               'rol': 'cliente',
-              'is_admin': false,
             });
           } else {
             final userRow = existingUser.first;

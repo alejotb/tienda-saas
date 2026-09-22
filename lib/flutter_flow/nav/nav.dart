@@ -75,9 +75,14 @@ class AppStateNotifier extends ChangeNotifier {
             .from('usuarios')
             .select()
             .eq('id', user!.uid as String)
-            .single();
-        currentUserRow = UsuariosRow(data);
-        FFAppState().isAdmin = currentUserRow?.isAdmin ?? false;
+            .maybeSingle();
+        if (data != null) {
+          currentUserRow = UsuariosRow(data);
+          FFAppState().isAdmin = currentUserRow?.isAdmin ?? false;
+        } else {
+          currentUserRow = null;
+          FFAppState().isAdmin = false;
+        }
 
         // Consultar si el usuario posee una tienda registrada
         currentStore = await StoreService.instance.getMyStore();
