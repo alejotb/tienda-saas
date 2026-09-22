@@ -2,8 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:baul_pandora/services/store_theme_service.dart';
 
 const kThemeModeKey = '__theme_mode__';
 
@@ -144,16 +144,37 @@ class LightModeTheme extends FlutterFlowTheme {
   @Deprecated('Use tertiary instead')
   Color get tertiaryColor => tertiary;
 
-  late Color primary = const Color(0xFF4B39EF);
-  late Color secondary = const Color(0xFF39D2C0);
+  @override
+  Color get primary => StoreThemeService.instance.currentStore != null
+      ? StoreThemeService.instance.primaryColor
+      : const Color(0xFF4B39EF);
+  set primary(Color value) {}
+
+  @override
+  Color get secondary => StoreThemeService.instance.currentStore != null
+      ? StoreThemeService.instance.secondaryColor
+      : const Color(0xFF39D2C0);
+  set secondary(Color value) {}
+
   late Color tertiary = const Color(0xFFEE8B60);
   late Color alternate = const Color(0xFFE0E3E7);
   late Color primaryText = const Color(0xFF14181B);
   late Color secondaryText = const Color(0xFF57636C);
   late Color primaryBackground = const Color(0xFFF1F4F8);
   late Color secondaryBackground = const Color(0xFFFFFFFF);
-  late Color accent1 = const Color(0x4C4B39EF);
-  late Color accent2 = const Color(0x4D39D2C0);
+
+  @override
+  Color get accent1 => StoreThemeService.instance.currentStore != null
+      ? StoreThemeService.instance.primaryColor.withValues(alpha: 0.3)
+      : const Color(0x4C4B39EF);
+  set accent1(Color value) {}
+
+  @override
+  Color get accent2 => StoreThemeService.instance.currentStore != null
+      ? StoreThemeService.instance.secondaryColor.withValues(alpha: 0.3)
+      : const Color(0x4D39D2C0);
+  set accent2(Color value) {}
+
   late Color accent3 = const Color(0x4DEE8B60);
   late Color accent4 = const Color(0xCCFFFFFF);
   late Color success = const Color(0xFF249689);
@@ -330,16 +351,37 @@ class DarkModeTheme extends FlutterFlowTheme {
   @Deprecated('Use tertiary instead')
   Color get tertiaryColor => tertiary;
 
-  late Color primary = const Color(0xFF4B39EF);
-  late Color secondary = const Color(0xFF39D2C0);
+  @override
+  Color get primary => StoreThemeService.instance.currentStore != null
+      ? StoreThemeService.instance.primaryColor
+      : const Color(0xFF4B39EF);
+  set primary(Color value) {}
+
+  @override
+  Color get secondary => StoreThemeService.instance.currentStore != null
+      ? StoreThemeService.instance.secondaryColor
+      : const Color(0xFF39D2C0);
+  set secondary(Color value) {}
+
   late Color tertiary = const Color(0xFFEE8B60);
   late Color alternate = const Color(0xFF262D34);
   late Color primaryText = const Color(0xFFFFFFFF);
   late Color secondaryText = const Color(0xFF95A1AC);
   late Color primaryBackground = const Color(0xFF1D2428);
   late Color secondaryBackground = const Color(0xFF14181B);
-  late Color accent1 = const Color(0x4C4B39EF);
-  late Color accent2 = const Color(0x4D39D2C0);
+
+  @override
+  Color get accent1 => StoreThemeService.instance.currentStore != null
+      ? StoreThemeService.instance.primaryColor.withValues(alpha: 0.3)
+      : const Color(0x4C4B39EF);
+  set accent1(Color value) {}
+
+  @override
+  Color get accent2 => StoreThemeService.instance.currentStore != null
+      ? StoreThemeService.instance.secondaryColor.withValues(alpha: 0.3)
+      : const Color(0x4D39D2C0);
+  set accent2(Color value) {}
+
   late Color accent3 = const Color(0x4DEE8B60);
   late Color accent4 = const Color(0xB2262D34);
   late Color success = const Color(0xFF249689);

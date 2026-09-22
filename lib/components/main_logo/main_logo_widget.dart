@@ -80,18 +80,29 @@ class _MainLogoWidgetState extends State<MainLogoWidget> {
     final primaryColor = StoreThemeService.instance.primaryColor;
     final theme = FlutterFlowTheme.of(context);
 
-    if (store.logoUrl != null && store.logoUrl!.isNotEmpty) {
+    if (store.logoUrl != null && store.logoUrl!.trim().isNotEmpty) {
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8.0),
-            child: Image.network(
-              store.logoUrl!,
-              height: 38.0,
-              width: 38.0,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => _buildStoreFallbackText(theme, primaryColor, store.nombre),
+          Container(
+            height: 38.0,
+            constraints: const BoxConstraints(maxWidth: 140.0),
+            padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 2.0),
+            decoration: BoxDecoration(
+              color: theme.secondaryBackground,
+              borderRadius: BorderRadius.circular(8.0),
+              border: Border.all(
+                color: primaryColor.withValues(alpha: 0.25),
+                width: 1.0,
+              ),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(6.0),
+              child: Image.network(
+                store.logoUrl!,
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) => _buildStoreFallbackText(theme, primaryColor, store.nombre),
+              ),
             ),
           ),
           const SizedBox(width: 8.0),

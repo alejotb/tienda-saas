@@ -40,17 +40,6 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
   int _currentSlideIndex = 0;
   Timer? _sliderTimer;
 
-  final List<String> _presetColors = [
-    '#6366F1', // Indigo
-    '#3B82F6', // Blue
-    '#10B981', // Emerald/Green
-    '#F59E0B', // Amber
-    '#EF4444', // Red
-    '#8B5CF6', // Purple
-    '#EC4899', // Pink
-    '#0F172A', // Slate Dark
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -480,20 +469,26 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: theme.primary.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(Icons.storefront_rounded, color: theme.primary, size: 20),
+            Image.asset(
+              Theme.of(context).brightness == Brightness.dark
+                  ? 'assets/images/shop_logo_light@4x.png'
+                  : 'assets/images/shop_logo_dark@4x.png',
+              height: 28.0,
+              fit: BoxFit.contain,
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 12),
+            Container(
+              height: 18,
+              width: 1,
+              color: theme.alternate,
+            ),
+            const SizedBox(width: 12),
             Text(
               'Crear Nueva Tienda',
-              style: theme.titleMedium.override(
+              style: theme.titleSmall.override(
                 fontFamily: 'Inter',
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w600,
+                color: theme.secondaryText,
               ),
             ),
           ],
@@ -1457,6 +1452,16 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
 
   // --- PASO 2: Branding e Identidad Visual (Logo, Colores) ---
   Widget _buildStepBranding(FlutterFlowTheme theme) {
+    final activePreset = StoreThemeService.presets.firstWhere(
+      (p) => p.primaryHex.toLowerCase() == _model.primaryColorHex.toLowerCase(),
+      orElse: () => StoreThemeService.presets.first,
+    );
+    final primaryColor = activePreset.primaryColor;
+    final secondaryColor = activePreset.secondaryColor;
+    final storeName = _model.storeNameController.text.trim().isNotEmpty
+        ? _model.storeNameController.text.trim()
+        : 'Mi Tienda Online';
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1470,73 +1475,317 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
         ),
         const SizedBox(height: 6),
         Text(
-          'Personaliza el logo y el color distintivo de tu tienda.',
+          'Elige el estilo visual de tu marca y sube tu logo. Todos los elementos clave de tu tienda se adaptarán automáticamente.',
           style: theme.bodySmall.override(
             fontFamily: 'Inter',
             color: theme.secondaryText,
           ),
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: 20),
 
         // Subida de Logo
-        Text('Logo de la Tienda (Opcional)', style: theme.bodyMedium.override(fontWeight: FontWeight.bold, fontSize: 13)),
-        const SizedBox(height: 6),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Logo de tu Tienda', style: theme.bodyMedium.override(fontWeight: FontWeight.bold, fontSize: 13)),
+            if (_logoBytes != null)
+              GestureDetector(
+                onTap: () => setState(() {
+                  _logoBytes = null;
+                  _logoFileName = null;
+                }),
+                child: const Text('Quitar', style: TextStyle(fontSize: 12, color: Colors.redAccent)),
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
         GestureDetector(
           onTap: () => _pickImage(true),
           child: Container(
-            height: 90,
+            height: 84,
             width: double.infinity,
             decoration: BoxDecoration(
               color: theme.primaryBackground,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: theme.alternate),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: _logoBytes != null ? primaryColor.withValues(alpha: 0.6) : theme.alternate,
+                width: _logoBytes != null ? 1.5 : 1.0,
+              ),
             ),
             child: _logoBytes != null
-                ? Image.memory(_logoBytes!, fit: BoxFit.contain)
-                : const Column(
+                ? Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.add_photo_alternate_outlined, size: 30),
-                      SizedBox(height: 4),
-                      Text('Haz clic para subir el Logo', style: TextStyle(fontSize: 12)),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.memory(_logoBytes!, height: 60, fit: BoxFit.contain),
+                      ),
+                      const SizedBox(width: 14),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _logoFileName ?? 'Logo cargado',
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Haz clic para cambiar imagen',
+                            style: TextStyle(fontSize: 11, color: theme.secondaryText),
+                          ),
+                        ],
+                      ),
+                    ],
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: primaryColor.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(Icons.add_photo_alternate_outlined, color: primaryColor, size: 22),
+                      ),
+                      const SizedBox(width: 12),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Haz clic para subir tu Logo', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+                          const SizedBox(height: 2),
+                          Text('PNG, JPG o WebP (Fondo transparente recomendado)', style: TextStyle(fontSize: 10, color: theme.secondaryText)),
+                        ],
+                      ),
                     ],
                   ),
           ),
         ),
 
-        const SizedBox(height: 18),
+        const SizedBox(height: 22),
 
-        // Selector de Color Primario
-        Text('Color Principal de la Marca', style: theme.bodyMedium.override(fontWeight: FontWeight.bold, fontSize: 13)),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 10,
-          runSpacing: 10,
-          children: _presetColors.map((colorHex) {
-            final isSelected = _model.primaryColorHex == colorHex;
-            final color = Color(int.parse(colorHex.replaceFirst('#', 'ff'), radix: 16));
+        // Selector de Estilos & Paletas de Color
+        Text('Estilo & Paleta de Colores', style: theme.bodyMedium.override(fontWeight: FontWeight.bold, fontSize: 13)),
+        const SizedBox(height: 4),
+        Text('Selecciona el estilo que mejor represente a tu negocio:', style: TextStyle(fontSize: 11, color: theme.secondaryText)),
+        const SizedBox(height: 12),
+
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            childAspectRatio: 2.2,
+          ),
+          itemCount: StoreThemeService.presets.length,
+          itemBuilder: (context, index) {
+            final preset = StoreThemeService.presets[index];
+            final isSelected = activePreset.id == preset.id;
+            final pColor = preset.primaryColor;
+            final sColor = preset.secondaryColor;
+
             return GestureDetector(
-              onTap: () => setState(() => _model.primaryColorHex = colorHex),
-              child: Container(
-                width: 38,
-                height: 38,
+              onTap: () {
+                setState(() {
+                  _model.primaryColorHex = preset.primaryHex;
+                  _model.secondaryColorHex = preset.secondaryHex;
+                });
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                 decoration: BoxDecoration(
-                  color: color,
-                  shape: BoxShape.circle,
-                  border: isSelected ? Border.all(color: Colors.black, width: 2.5) : null,
-                  boxShadow: [
-                    if (isSelected)
-                      BoxShadow(
-                        color: color.withValues(alpha: 0.4),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
+                  color: isSelected ? pColor.withValues(alpha: 0.08) : theme.primaryBackground,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isSelected ? pColor : theme.alternate,
+                    width: isSelected ? 2.0 : 1.0,
+                  ),
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: pColor.withValues(alpha: 0.2),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Row(
+                  children: [
+                    // Círculos de color
+                    Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [pColor, sColor],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        shape: BoxShape.circle,
                       ),
+                      child: Center(
+                        child: Icon(
+                          isSelected ? Icons.check : preset.icon,
+                          color: Colors.white,
+                          size: 15,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            preset.name,
+                            style: TextStyle(
+                              fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                              fontSize: 11,
+                              color: isSelected ? pColor : theme.primaryText,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            preset.tag,
+                            style: TextStyle(
+                              fontSize: 9,
+                              color: theme.secondaryText,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
-                child: isSelected ? const Icon(Icons.check, color: Colors.white, size: 18) : null,
               ),
             );
-          }).toList(),
+          },
+        ),
+
+        const SizedBox(height: 22),
+
+        // --- Vista Previa Dinámica del Estilo Seleccionado ---
+        Text('Vista Previa de tu Tienda', style: theme.bodyMedium.override(fontWeight: FontWeight.bold, fontSize: 13)),
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: theme.primaryBackground,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: primaryColor.withValues(alpha: 0.35)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header de la Tienda
+              Row(
+                children: [
+                  if (_logoBytes != null)
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: Image.memory(_logoBytes!, width: 28, height: 28, fit: BoxFit.contain),
+                    )
+                  else
+                    Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        color: primaryColor.withValues(alpha: 0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.storefront_rounded, color: primaryColor, size: 16),
+                    ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          storeName,
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: theme.primaryText),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text('Catálogo Oficial', style: TextStyle(fontSize: 9, color: theme.secondaryText)),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [primaryColor, secondaryColor],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Text('Estilo Activo', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+
+              // Mockup de Producto con Colores Aplicados
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: theme.secondaryBackground,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: theme.alternate),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: primaryColor.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(Icons.shopping_bag_outlined, color: primaryColor, size: 22),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Producto Destacado', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                          const SizedBox(height: 2),
+                          Text('\$25.00 USD', style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold, fontSize: 12)),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: primaryColor,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.add_shopping_cart, color: Colors.white, size: 12),
+                          SizedBox(width: 4),
+                          Text('Agregar', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
 
         const SizedBox(height: 24),
@@ -1559,7 +1808,7 @@ class _StoreRegisterWidgetState extends State<StoreRegisterWidget> {
                 onPressed: _isLoading ? null : _submitRegistration,
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  backgroundColor: theme.primary,
+                  backgroundColor: primaryColor,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   elevation: 0,
                 ),

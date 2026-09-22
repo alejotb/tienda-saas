@@ -11,11 +11,11 @@ import 'auth/supabase_auth/auth_util.dart';
 import 'package:baul_pandora/backend/supabase/supabase.dart';
 import 'package:baul_pandora/flutter_flow/flutter_flow_theme.dart';
 import 'flutter_flow/flutter_flow_util.dart';
-import 'package:baul_pandora/services/isar_service.dart';
 import 'package:baul_pandora/pages/administracion/admin_pagos_page.dart';
 import 'package:baul_pandora/pages/administracion/admin_despachos_page.dart';
 import 'package:baul_pandora/pages/administracion/admin_inventario_page.dart';
 import 'package:baul_pandora/pages/administracion/admin_auditoria_page.dart';
+import 'package:baul_pandora/services/store_theme_service.dart';
 import 'package:baul_pandora/index.dart';
 
 void main() async {
@@ -98,29 +98,34 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      debugShowCheckedModeBanner: false,
-      title: 'BaulPandora',
-      locale: const Locale('es', 'ES'),
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: const [
-        Locale('es', 'ES'),
-        Locale('en', 'US'),
-      ],
-      theme: ThemeData(
-        brightness: Brightness.light,
-        useMaterial3: false,
-      ),
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        useMaterial3: false,
-      ),
-      themeMode: _themeMode,
-      routerConfig: _router,
+    return ListenableBuilder(
+      listenable: StoreThemeService.instance,
+      builder: (context, _) {
+        return MaterialApp.router(
+          debugShowCheckedModeBanner: false,
+          title: 'BaulPandora',
+          locale: const Locale('es', 'ES'),
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale('es', 'ES'),
+            Locale('en', 'US'),
+          ],
+          theme: ThemeData(
+            brightness: Brightness.light,
+            useMaterial3: false,
+          ),
+          darkTheme: ThemeData(
+            brightness: Brightness.dark,
+            useMaterial3: false,
+          ),
+          themeMode: _themeMode,
+          routerConfig: _router,
+        );
+      },
     );
   }
 }
