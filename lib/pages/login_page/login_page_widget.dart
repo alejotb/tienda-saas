@@ -179,7 +179,7 @@ class _LoginPageWidgetState extends State<LoginPageWidget>
                     child: wrapWithModel(
                       model: _model.mainLogoModel,
                       updateCallback: () => safeSetState(() {}),
-                      child: const MainLogoWidget(),
+                      child: MainLogoWidget(forceGeneralLogo: !isStoreMode),
                     ),
                   ),
                 ),

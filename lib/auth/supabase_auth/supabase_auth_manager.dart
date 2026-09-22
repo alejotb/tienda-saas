@@ -9,6 +9,7 @@ import 'email_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:baul_pandora/services/favorites_service.dart';
 import 'package:baul_pandora/services/cart_service.dart';
+import 'package:baul_pandora/services/store_theme_service.dart';
 import 'supabase_user_provider.dart';
 
 export 'package:baul_pandora/auth/base_auth_user_provider.dart';
@@ -26,6 +27,9 @@ class SupabaseAuthManager extends AuthManager
 
     // 2. Clear all local user data (favorites, addresses, invitado mode, etc.)
     FFAppState().clearUserData();
+    FFAppState().activeStoreId = '';
+    FFAppState().activeStoreSlug = '';
+    StoreThemeService.instance.clearStore();
 
     // 3. Reset guest mode whenever the app signs out and signOut Supabase
     try {

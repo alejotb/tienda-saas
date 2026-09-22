@@ -26,6 +26,19 @@ class FeaturedCategoriesWidget extends StatelessWidget {
         queryFn: (q) => q.eq('destacada', true),
       ),
       builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          if (!model.isAdmin) return const SizedBox.shrink();
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: Row(
+              children: [
+                Icon(Icons.info_outline_rounded, color: theme.secondaryText, size: 18),
+                const SizedBox(width: 8),
+                Text('No hay categorías destacadas configuradas', style: theme.bodySmall.override(fontFamily: 'Inter', color: theme.secondaryText)),
+              ],
+            ),
+          );
+        }
         if (!snapshot.hasData) {
           return const SizedBox(
             height: 80.0,

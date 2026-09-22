@@ -164,21 +164,68 @@ class _DropdownCategoriasDestacadasWidgetState
                     ),
                     builder: (context, snapshot) {
                       // Customize what your widget looks like when it's loading.
+                      if (snapshot.hasError) {
+                        return Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.error_outline_rounded,
+                                  color: FlutterFlowTheme.of(context).error,
+                                  size: 32.0,
+                                ),
+                                const SizedBox(height: 8.0),
+                                Text(
+                                  'Error al cargar categorías',
+                                  style: FlutterFlowTheme.of(context).bodyMedium,
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
                       if (!snapshot.hasData) {
                         return Center(
                           child: SizedBox(
-                            width: 50.0,
-                            height: 50.0,
+                            width: 36.0,
+                            height: 36.0,
                             child: CircularProgressIndicator(
                               valueColor: AlwaysStoppedAnimation<Color>(
                                 FlutterFlowTheme.of(context).primary,
                               ),
+                              strokeWidth: 2.5,
                             ),
                           ),
                         );
                       }
                       List<CategoriasRow> columnCategoriasRowList =
                           snapshot.data!;
+
+                      if (columnCategoriasRowList.isEmpty) {
+                        return Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.category_outlined,
+                                  color: FlutterFlowTheme.of(context).secondaryText,
+                                  size: 36.0,
+                                ),
+                                const SizedBox(height: 8.0),
+                                Text(
+                                  'No hay categorías creadas aún',
+                                  textAlign: TextAlign.center,
+                                  style: FlutterFlowTheme.of(context).bodyMedium,
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
 
                       return SingleChildScrollView(
                         child: Column(

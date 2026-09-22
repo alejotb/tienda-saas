@@ -8,7 +8,12 @@ import 'main_logo_model.dart';
 export 'main_logo_model.dart';
 
 class MainLogoWidget extends StatefulWidget {
-  const MainLogoWidget({super.key});
+  const MainLogoWidget({
+    super.key,
+    this.forceGeneralLogo = false,
+  });
+
+  final bool forceGeneralLogo;
 
   @override
   State<MainLogoWidget> createState() => _MainLogoWidgetState();
@@ -37,6 +42,19 @@ class _MainLogoWidgetState extends State<MainLogoWidget> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.forceGeneralLogo) {
+      return InkWell(
+        splashColor: Colors.transparent,
+        focusColor: Colors.transparent,
+        hoverColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        onTap: () async {
+          context.pushNamed(MainHomePageWidget.routeName);
+        },
+        child: _buildDefaultLogo(context),
+      );
+    }
+
     return ListenableBuilder(
       listenable: StoreThemeService.instance,
       builder: (context, _) {
