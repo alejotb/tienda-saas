@@ -1,1 +1,1 @@
-// Errores resueltos satisfactoriamente. Todos los tests pasaron (16/16).
+// Errores de login y esquema de base de datos solucionados. 16/16 pruebas pasando exitosamente.
