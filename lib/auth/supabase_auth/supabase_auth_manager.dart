@@ -220,15 +220,18 @@ class SupabaseAuthManager extends AuthManager
       // doesn't assign the currentUser in time.
       if (authUser != null) {
         currentUser = authUser;
-        await AppStateNotifier.instance.update(authUser);
 
-        // Sincronizar / crear información del usuario en tabla 'usuarios'
+        // 1. Sincronizar / crear información del usuario en tabla 'usuarios'
         try {
           final metadata = user?.userMetadata;
           final fullName = metadata?['display_name']?.toString() ??
               metadata?['full_name']?.toString() ??
               metadata?['name']?.toString() ??
-              metadata?['nombre']?.toString();
+              metadata?['nombre_completo']?.toString() ??
+              metadata?['nombre']?.toString() ??
+              (user?.email != null && user!.email!.contains('@')
+                  ? user.email!.split('@').first
+                  : 'Usuario');
           final avatarUrl = metadata?['avatar_url']?.toString() ??
               metadata?['picture']?.toString() ??
               metadata?['photo_path']?.toString();
@@ -238,20 +241,20 @@ class SupabaseAuthManager extends AuthManager
           );
 
           if (existingUser.isEmpty) {
-            await SupaFlow.client.from('usuarios').insert({
+            await SupaFlow.client.from('usuarios').upsert({
               'id': authUser.uid!,
               'email': user?.email,
-              if (fullName != null && fullName.isNotEmpty) 'nombre_completo': fullName,
+              'nombre_completo': fullName,
               if (avatarUrl != null && avatarUrl.isNotEmpty) 'photo_path': avatarUrl,
               'rol': 'cliente',
+              'created_at': DateTime.now().toIso8601String(),
             });
           } else {
             final userRow = existingUser.first;
             bool needsUpdate = false;
             final updateData = <String, dynamic>{};
 
-            if (fullName != null &&
-                fullName.isNotEmpty &&
+            if (fullName.isNotEmpty &&
                 (userRow.nombreCompleto == null || userRow.nombreCompleto!.isEmpty)) {
               updateData['nombre_completo'] = fullName;
               needsUpdate = true;
@@ -273,6 +276,9 @@ class SupabaseAuthManager extends AuthManager
         } catch (e) {
           debugPrint('Error sincronizando usuario en tabla usuarios: $e');
         }
+
+        // 2. Actualizar el estado global con el usuario y su fila en 'usuarios'
+        await AppStateNotifier.instance.update(authUser);
 
         // Synchronize favorites upon successful login
         try {

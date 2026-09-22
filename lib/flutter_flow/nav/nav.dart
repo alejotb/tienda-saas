@@ -71,11 +71,45 @@ class AppStateNotifier extends ChangeNotifier {
     
     if (user?.uid != null) {
       try {
-        final data = await SupaFlow.client
+        var data = await SupaFlow.client
             .from('usuarios')
             .select()
             .eq('id', user!.uid as String)
             .maybeSingle();
+
+        // Si el usuario no tiene fila en usuarios, crearla inmediatamente
+        if (data == null) {
+          final currentUserObj = SupaFlow.client.auth.currentUser;
+          if (currentUserObj != null) {
+            final metadata = currentUserObj.userMetadata ?? {};
+            final fullName = metadata['display_name']?.toString() ??
+                metadata['full_name']?.toString() ??
+                metadata['name']?.toString() ??
+                metadata['nombre_completo']?.toString() ??
+                (currentUserObj.email != null && currentUserObj.email!.contains('@')
+                    ? currentUserObj.email!.split('@').first
+                    : 'Usuario');
+            final avatarUrl = metadata['avatar_url']?.toString() ??
+                metadata['picture']?.toString() ??
+                metadata['photo_path']?.toString();
+
+            await SupaFlow.client.from('usuarios').upsert({
+              'id': user!.uid as String,
+              'email': currentUserObj.email,
+              'nombre_completo': fullName,
+              if (avatarUrl != null && avatarUrl.isNotEmpty) 'photo_path': avatarUrl,
+              'rol': 'cliente',
+              'created_at': DateTime.now().toIso8601String(),
+            });
+
+            data = await SupaFlow.client
+                .from('usuarios')
+                .select()
+                .eq('id', user!.uid as String)
+                .maybeSingle();
+          }
+        }
+
         if (data != null) {
           currentUserRow = UsuariosRow(data);
           FFAppState().isAdmin = currentUserRow?.isAdmin ?? false;
